@@ -15,7 +15,9 @@ Including another URLconf
 """
 from django.conf.urls import url
 from django.contrib import admin
+import FiProcess.views
 
 urlpatterns = [
     url(r'^admin/', admin.site.urls),
+    url(r'^$', FiProcess.views.index, name='index'),
 ]
