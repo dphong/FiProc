@@ -18,6 +18,7 @@ from django.contrib import admin
 import FiProcess.views
 
 urlpatterns = [
-    url(r'^admin/', admin.site.urls),
-    url(r'^$', FiProcess.views.index, name='index'),
+    url(r'^hftcCsFiProcAdmin/', admin.site.urls),
+    url(r'^$', FiProcess.views.login, name='login'),
+    url(r'^error/', FiProcess.views.error, name='error'),
 ]

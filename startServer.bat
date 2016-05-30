@@ -1,1 +1,3 @@
-python manage.py runserver 8880
+python manage.py runserver 0.0.0.0:8880
+
+PAUSE
