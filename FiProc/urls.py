@@ -20,5 +20,6 @@ import FiProcess.views
 urlpatterns = [
     url(r'^hftcCsFiProcAdmin/', admin.site.urls),
     url(r'^$', FiProcess.views.login, name='login'),
+    url(r'register/', FiProcess.views.register, name='register'),
     url(r'^error/', FiProcess.views.error, name='error'),
 ]
