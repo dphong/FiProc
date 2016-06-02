@@ -12,31 +12,51 @@
     <script type="text/javascript" src="{% static 'FiProcess/validator.min.js' %}"></script>
 </head>  
   
-<body>  
+<body>
+    {% if not register_success %}
+        <div class="alert alert-danger">
+            <a href="#" class="close" data-dismiss="alert" aria-label="close">&times;</a>
+            <h4><strong>注册信息异常！</strong>请修改</h4>
+            {% if message %}
+            <h4><strong>{{message}}</strong></h4>
+            {% endif %}
+            {% if form.errors %}
+                {% for field in form %}
+                    {% for error in field.errors %}
+                        <h4>{{ error|escape }}<h4>
+                    {% endfor %}
+                {% endfor %}
+            {% endif %}
+        </div>
+    {% endif %}
     <form data-toggle="validator" role="form" class="form" action="" method="post">  
         {% csrf_token %}  
         <div class="form-group has-feedback">
             <label for="inputName" class="control-label">用户名</label>
             <input type="text" pattern="^[A-z0-9]{6,}$" maxlength="24" class="form-control" id="inputName" 
-                name="username" required placeholder="请使用6-24位字母和数字组合">
+                name="username" required placeholder="请使用6-24位字母和数字组合"
+                value={{form.username.value}}>
             <span class="glyphicon form-control-feedback" aria-hidden="true"></span>
             <div class="help-block with-errors"></div>
         </div>
         <div class="form-group">
             <label for="inputActualName" class="control-label">姓名</label>
             <input type="text" class="form-control" id="inputActualName"
-                name="name" required placeholder="请输入真实姓名">
+                name="name" required placeholder="请输入真实姓名"
+                value={{form.name.value}}>
         </div>
         <div class="form-group has-feedback">
             <label for="inputWorkId" class="control-label">工号</label>
             <input type="text" pattern="^[0-9]{1,}$" maxlength="10" class="form-control" id="inputWorkId"
-                name="workId" required placeholder="请输入工号，无工号请输0">
+                name="workId" required placeholder="请输入工号，无工号请输0"
+                value={{form.workId.value}}>
             <span class="glyphicon form-control-feedback" aria-hidden="true"></span>
         </div>
         <div class="form-group has-feedback">
             <label for="inputPhoneNumber" class="control-label">联系电话</label>
             <input type="text" pattern="^[-0-9]{4,}$" class="form-control" id="inputPhoneNumber"
-                name="phoneNumber" required placeholder="请输入固化或手机号码">
+                name="phoneNumber" required placeholder="请输入固化或手机号码"
+                value={{form.phoneNumber.value}}>
             <span class="glyphicon form-control-feedback" aria-hidden="true"></span>
         </div>
         <div>
@@ -45,13 +65,15 @@
         <div class="form-group has-feedback">
             <label for="inputIcbcCard" class="control-label">公务卡号</label>
             <input type="text" pattern="^[0-9]{8,}$" maxlength="8" class="form-control" id="inputIcbcCard"
-                name="icbcCard" placeholder="请输入8位公务卡卡号">
+                name="icbcCard" placeholder="请输入16位公务卡卡号"
+                value={{form.icbcCard.value}}>
             <span class="glyphicon form-control-feedback" aria-hidden="true"></span>
         </div>
         <div class="form-group has-feedback">
             <label for="inputCcbCard" class="control-label">工资卡号</label>
             <input type="text" pattern="^[0-9]{6,}$" maxlength="24" class="form-control" id="inputCcbCard"
-                name="ccbCard" placeholder="请输入工资卡号或其他用于转账的卡号">
+                name="ccbCard" placeholder="请输入工资卡号或其他用于转账的卡号"
+                value={{form.ccbCard.value}}>
         </div>
         <div class="form-group">
             <label for="inputPsw" class="control-label">设置登录密码</label>

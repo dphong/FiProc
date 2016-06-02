@@ -1,42 +1,58 @@
 <!DOCTYPE html>  
-{% load bootstrap3  %}  
+{% load bootstrap3  %} 
+{% load staticfiles %} 
 <html lang="en">  
 <head>  
     <meta charset="utf-8">  
     <title>财务报账审批系统</title>  
     <meta name="description" content="">  
-    <meta name="author" content="朱显杰">  
-    {% bootstrap_css %}
-    {% bootstrap_javascript %}
-    {% bootstrap_messages %}
-    <style type="text/css">  
-        body {  
-            padding-top: 60px;  
-        }  
-    </style>  
+    <link rel="stylesheet" type="text/css" href="{% static 'FiProcess/bootstrap.min.css' %}" /> 
+    <script type="text/javascript" src="{% static 'FiProcess/jquery-2.2.4.min.js' %}"></script>
+    <script type="text/javascript" src="{% static 'FiProcess/bootstrap.min.js' %}"></script>
+    <script type="text/javascript" src="{% static 'FiProcess/validator.min.js' %}"></script>
 </head>  
   
 <body>  
+    <div class="container" style="max-width: 1000px">
     {% if password_is_wrong %}  
         <div class="alert alert-error">  
             <button type="button" class="close" data-dismiss="alert">×</button>  
             <h4>错误!</h4>用户名或密码错误  
         </div>  
     {% endif %}      
+    {% if register_success %}
+        <div class="alert alert-success">  
+            <button type="button" class="close" data-dismiss="alert">×</button>  
+            <h4>注册成功!</h4>请登录  
+        </div>  
+    {% endif %}
+    <h1 align="center">财务报账审批系统</h1>  
     <div class="well">  
-        <h1>财务报账审批系统</h1>  
-        <p> </p>  
         <form class="form" action="" method="post">  
             {% csrf_token %}  
-            {% bootstrap_form form %}
+            <div class="form-group has-feedback">
+                <label for="inputName" class="control-label">用户名</label>
+                <input type="text" pattern="^[A-z0-9]{6,}$" maxlength="24" class="form-control" id="inputName" 
+                    name="username" required placeholder="请输入用户名"
+                    {% if messages %}{% for message in messages %}value={{message}}{% endfor %}{% endif %}>
+                <span class="glyphicon form-control-feedback" aria-hidden="true"></span>
+                <div class="help-block with-errors"></div>
+                <div class="form-group">
+                    <label for="inputPsw" class="control-label">密码</label>
+                    <input type="password" data-minlength="6" maxlength="64" class="form-control" id="inputPsw" 
+                        name="password" required placeholder="请输入登录密码">
+                    <div class="help-block with-errors"></div>
+                </div>
+            </div>
             <p class="form-actions">  
                 <input type="submit" value="登录" class="btn btn-primary">  
                 <a href="/error/"><input type="button" value="忘记密码" class="btn btn-danger"></a>  
                 <a href="/register/"><input type="button" value="注册新用户" class="btn btn-success"></a>  
             </p>  
         </form>  
+    </div>
+    <p  align="center">请使用谷歌、火狐或IE10以上内核浏览器</p>
+    <p  align="center">意见及建议请发送至邮箱：jijunhe@qq.com</p>
     </div>  
-    <p>请使用谷歌、火狐或IE10以上内核浏览器</p>
-    <p>意见及建议请发送至邮箱：jijunhe@qq.com</p>
 </body>  
 </html>  
