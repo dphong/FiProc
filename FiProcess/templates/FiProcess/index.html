@@ -1,0 +1,47 @@
+<!DOCTYPE html>  
+{% load bootstrap3  %} 
+{% load staticfiles %} 
+<html lang="en">  
+<head>  
+    <meta charset="utf-8">  
+    <title>财务报账审批系统</title>  
+    <meta name="description" content="">  
+    <link rel="stylesheet" type="text/css" href="{% static 'FiProcess/bootstrap.min.css' %}" /> 
+    <script type="text/javascript" src="{% static 'FiProcess/jquery-2.2.4.min.js' %}"></script>
+    <script type="text/javascript" src="{% static 'FiProcess/bootstrap.min.js' %}"></script>
+    <script type="text/javascript" src="{% static 'FiProcess/validator.min.js' %}"></script>
+    <style type="text/css">
+    </style>
+</head>  
+
+<body>  
+    <div class="container">
+        <h2>财务报账审批系统</h2>
+        <ul class="nav nav-tabs">
+            <li class="active"><a data-toggle="tab" href="#user">个人信息</a></li>
+            <li><a data-toggle="tab" href="#order">报销单</a></li>
+            <li><a data-toggle="tab" href="#signList">待审批单据</a></li>
+            <li><a data-toggle="tab" href="#stuffCheck">用户注册申请</a></li>
+            <form class="form" method="post">
+                {% csrf_token %}  
+                <button type="submit" name="logout" class="btn btn-primary navbar-btn pull-right">注销</button>
+            </form>
+        </ul>
+
+        <div class="tab-content">
+            <div id="user" class="tab-pane fade in active">
+                <h3>用户个人信息</h3>
+            </div>
+            <div id="order" class="tab-pane fade">
+                <h3>报销单</h3>
+            </div>
+            <div id="signList" class="tab-pane fade">
+                <h3>待审批单据</h3>
+            </div>
+            <div id="stuffCheck" class="tab-pane fade">
+                <h3>用户注册申请</h3>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

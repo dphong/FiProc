@@ -4,6 +4,8 @@ from django.shortcuts import render_to_response
 from django.template.context import RequestContext
 from django.contrib import auth
 from django.contrib.auth.hashers import check_password
+from django.http import HttpResponseRedirect
+from django.core.urlresolvers import reverse
 
 from ..models import Stuff
 
@@ -38,14 +40,13 @@ class LoginForm(forms.Form):
             username = request.POST.get('username', '')
             password = request.POST.get('password', '')
             user = auth.authenticate(username=username, password=password)
-            print user
             if user is not None and user.is_active:
                 auth.login(request, user)
             if user is not None and not user.is_active:
                 return render_to_response('FiProcess/login.html',
                                           RequestContext(request, {'form': self, 'auth_login_wrong': True}))
             request.session['username'] = username
-            return render_to_response('FiProcess/index.html', RequestContext(request, {'form': self, }))
+            return HttpResponseRedirect(reverse('index'))
         else:
             return render_to_response('FiProcess/login.html',
                                       RequestContext(request, {'form': self, 'login_wrong': True}))

@@ -33,3 +33,7 @@ class Stuff(models.Model):
 
 class StuffCheck(models.Model):
     stuff = models.ForeignKey(Stuff, on_delete=models.CASCADE)
+
+
+class SchoolMaster(models.Model):
+    stuff = models.ForeignKey(Stuff, on_delete=models.CASCADE)
