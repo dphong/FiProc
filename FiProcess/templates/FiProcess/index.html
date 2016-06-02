@@ -20,8 +20,12 @@
         <ul class="nav nav-tabs">
             <li class="active"><a data-toggle="tab" href="#user">个人信息</a></li>
             <li><a data-toggle="tab" href="#order">报销单</a></li>
+            {% if signer %}
             <li><a data-toggle="tab" href="#signList">待审批单据</a></li>
+            {% endif %}
+            {% if sys_admin %}
             <li><a data-toggle="tab" href="#stuffCheck">用户注册申请</a></li>
+            {% endif %}
             <form class="form" method="post">
                 {% csrf_token %}  
                 <button type="submit" name="logout" class="btn btn-primary navbar-btn pull-right">注销</button>
@@ -35,12 +39,16 @@
             <div id="order" class="tab-pane fade">
                 <h3>报销单</h3>
             </div>
+            {% if signer %}
             <div id="signList" class="tab-pane fade">
                 <h3>待审批单据</h3>
             </div>
+            {% endif %}
+            {% if sys_admin %}
             <div id="stuffCheck" class="tab-pane fade">
                 <h3>用户注册申请</h3>
             </div>
+            {% endif %}
         </div>
     </div>
 </body>

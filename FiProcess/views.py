@@ -1,6 +1,4 @@
 from django.shortcuts import render_to_response
-from django.core.urlresolvers import reverse
-from django.http import HttpResponseRedirect
 
 from Form.LoginForm import LoginForm
 from Form.IndexForm import IndexForm
