@@ -5,6 +5,7 @@ from django.template.context import RequestContext
 from django.http import HttpResponseRedirect
 from django.contrib import messages
 from django.core.urlresolvers import reverse
+from django.contrib.auth.hashers import make_password
 
 from .models import Stuff
 
@@ -34,10 +35,11 @@ class RegisterForm(ModelForm):
             if workId:
                 message = u"工号" + inst.workId + u"已注册"
             if len(message) > 0:
-                return render(request, 'FiProcess/register.html', {'form': form, 'message': message})
+                return render('FiProcess/register.html', {'form': form, 'message': message})
+            inst.password = make_password(inst.password)
             inst.save()
             inst.stuffcheck_set.create()
             messages.add_message(request, messages.INFO, inst.username)
             return HttpResponseRedirect(reverse('login'))
         else:
-            return render(request, 'FiProcess/register.html', {'form': form, 'register_success': False})
+            return render('FiProcess/register.html', {'form': form, 'register_success': False})

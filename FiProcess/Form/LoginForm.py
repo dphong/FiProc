@@ -2,6 +2,10 @@
 from django import forms
 from django.shortcuts import render_to_response
 from django.template.context import RequestContext
+from django.contrib import auth
+from django.contrib.auth.hashers import check_password
+
+from ..models import Stuff
 
 
 class LoginForm(forms.Form):
@@ -27,25 +31,35 @@ class LoginForm(forms.Form):
     )
 
     def get(self, request):
-        return render_to_response('FiProcess/login.html', RequestContext(request, {'form': self, }))
+        return render_to_response('FiProcess/login.html', RequestContext(request))
 
     def post(self, request):
         if self.is_valid():
-            # username = request.POST.get('username', '')
-            # password = request.POST.get('password', '')
-            # user = auth.authenticate(username=username, password=password)
-            user = None
+            username = request.POST.get('username', '')
+            password = request.POST.get('password', '')
+            user = auth.authenticate(username=username, password=password)
+            print user
             if user is not None and user.is_active:
-                #  auth.login(request, user)
-                return render_to_response('FiProcess/index.html', RequestContext(request, {'form': self, }))
-            else:
-                return render_to_response('FiProcess/login.html', RequestContext(request, {'form': self, 'password_is_wrong': True}))
+                auth.login(request, user)
+            if user is not None and not user.is_active:
+                return render_to_response('FiProcess/login.html',
+                                          RequestContext(request, {'form': self, 'auth_login_wrong': True}))
+            request.session['username'] = username
+            return render_to_response('FiProcess/index.html', RequestContext(request, {'form': self, }))
         else:
-            return render_to_response('FiProcess/login.html', RequestContext(request, {'form': self, }))
+            return render_to_response('FiProcess/login.html',
+                                      RequestContext(request, {'form': self, 'login_wrong': True}))
 
     def clean(self):
         if not self.is_valid():
-            raise forms.ValidationError(u"用户名和密码为必填项")
-        else:
-            # cleaned_data = super(LoginForm, self).clean()
-            return
+            raise forms.ValidationError(u"用户名和密码错误")
+        clean_data = super(LoginForm, self).clean()
+        username = clean_data.get('username')
+        password = clean_data.get('password')
+        try:
+            stuff = Stuff.objects.get(username__exact=username)
+        except:
+            raise forms.ValidationError(u"用户不存在或密码错误")
+        if not check_password(password, stuff.password):
+            raise forms.ValidationError(u"密码错误")
+        return clean_data
