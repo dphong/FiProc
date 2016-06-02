@@ -12,11 +12,22 @@
     <script type="text/javascript" src="{% static 'FiProcess/validator.min.js' %}"></script>
     <style type="text/css">
     </style>
+    <script type="text/javascript">
+    $(document).ready(function(){
+        $('a[data-toggle="tab"]').on('shown.bs.tab', function (e) {
+          var target = $(e.target).attr("href") // activated tab
+          var x = $(e.target).text();         // active tab
+          $(".act span").text(x);
+          alert(target);
+        });
+    });
+    </script>
 </head>  
 
 <body>  
     <div class="container">
         <h2>财务报账审批系统</h2>
+        <p class="act">tab clicked is<span></span></p>
         <ul class="nav nav-tabs">
             <li class="active"><a data-toggle="tab" href="#user">个人信息</a></li>
             <li><a data-toggle="tab" href="#order">报销单</a></li>
