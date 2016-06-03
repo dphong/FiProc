@@ -15,10 +15,12 @@
     <script type="text/javascript">
     $(document).ready(function(){
         $('a[data-toggle="tab"]').on('shown.bs.tab', function (e) {
-          var target = $(e.target).attr("href") // activated tab
-          var x = $(e.target).text();         // active tab
-          $(".act span").text(x);
-          alert(target);
+            var target = $(e.target).attr("href") // activated tab
+            var xmlhttp = new XMLHttpRequest();;
+            alert({% url 'index' %} + target);
+            xmlhttp.open("GET", {% url 'index' %} + target, true);
+            xmlhttp.send();
+            window.location.reload();
         });
     });
     </script>
@@ -27,15 +29,15 @@
 <body>  
     <div class="container">
         <h2>财务报账审批系统</h2>
-        <p class="act">tab clicked is<span></span></p>
         <ul class="nav nav-tabs">
-            <li class="active"><a data-toggle="tab" href="#user">个人信息</a></li>
-            <li><a data-toggle="tab" href="#order">报销单</a></li>
+            <li class="active"><a data-toggle="tab" href="user">个人信息</a></li>
+            <li><a data-toggle="tab" href="order">报销单</a></li>
+            <li><a data-toggle="tab" href="changepsw">修改密码</a></li>
             {% if signer %}
-            <li><a data-toggle="tab" href="#signList">待审批单据</a></li>
+            <li><a data-toggle="tab" href="signList">待审批单据</a></li>
             {% endif %}
             {% if sys_admin %}
-            <li><a data-toggle="tab" href="#stuffCheck">用户注册申请</a></li>
+            <li><a data-toggle="tab" href="stuffCheck">用户注册申请</a></li>
             {% endif %}
             <form class="form" method="post">
                 {% csrf_token %}  
@@ -44,22 +46,81 @@
         </ul>
 
         <div class="tab-content">
-            <div id="user" class="tab-pane fade in active">
-                <h3>用户个人信息</h3>
-            </div>
-            <div id="order" class="tab-pane fade">
-                <h3>报销单</h3>
-            </div>
-            {% if signer %}
-            <div id="signList" class="tab-pane fade">
-                <h3>待审批单据</h3>
-            </div>
+        {% if userInfoForm %}
+            {% if saveFailedMsg %}
+                <div class="alert alert-danger">
+                    <button type="button" class="close" data-dismiss="alert">×</button>  
+                    <h4>保存失败, {{saveFailedMsg}}</h4>
+                </div>
             {% endif %}
-            {% if sys_admin %}
-            <div id="stuffCheck" class="tab-pane fade">
-                <h3>用户注册申请</h3>
-            </div>
+            {% if saveSuccess %}
+                <div class="alert alert-success">  
+                    <button type="button" class="close" data-dismiss="alert">×</button>  
+                    <h4>保存成功</h4>  
+                </div>  
             {% endif %}
+            <form data-toggle="validator" role="form" class="form" action="" method="post">  
+                {% csrf_token %}  
+                <div>
+                    {% bootstrap_field userInfoForm.username %}
+                </div>
+                <div>
+                    {% bootstrap_field userInfoForm.name %}
+                </div>
+                <div>
+                    {% bootstrap_field userInfoForm.workId %}
+                </div>
+                <div>
+                    {% bootstrap_field userInfoForm.department %}
+                </div>
+                <div class="form-group has-feedback">
+                    <label for="inputPhoneNumber" class="control-label">联系电话</label>
+                    <input type="text" pattern="^[-0-9]{4,}$" class="form-control" id="inputPhoneNumber"
+                        name="phoneNumber" required placeholder="请输入固化或手机号码"
+                        value={{userInfoForm.phoneNumber.value}}>
+                    <span class="glyphicon form-control-feedback" aria-hidden="true"></span>
+                </div>
+                <div class="form-group has-feedback">
+                    <label for="inputIcbcCard" class="control-label">公务卡号</label>
+                    <input type="text" pattern="^[0-9]{8,}$" maxlength="8" class="form-control" id="inputIcbcCard"
+                        name="icbcCard" placeholder="请输入16位公务卡卡号"
+                        value={{userInfoForm.icbcCard.value}}>
+                    <span class="glyphicon form-control-feedback" aria-hidden="true"></span>
+                </div>
+                <div class="form-group has-feedback">
+                    <label for="inputCcbCard" class="control-label">工资卡号</label>
+                    <input type="text" pattern="^[0-9]{6,}$" maxlength="24" class="form-control" id="inputCcbCard"
+                        name="ccbCard" placeholder="请输入工资卡号或其他用于转账的卡号"
+                        value={{userInfoForm.ccbCard.value}}>
+                    <span class="glyphicon form-control-feedback" aria-hidden="true"></span>
+                </div>
+                <div class="form-group">
+                    <label for="inputPsw" class="control-label">设置登录密码</label>
+                    <input type="password" data-minlength="6" maxlength="64" class="form-control" id="inputPsw" 
+                        name="password" required placeholder="修改信息请输入密码">
+                </div>
+                <div class="form-group">  
+                    <button type="submit" name="saveUserInfo" class="btn btn-primary">保存信息</button>
+                </div>
+            </form>
+        {% endif %}
+        {% if changePsw %}
+        <form data-toggle="validator" role="form" class="form" action="" method="post">  
+            {% csrf_token %}  
+            <div class="form-group">
+                <label for="changePsw" class="control-label">设置登录密码</label>
+                <input type="password" data-minlength="6" maxlength="64" class="form-control" id="changePsw" 
+                    name="password" required placeholder="请输入不少于6位密码">
+                <label for="confirmPsw" class="contorl-label">确认密码</label>
+                <input type="password" class="form-control" id="confirmPsw" required data-match="#changePsw" data-match-error="两次输入不一致">
+                <div class="help-block with-errors"></div>
+            </div>
+            <div class="form-group">
+                <button type="submit" name="changePassword" class="btn btn-primary">提交更改</button>
+            </div>
+        </form>
+        {% endif %}
+
         </div>
     </div>
 </body>

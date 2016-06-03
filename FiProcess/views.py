@@ -25,10 +25,13 @@ def register(request):
     return form.post(request)
 
 
-def index(request):
+def index(request, target=''):
     if request.method == 'GET':
+        print 'get'
         form = IndexForm(request.GET)
-        return form.get(request)
+        return form.get(request, target)
     if request.method == 'POST':
+        print 'post'
+        form = IndexForm(request.GET)
         form = IndexForm(request.POST)
         return form.post(request)

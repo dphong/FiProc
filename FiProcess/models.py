@@ -3,8 +3,6 @@ from __future__ import unicode_literals
 from django.db import models
 from django.utils.encoding import python_2_unicode_compatible
 
-# Create your models here.
-
 
 @python_2_unicode_compatible  # only if you need to support Python 2
 class Department(models.Model):
@@ -18,6 +16,7 @@ class Department(models.Model):
 
 @python_2_unicode_compatible  # only if you need to support Python 2
 class Stuff(models.Model):
+    # may be change to staff :)
     username = models.CharField(max_length=64)
     name = models.CharField(max_length=64)
     password = models.CharField(max_length=128)
