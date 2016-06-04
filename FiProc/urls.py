@@ -23,5 +23,4 @@ urlpatterns = [
     url(r'register/', FiProcess.views.register, name='register'),
     url(r'^error/', FiProcess.views.error, name='error'),
     url(r'^index/$', FiProcess.views.index, name='index'),
-    url(r'^index/(?P<target>[a-z]+)', FiProcess.views.index, name='index'),
 ]

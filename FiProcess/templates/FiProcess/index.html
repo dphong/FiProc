@@ -9,18 +9,44 @@
     <link rel="stylesheet" type="text/css" href="{% static 'FiProcess/bootstrap.min.css' %}" /> 
     <script type="text/javascript" src="{% static 'FiProcess/jquery-2.2.4.min.js' %}"></script>
     <script type="text/javascript" src="{% static 'FiProcess/bootstrap.min.js' %}"></script>
+    <script src="http://ajax.aspnetcdn.com/ajax/jquery.validate/1.11.1/jquery.validate.js"></script>
     <script type="text/javascript" src="{% static 'FiProcess/validator.min.js' %}"></script>
     <style type="text/css">
     </style>
     <script type="text/javascript">
     $(document).ready(function(){
+        $.fn.validator.Constructor.INPUT_SELECTOR = ':input:not([type="submit"], button):enabled'
+        function setVisible(target){
+            var targetList = new Array("user", "order", "changepsw", "signList", "stuffCheck")
+            var formList = new Array("form.userInfo", "form.orderList", "form.changePsw", "form.signList", "form.userRegList")
+            for (var i = 0; i < targetList.length; i++){
+                if (targetList[i] == target){
+                    $(formList[i]).show()
+                }
+                else{
+                    $(formList[i]).hide()
+                }
+                $(formList[i]).validate({ignore: [],})
+            }
+        }
+        {% if is_sysAdmin %}
+        $('#confirmUserCheck').on('show.bs.modal', function (e) {
+            var button = e.relatedTarget;
+            var countchecked = $("table input[type=checkbox]:checked").length;
+            showText = "共审核通过";
+            if (button.id=="userCheckDel"){
+                showText = "共删除";
+            }
+            showText = showText+countchecked+"人的用户申请";
+            $("div#confirmUserCheckOk").text(showText);
+            document.getElementById("submitUserCheck").name = button.id
+            document.getElementById("submitUserCheck").disabled = countchecked == 0
+        })
+        {% endif %}
+        setVisible('{{userInfoForm.currentTab}}')
         $('a[data-toggle="tab"]').on('shown.bs.tab', function (e) {
             var target = $(e.target).attr("href") // activated tab
-            var xmlhttp = new XMLHttpRequest();;
-            alert({% url 'index' %} + target);
-            xmlhttp.open("GET", {% url 'index' %} + target, true);
-            xmlhttp.send();
-            window.location.reload();
+            setVisible(target)
         });
     });
     </script>
@@ -30,14 +56,16 @@
     <div class="container">
         <h2>财务报账审批系统</h2>
         <ul class="nav nav-tabs">
-            <li class="active"><a data-toggle="tab" href="user">个人信息</a></li>
-            <li><a data-toggle="tab" href="order">报销单</a></li>
-            <li><a data-toggle="tab" href="changepsw">修改密码</a></li>
-            {% if signer %}
-            <li><a data-toggle="tab" href="signList">待审批单据</a></li>
+            <li {% if userInfoForm.currentTab == 'user' %}class="active"{% endif %}><a data-toggle="tab" href="user">个人信息</a></li>
+            <li {% if userInfoForm.currentTab == 'order' %}class="active"{% endif %}><a data-toggle="tab" href="order">报销单</a></li>
+            {% if not is_sysAdmin %}
+            <li {% if userInfoForm.currentTab == 'changepsw' %}class="active"{% endif %}><a data-toggle="tab" href="changepsw">修改密码</a></li>
             {% endif %}
-            {% if sys_admin %}
-            <li><a data-toggle="tab" href="stuffCheck">用户注册申请</a></li>
+            {% if signer %}
+            <li {% if userInfoForm.currentTab == 'signList' %}class="active"{% endif %}><a data-toggle="tab" href="signList">待审批单据</a></li>
+            {% endif %}
+            {% if is_sysAdmin %}
+            <li {% if userInfoForm.currentTab == 'stuffCheck' %}class="active"{% endif %}><a data-toggle="tab" href="stuffCheck">用户注册申请</a></li>
             {% endif %}
             <form class="form" method="post">
                 {% csrf_token %}  
@@ -46,7 +74,6 @@
         </ul>
 
         <div class="tab-content">
-        {% if userInfoForm %}
             {% if saveFailedMsg %}
                 <div class="alert alert-danger">
                     <button type="button" class="close" data-dismiss="alert">×</button>  
@@ -59,7 +86,7 @@
                     <h4>保存成功</h4>  
                 </div>  
             {% endif %}
-            <form data-toggle="validator" role="form" class="form" action="" method="post">  
+            <form data-toggle="validator" role="form" class="userInfo" action="" method="post">  
                 {% csrf_token %}  
                 <div>
                     {% bootstrap_field userInfoForm.username %}
@@ -103,24 +130,80 @@
                     <button type="submit" name="saveUserInfo" class="btn btn-primary">保存信息</button>
                 </div>
             </form>
-        {% endif %}
-        {% if changePsw %}
-        <form data-toggle="validator" role="form" class="form" action="" method="post">  
-            {% csrf_token %}  
-            <div class="form-group">
-                <label for="changePsw" class="control-label">设置登录密码</label>
-                <input type="password" data-minlength="6" maxlength="64" class="form-control" id="changePsw" 
-                    name="password" required placeholder="请输入不少于6位密码">
-                <label for="confirmPsw" class="contorl-label">确认密码</label>
-                <input type="password" class="form-control" id="confirmPsw" required data-match="#changePsw" data-match-error="两次输入不一致">
-                <div class="help-block with-errors"></div>
-            </div>
-            <div class="form-group">
-                <button type="submit" name="changePassword" class="btn btn-primary">提交更改</button>
-            </div>
-        </form>
-        {% endif %}
-
+            {% if not is_sysAdmin %}
+            <form data-toggle="validator" class="changePsw" action="" method="post">  
+                {% csrf_token %}  
+                <div class="form-group">
+                    <label for="originPsw" class="contorl-label">原密码</label>
+                    <input type="password" class="form-control" id="originPsw"
+                        name="originPsw">
+                </div>
+                <div class="form-group">
+                    <label for="changePsw" class="control-label">设置登录密码</label>
+                    <input type="password" data-minlength="6" maxlength="64" class="form-control" id="changePsw" 
+                        name="changePsw" required placeholder="请输入不少于6位密码">
+                    <label for="confirmPsw" class="contorl-label">确认密码</label>
+                    <input type="password" class="form-control" id="confirmPsw" required data-match="#changePsw" 
+                        name="confirmPsw" data-match-error="两次输入不一致">
+                    <div class="help-block with-errors"></div>
+                </div>
+                <div class="form-group">
+                    <button type="submit" name="changePassword" class="btn btn-primary disabled">提交更改</button>
+                </div>
+            </form>
+            {% endif %}
+            <form class="orderList" method="post">
+                {% csrf_token %}  
+                报销单
+            </form>
+            {% if signer %}
+            <form class="signList" method="post">
+                {% csrf_token %}  
+                审批
+            </form>
+            {% endif %}
+            {% if is_sysAdmin %}
+            <form class="userRegList" method="post">
+                {% csrf_token %}  
+                <table class="table table-hover">
+                    <tr>
+                        <th>#</th>
+                        <th>姓名</th>
+                        <th>工号</th>
+                        <th>部门</th>
+                        <th>联系电话</th>
+                        <th>注册用户名</th>
+                    </tr>
+                    {% for user in userCheckList %}
+                        <tr>
+                            <td><input name="userCheckId" type="checkbox" value={{user.id}}></td>
+                            <td>{{user.stuff.name}}</td>
+                            <td>{{user.stuff.workId}}</td>
+                            <td>{{user.stuff.department.name}}</td>
+                            <td>{{user.stuff.phoneNumber}}</td>
+                            <td>{{user.stuff.username}}</td>
+                        </tr>
+                    {% endfor %}
+                </table>
+                <div class="form-group">
+                    <a href="#confirmUserCheck" data-toggle="modal" id="userCheckOK" class="userCheckButton btn btn-primary" role="button" data-toggle="modal" >审核通过</a>
+                    <a href="#confirmUserCheck" data-toggle="modal" id="userCheckDel" class="userCheckButton btn btn-danger" role="button" data-toggle="modal" >审核不通过,删除</a>
+                </div>
+                <!-- Modal -->
+                <div class="modal fade" id="confirmUserCheck" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+                    <div class="modal-dialog" role="document">
+                        <div class="modal-content">
+                            <div  id="confirmUserCheckOk" class="modal-body">
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-default" data-dismiss="modal">取消</button>
+                                <button id="submitUserCheck" type="submit" class="btn btn-primary">确定</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </form>
+            {% endif %}
         </div>
     </div>
 </body>
