@@ -9,7 +9,6 @@
     <link rel="stylesheet" type="text/css" href="{% static 'FiProcess/bootstrap.min.css' %}" /> 
     <script type="text/javascript" src="{% static 'FiProcess/jquery-2.2.4.min.js' %}"></script>
     <script type="text/javascript" src="{% static 'FiProcess/bootstrap.min.js' %}"></script>
-    <script src="http://ajax.aspnetcdn.com/ajax/jquery.validate/1.11.1/jquery.validate.js"></script>
     <script type="text/javascript" src="{% static 'FiProcess/validator.min.js' %}"></script>
     <style type="text/css">
     </style>
@@ -26,7 +25,6 @@
                 else{
                     $(formList[i]).hide()
                 }
-                $(formList[i]).validate({ignore: [],})
             }
         }
         {% if is_sysAdmin %}
@@ -122,7 +120,7 @@
                     <span class="glyphicon form-control-feedback" aria-hidden="true"></span>
                 </div>
                 <div class="form-group">
-                    <label for="inputPsw" class="control-label">设置登录密码</label>
+                    <label for="inputPsw" class="control-label">输入登录密码</label>
                     <input type="password" data-minlength="6" maxlength="64" class="form-control" id="inputPsw" 
                         name="password" required placeholder="修改信息请输入密码">
                 </div>
@@ -135,7 +133,7 @@
                 {% csrf_token %}  
                 <div class="form-group">
                     <label for="originPsw" class="contorl-label">原密码</label>
-                    <input type="password" class="form-control" id="originPsw"
+                    <input type="password" data-minlength="6" maxlength="64" class="form-control" id="originPsw"
                         name="originPsw">
                 </div>
                 <div class="form-group">
@@ -154,7 +152,8 @@
             {% endif %}
             <form class="orderList" method="post">
                 {% csrf_token %}  
-                报销单
+                <button type="submit" name="newFiStream" class="btn btn-success">
+                    <span class="glyphicon glyphicon-plus-sign" aria-hidden="true"></span> 新增报销单</button>
             </form>
             {% if signer %}
             <form class="signList" method="post">

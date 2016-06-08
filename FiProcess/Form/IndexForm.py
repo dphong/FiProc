@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 from django import forms
+from django.forms import ModelForm
 from django.shortcuts import render_to_response
 from django.core.urlresolvers import reverse
 from django.http import HttpResponseRedirect
@@ -7,7 +8,9 @@ from django.template.context import RequestContext
 from django.contrib import messages, auth
 from django.contrib.auth.hashers import check_password, make_password
 
-from ..models import Stuff, StuffCheck
+from datetime import datetime
+
+from ..models import Stuff, StuffCheck, FiStream
 
 
 class UserInfoForm(forms.Form):
@@ -48,6 +51,57 @@ class UserInfoForm(forms.Form):
     ccbCard = forms.CharField()
     password = forms.CharField()
     currentTab = ""
+
+
+class CommonStreamForm(ModelForm):
+    class Meta:
+        model = FiStream
+        fields = ['applyDate', 'supportDept', 'projectName', 'streamDiscript']
+        labels = {
+            'applyDate': u'报销日期',
+            'supportDept': u'经费来源所属部门',
+            'projectName': u'经费来源项目名称',
+            'streamDiscript': u'经费使用目的',
+        }
+        field_classes = {
+            'applyDate': forms.DateField,
+        }
+
+    department = forms.CharField(
+        label=u'部门',
+        widget=forms.TextInput(
+            attrs={
+                'readonly': 'readonly'
+            }
+        ),
+    )
+    name = forms.CharField(
+        label=u'姓名',
+        widget=forms.TextInput(
+            attrs={
+                'readonly': 'readonly',
+            }
+        ),
+    )
+    workId = forms.CharField(
+        label=u'工号',
+        widget=forms.TextInput(
+            attrs={
+                'readonly': 'readonly'
+            }
+        ),
+    )
+    projectLeaderWorkId = forms.CharField(
+        label=u'项目负责人工号',
+        widget=forms.TextInput(
+            attrs={
+                'readonly': 'readonly'
+            }
+        ),
+    )
+    projectLeaderName = forms.CharField(
+        label=u'项目负责人'
+    )
 
 
 class IndexForm(forms.Form):
@@ -128,6 +182,8 @@ class IndexForm(forms.Form):
             return self.saveNewPassword(request)
         elif "userCheckId" in request.POST:
             return self.approveStuffCheck(request)
+        elif "newFiStream" in request.POST:
+            return HttpResponseRedirect(reverse('index', args={'newstream'}))
         return self.logout(request)
 
     def get(self, request):
@@ -142,12 +198,18 @@ class IndexForm(forms.Form):
                     'userCheckList': StuffCheck.objects.all(), 'is_sysAdmin': True}))
         return render_to_response('FiProcess/index.html', RequestContext(request, {'userInfoForm': userInfoForm}))
 
-    def getUserInfoForm(self, request):
+    def getStuffFromRequest(self, request):
         username = request.session['username']
         stuff = Stuff.objects.filter(username__exact=username)
         if not stuff or stuff.count() > 1:
-            return self.logout(request, '用户信息异常，请保存本条错误信息，并联系管理员')
+            return None
         stuff = Stuff.objects.get(username__exact=username)
+        return stuff
+
+    def getUserInfoForm(self, request):
+        stuff = self.getStuffFromRequest(request)
+        if not stuff:
+            return self.logout(request, '用户信息异常，请保存本条错误信息，并联系管理员')
         userInfoForm = UserInfoForm(
             initial={'username': stuff.username, 'name': stuff.name, 'workId': stuff.workId,
                      'phoneNumber': stuff.phoneNumber, 'department': stuff.department.name,
@@ -155,3 +217,32 @@ class IndexForm(forms.Form):
         )
         userInfoForm.currentTab = 'user'
         return userInfoForm
+
+    # new process stream
+    def newStreamGet(self, request):
+        return render_to_response('FiProcess/newStream.html', RequestContext(request))
+
+    def newFiStreamType(self, request):
+        streamType = request.POST['newStreamType']
+        if streamType == 'common':
+            return self.showCommonStream(request)
+        if streamType == 'travel':
+            return render_to_response('FiProcess/travelStream.html', RequestContext(request))
+        if streamType == 'labor':
+            return render_to_response('FiProcess/laborStream.html', RequestContext(request))
+        return render_to_response('FiProcess/newStream.html', RequestContext(request))
+
+    def newStreamPost(self, request):
+        if "newStreamType" in request.POST:
+            return self.newFiStreamType(request)
+        return render_to_response('FiProcess/newStream.html', RequestContext(request))
+
+    def showCommonStream(self, request):
+        stuff = self.getStuffFromRequest(request)
+        if not stuff:
+            return self.logout(request, '用户信息异常，请保存本条错误信息，并联系管理员')
+        form = CommonStreamForm(
+            initial={'department': stuff.department.name,
+                'name': stuff.name, 'workId': stuff.workId, 'applyDate': datetime.today()}
+        )
+        return render_to_response('FiProcess/commonStream.html', RequestContext(request, {'form': form}))

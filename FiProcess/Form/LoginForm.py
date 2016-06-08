@@ -46,7 +46,7 @@ class LoginForm(forms.Form):
                 return render_to_response('FiProcess/login.html',
                                           RequestContext(request, {'form': self, 'auth_login_wrong': True}))
             request.session['username'] = username
-            return HttpResponseRedirect(reverse('index'))
+            return HttpResponseRedirect(reverse('index', args={''}))
         else:
             return render_to_response('FiProcess/login.html',
                                       RequestContext(request, {'form': self, 'login_wrong': True}))

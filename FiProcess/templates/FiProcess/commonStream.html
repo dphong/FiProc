@@ -1,0 +1,213 @@
+<!DOCTYPE html>  
+{% load bootstrap3  %} 
+{% load staticfiles %} 
+<html lang="en">  
+<head>  
+    <meta charset="utf-8">  
+    <title>合肥师范学院单据报销</title>
+    <meta name="description" content="">  
+    <link rel="stylesheet" type="text/css" href="{% static 'FiProcess/bootstrap.min.css' %}" /> 
+    <script type="text/javascript" src="{% static 'FiProcess/jquery-2.2.4.min.js' %}"></script>
+    <script type="text/javascript" src="{% static 'FiProcess/bootstrap.min.js' %}"></script>
+    <script type="text/javascript" src="{% static 'FiProcess/validator.min.js' %}"></script>
+    <style type="text/css">
+    </style>
+    <script type="text/javascript">
+    function cardHolder(i){
+        return "<td><input name='name"
+            +i+"' type='text' placeholder='持卡人姓名' class='form-control input-md col-md-1'/></td>\n";
+    }
+    function amount(i){
+        return "<td><input name='amount"
+            +i+"' type='text' placeholder='' class='form-control input-md'></td>\n";
+    }
+    function cardNum(i){
+        return "<td class='form-group has-feedback'><input pattern='^[0-9]{8,}$' maxlength='16' name='account"
+            +i+"' type='text' placeholder='' class='form-control input-md'></td>\n";
+    }
+    $(document).ready(function(){
+        var spendTypes = "<td class='form-group has-feedback col-md-2'>\
+            <select name='spendType' class='form-control'>\
+                <option value='1'>办公用品</option>\
+                <option value='2'>书报资料</option>\
+                <option value='3'>印刷费</option>\
+                <option value='4'>邮电费</option>\
+                <option value='5'>住宿费</option>\
+                <option value='6'>出国费</option>\
+                <option value='7'>维修维护</option>\
+                <option value='8'>医疗费</option>\
+                <option value='9'>会议费</option>\
+                <option value='10'>培训费</option>\
+                <option value='11'>招待费</option>\
+                <option value='12'>交通费</option>\
+                <option value='13'>专用材料</option>\
+                <option value='14'>设备购置</option>\
+                <option value='15'>其它</option>\
+            </select></td>";
+        var i=1;
+        $("#add_row").click(function(){
+            $('#tab_icbcCard').append('<tr id="addr'+i+'"></tr>');
+            var holder = cardHolder(i);
+            $('#addr'+i).html(
+                "<td>"+ i +"</td>\n" + cardHolder(i) +
+                "<td>\
+                    <input name='date"+i+"' type='text' placeholder='YYYY-mm-dd'' class='form-control input-md'>\
+                </td>\n" + amount(i) + 
+                "<td>\
+                    <input name='actualAmount"+i+"' type='text' placeholder='' class='form-control input-md'>\
+                </td>\n" + cardNum(i) + spendTypes);
+            i++; 
+        });
+        $("#delete_row").click(function(){
+            if(i>1){
+                $("#addr"+(i-1)).html('');
+                i--;
+            }
+        });
+        function bankName(i){
+            return "<td><input name='bankName" 
+                + i + "' type='text' placeholder='' class='form-control input-md'></td>\n";
+        }
+        var i_ccb = 1;
+        $("#add_row_ccb").click(function(){
+            $('#tab_ccbCard').append('<tr id="addr_ccb'+i_ccb+'"></tr>');
+            $('#addr_ccb'+i_ccb).html(
+                "<td>"+i_ccb+"</td>\n" + cardHolder(i_ccb) + amount(i_ccb) + cardNum(i_ccb) + bankName(i_ccb) 
+                    + spendTypes +"</td>");
+            i_ccb++;
+        })
+        $("#delete_row_ccb").click(function(){
+            if(i_ccb>1){
+                $("#addr_ccb"+(i_ccb-1)).html('');
+                i_ccb--;
+            }
+        })
+        var i_com = 1;
+        $("#add_row_com").click(function(){
+            $('#tab_companyAccount').append('<tr id="addr_com' + i_com + '"></tr>');
+            $('#addr_com'+i_com).html(
+                "<td>"+i_com+"</td>\n" + cardHolder(i_com) + amount(i_com) + cardNum(i_com) + bankName(i_com)
+                    + spendTypes + "</td>");
+            i_com++;
+        })
+        $('#delete_row_com').click(function(){
+            if(i_com>1){
+                $("#addr_com"+(i_com-1)).html('');
+                i_com--;
+            }
+        })
+    })
+    </script>
+</head>
+
+<body>
+    <div class="container" style="max-width:1000px">
+    <form data-toggle="validator" role="form" lass="form" action="" method="post" style="margin:20px 0px 0px 0px">
+        {% csrf_token %}
+        <div class="form-group">  
+            <button type="submit" class="btn btn-primary">创建</button>
+        </div>
+        <div class="well">
+            <h3 align="center"><strong>合肥师范学院单据报销</strong></h3>
+            <div class="row">
+                <div class="form-group col-md-3">
+                    {% bootstrap_field form.department %}
+                </div>
+                <div class="form-group col-md-3">
+                    {% bootstrap_field form.name %}
+                </div>
+                <div class="form-group col-md-3">
+                    {% bootstrap_field form.workId %}
+                </div>
+                <div class="form-group col-md-3">
+                    {% bootstrap_field form.applyDate %}
+                </div>
+            </div>
+            <div class="row">
+                <div class="form-group col-md-3">
+                    {% bootstrap_field form.supportDept %}
+                </div>
+                <div class="form-group col-md-9">
+                    {% bootstrap_field form.projectName %}
+                </div>
+            </div>
+            <div class="form-group">
+                {% bootstrap_field form.streamDiscript %}
+            </div>
+            <label for="tab_icbcCard" class="control-label">公务卡刷卡记录</label>
+            <table class="table table-bordered table-hover" id="tab_icbcCard">
+                <thead>
+                    <tr>
+                        <th class="text-center">#</th>
+                        <th class="text-center">持卡人姓名</th>
+                        <th class="text-center">消费日期</th>
+                        <th class="text-center">消费金额</th>
+                        <th class="text-center">实报金额</th>
+                        <th class="text-center">公务卡号</th>
+                        <th class="text-center">开支类别</th>
+                    </tr>
+                </thead>
+                <tbody>
+                </tbody>
+            </table>
+            <div class="row">
+                <div class="col-md-1">
+                    <a id="add_row" class="btn btn-default">增加一条刷卡记录</a>
+                </div>
+                <div class="col-md-9"></div>
+                <div class="col-md-1">
+                    <a id='delete_row' class="btn btn-default">删除一条记录</a>
+                </div>
+            </div>
+            <label for="tab_ccbCard" class="control-label">现金支付记录</label>
+            <table class="table table-bordered table-hover" id="tab_ccbCard">
+                <thead>
+                    <tr>
+                        <th class="text-center">#</th>
+                        <th class="text-center">持卡人姓名</th>
+                        <th class="text-center">报销金额</th>
+                        <th class="text-center">卡号</th>
+                        <th class="text-center">开户行</th>
+                        <th class="text-center">开支类别</th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+            <div class="row">
+                <div class="col-md-1">
+                    <a id="add_row_ccb" class="btn btn-default">增加一条记录</a>
+                </div>
+                <div class="col-md-9"></div>
+                <div class="col-md-1">
+                    <a id='delete_row_ccb' class="btn btn-default">删除一条记录</a>
+                </div>
+            </div>
+            <label for="tab_companyAccount" class="control-label">对公转账</label>
+            <table class="table table-bordered table-hover" id="tab_companyAccount">
+                <thead>
+                    <tr>
+                        <th class="text-center">#</th>
+                        <th class="text-center">收款单位</th>
+                        <th class="text-center">报销金额</th>
+                        <th class="text-center">卡号</th>
+                        <th class="text-center">开户行</th>
+                        <th class="text-center">开支类别</th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+            <div class="row">
+                <div class="col-md-1">
+                    <a id="add_row_com" class="btn btn-default">增加一条记录</a>
+                </div>
+                <div class="col-md-9"></div>
+                <div class="col-md-1">
+                    <a id='delete_row_com' class="btn btn-default">删除一条记录</a>
+                </div>
+            </div>
+        </div>
+    </form>
+    <a href={% url 'index' '' %} class="btn btn-large btn-default">返回</a>
+    </div>
+</body>
+</html>

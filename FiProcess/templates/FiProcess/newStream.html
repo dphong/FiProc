@@ -1,0 +1,79 @@
+<!DOCTYPE html>  
+{% load bootstrap3  %} 
+{% load staticfiles %} 
+<html lang="en">  
+<head>  
+    <meta charset="utf-8">  
+    <title>创建新报销单</title>  
+    <meta name="description" content="">  
+    <link rel="stylesheet" type="text/css" href="{% static 'FiProcess/bootstrap.min.css' %}" /> 
+    <script type="text/javascript" src="{% static 'FiProcess/jquery-2.2.4.min.js' %}"></script>
+    <script type="text/javascript" src="{% static 'FiProcess/bootstrap.min.js' %}"></script>
+    <script type="text/javascript" src="{% static 'FiProcess/validator.min.js' %}"></script>
+    <script type="text/javascript">
+    function onNewStreamTypeChange(){
+        switch (document.getElementById("newStreamType").selectedIndex){
+            case 0:
+                document.getElementById("streamTypeHelp").value = textCommon;
+                break;
+            case 1:
+                document.getElementById("streamTypeHelp").value = textTravel;
+                break;
+            case 2:
+                document.getElementById("streamTypeHelp").value = textLabor;
+                break;
+        }
+    }
+    $(document).ready(function(){
+        textCommon = "开支项目分类说明及报销须知：\
+                        \n1、办公用品：日常办公用文具及办公必需品等\
+                        \n2、书报资料费:购报纸杂志、图书资料等\
+                        \n3、印刷费：包括版面费（附用稿通知）；打字复印费、装订费、证书、条幅、展板制作费等\
+                        \n4、邮电费：邮政、网络、查新、通讯等\
+                        \n5、住宿费：接待外来人员住宿费等\
+                        \n6、出国费：出国旅费、住宿费等\
+                        \n7、维修维护费：设备（不含交通工具）、建筑物及公共设施维修维护费\
+                        \n8、会议费：承办会议费、会务费\
+                        \n9、培训费：指各类培训支出\
+                        \n10、招待费：招待用餐费等\
+                        \n11、交通费：市内交通；搬运费、租车费等；车辆用燃料、停车、过路过桥等费用\
+                        \n12、专用材料：包括实验材料、墨盒硒鼓等低值易耗、体育用品、专用服装等\
+                        \n13、设备购置费：指购置办公、教学、科研、体育及医疗设备等\
+                        \n14、其他：以上内容以外的开支\
+        ";
+        textTravel = "差旅费包括：\n1、火车票（飞机票）\
+                        \n2、市内交通费（出租车票，公交票）\
+                        \n3、住宿费（含发票及住宿清单）";
+        textLabor = "劳务费包括：\n1、学生劳务费\
+                        \n2、校内人员劳务费\
+                        \n3、校外专家劳务费";
+        document.getElementById("streamTypeHelp").value = textCommon
+    });
+    </script>
+</head>  
+  
+<body>  
+    <div class="container" style="max-width: 1000px">
+    <h1 align="center">创建新的报销单</h1>
+    <div class="well">
+    <form class="form" action="" method="post">
+        {% csrf_token %}
+        <p class="form-actions">  
+            <input type="submit" value="创建" class="btn btn-primary">  
+        </p>
+        <div class="form-group">
+            <label for="newStreamType">请选择报销类型</label>
+            <select name="newStreamType" id="newStreamType" class="form-control" onchange="onNewStreamTypeChange()">
+                <option value="common">普通报销</option>
+                <option value="travel">差旅费</option>
+                <option value="labor">劳务费</option>
+            </select>
+        </div>
+        <textarea id="streamTypeHelp" class="form-control" rows="13" readonly style="resize:none"></textarea>
+        <p></p>
+    </form>
+    <a href={% url 'index' '' %} class="btn btn-large btn-default">返回</a>
+    </div>
+    </div>
+</body>
+</html>

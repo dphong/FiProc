@@ -36,3 +36,57 @@ class StuffCheck(models.Model):
 
 class SchoolMaster(models.Model):
     stuff = models.ForeignKey(Stuff, on_delete=models.CASCADE)
+
+
+class FiStream(models.Model):
+    applicante = models.ForeignKey(Stuff, on_delete=models.CASCADE, related_name="applicante")
+    applyDate = models.DateTimeField()
+    supportDept = models.ForeignKey(Department, on_delete=models.CASCADE)
+    projectLeader = models.ForeignKey(Stuff, on_delete=models.CASCADE, related_name="projectLeader")
+    currentStage = models.CharField(max_length=64)
+    projectName = models.CharField(max_length=256)
+    streamDiscript = models.CharField(max_length=4096)
+
+
+class SpendProof(models.Model):
+    fiStream = models.ForeignKey(FiStream, on_delete=models.CASCADE)
+    spendType = models.CharField(max_length=64)
+    spendAmount = models.DecimalField(max_digits=15, decimal_places=2)
+    proofDiscript = models.CharField(max_length=4096)
+
+
+class cashPay(models.Model):
+    spendProof = models.ForeignKey(FiStream, on_delete=models.CASCADE)
+    receiverWorkId = models.CharField(max_length=16)
+    receiverName = models.CharField(max_length=64)
+    receiveCard = models.CharField(max_length=19)
+    receiverBelong = models.CharField(max_length=256)
+    receiverTitle = models.CharField(max_length=64)
+    bankName = models.CharField(max_length=128)
+    workDate = models.DateTimeField()
+
+
+class IcbcCardRecord(models.Model):
+    spendProof = models.ForeignKey(SpendProof, on_delete=models.CASCADE)
+    stuff = models.ForeignKey(Stuff, on_delete=models.CASCADE)
+    date = models.DateTimeField()
+    spendAmount = models.DecimalField(max_digits=10, decimal_places=2)
+    cantApplyAmount = models.DecimalField(max_digits=10, decimal_places=2)
+    cantApplyReason = models.CharField(max_length=1024)
+
+
+class CompanyPayRecord(models.Model):
+    spendProof = models.ForeignKey(SpendProof, on_delete=models.CASCADE)
+    companyName = models.CharField(max_length=256)
+    bankName = models.CharField(max_length=128)
+    bankAccount = models.CharField(max_length=24)
+
+
+class TravelRecord(models.Model):
+    fiStream = models.ForeignKey(FiStream, on_delete=models.CASCADE)
+    leaveDate = models.DateTimeField()
+    returnDate = models.DateTimeField()
+    destination = models.CharField(max_length=128)
+    startPosition = models.CharField(max_length=128)
+    travelGrant = models.DecimalField(max_digits=10, decimal_places=2)
+    foodGrant = models.DecimalField(max_digits=10, decimal_places=2)

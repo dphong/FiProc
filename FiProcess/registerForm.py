@@ -15,6 +15,9 @@ class RegisterForm(ModelForm):
     class Meta:
         model = Stuff
         fields = ['username', 'name', 'workId', 'phoneNumber', 'department', 'icbcCard', 'ccbCard', 'password']
+        labels = {
+            'department': u'部门'
+        }
 
     def get(self, request):
         form = RegisterForm(

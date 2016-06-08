@@ -1,4 +1,6 @@
 from django.shortcuts import render_to_response
+from django.http import HttpResponseRedirect
+from django.core.urlresolvers import reverse
 
 from Form.LoginForm import LoginForm
 from Form.IndexForm import IndexForm
@@ -25,7 +27,17 @@ def register(request):
     return form.post(request)
 
 
-def index(request):
+def index(request, target=''):
+    if len(target) > 0:
+        if request.method == 'GET':
+            form = IndexForm(request.GET)
+            if target == "newstream":
+                return form.newStreamGet(request)
+        if request.method == 'POST':
+            form = IndexForm(request.POST)
+            if target == "newstream":
+                return form.newStreamPost(request)
+        return HttpResponseRedirect(reverse('index', args={''}))
     if request.method == 'GET':
         form = IndexForm(request.GET)
         return form.get(request)
