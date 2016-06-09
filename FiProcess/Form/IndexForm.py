@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 from django import forms
-from django.forms import ModelForm
 from django.shortcuts import render_to_response
 from django.core.urlresolvers import reverse
 from django.http import HttpResponseRedirect
@@ -8,9 +7,8 @@ from django.template.context import RequestContext
 from django.contrib import messages, auth
 from django.contrib.auth.hashers import check_password, make_password
 
-from datetime import datetime
-
-from ..models import Stuff, StuffCheck, FiStream
+from ..models import Stuff, StuffCheck
+from CommonStreamForm import CommonStreamForm
 
 
 class UserInfoForm(forms.Form):
@@ -51,57 +49,6 @@ class UserInfoForm(forms.Form):
     ccbCard = forms.CharField()
     password = forms.CharField()
     currentTab = ""
-
-
-class CommonStreamForm(ModelForm):
-    class Meta:
-        model = FiStream
-        fields = ['applyDate', 'supportDept', 'projectName', 'streamDiscript']
-        labels = {
-            'applyDate': u'报销日期',
-            'supportDept': u'经费来源所属部门',
-            'projectName': u'经费来源项目名称',
-            'streamDiscript': u'经费使用目的',
-        }
-        field_classes = {
-            'applyDate': forms.DateField,
-        }
-
-    department = forms.CharField(
-        label=u'部门',
-        widget=forms.TextInput(
-            attrs={
-                'readonly': 'readonly'
-            }
-        ),
-    )
-    name = forms.CharField(
-        label=u'姓名',
-        widget=forms.TextInput(
-            attrs={
-                'readonly': 'readonly',
-            }
-        ),
-    )
-    workId = forms.CharField(
-        label=u'工号',
-        widget=forms.TextInput(
-            attrs={
-                'readonly': 'readonly'
-            }
-        ),
-    )
-    projectLeaderWorkId = forms.CharField(
-        label=u'项目负责人工号',
-        widget=forms.TextInput(
-            attrs={
-                'readonly': 'readonly'
-            }
-        ),
-    )
-    projectLeaderName = forms.CharField(
-        label=u'项目负责人'
-    )
 
 
 class IndexForm(forms.Form):
@@ -198,14 +145,6 @@ class IndexForm(forms.Form):
                     'userCheckList': StuffCheck.objects.all(), 'is_sysAdmin': True}))
         return render_to_response('FiProcess/index.html', RequestContext(request, {'userInfoForm': userInfoForm}))
 
-    def getStuffFromRequest(self, request):
-        username = request.session['username']
-        stuff = Stuff.objects.filter(username__exact=username)
-        if not stuff or stuff.count() > 1:
-            return None
-        stuff = Stuff.objects.get(username__exact=username)
-        return stuff
-
     def getUserInfoForm(self, request):
         stuff = self.getStuffFromRequest(request)
         if not stuff:
@@ -225,7 +164,8 @@ class IndexForm(forms.Form):
     def newFiStreamType(self, request):
         streamType = request.POST['newStreamType']
         if streamType == 'common':
-            return self.showCommonStream(request)
+            form = CommonStreamForm(request.POST)
+            return form.showCommonStream(request)
         if streamType == 'travel':
             return render_to_response('FiProcess/travelStream.html', RequestContext(request))
         if streamType == 'labor':
@@ -235,14 +175,7 @@ class IndexForm(forms.Form):
     def newStreamPost(self, request):
         if "newStreamType" in request.POST:
             return self.newFiStreamType(request)
+        if "commonStreamForm" in request.POST:
+            form = CommonStreamForm(request.POST)
+            return form.commonStreamPost(request)
         return render_to_response('FiProcess/newStream.html', RequestContext(request))
-
-    def showCommonStream(self, request):
-        stuff = self.getStuffFromRequest(request)
-        if not stuff:
-            return self.logout(request, '用户信息异常，请保存本条错误信息，并联系管理员')
-        form = CommonStreamForm(
-            initial={'department': stuff.department.name,
-                'name': stuff.name, 'workId': stuff.workId, 'applyDate': datetime.today()}
-        )
-        return render_to_response('FiProcess/commonStream.html', RequestContext(request, {'form': form}))

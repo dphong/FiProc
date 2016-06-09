@@ -9,25 +9,45 @@
     <link rel="stylesheet" type="text/css" href="{% static 'FiProcess/bootstrap.min.css' %}" /> 
     <script type="text/javascript" src="{% static 'FiProcess/jquery-2.2.4.min.js' %}"></script>
     <script type="text/javascript" src="{% static 'FiProcess/bootstrap.min.js' %}"></script>
-    <script type="text/javascript" src="{% static 'FiProcess/validator.min.js' %}"></script>
+    <script type="text/javascript" src="{% static 'FiProcess/validator.js' %}"></script>
     <style type="text/css">
     </style>
     <script type="text/javascript">
-    function cardHolder(i){
-        return "<td><input name='name"
-            +i+"' type='text' placeholder='持卡人姓名' class='form-control input-md col-md-1'/></td>\n";
+    function cardHolder(prefix, i){
+        return "<td>\
+                <div class='form-group has-feedback'>\
+                    <input name='"+prefix+"_cardHolderName"+i+"' type='text' placeholder='持卡人姓名' required\
+                        class='form-control input-md col-md-1'>\
+                </div>\
+            </td>\n";
     }
-    function amount(i){
-        return "<td><input name='amount"
-            +i+"' type='text' placeholder='' class='form-control input-md'></td>\n";
+    function amount(prefix, i){
+        return "<td>\
+                <div class='form-group has-feedback'>\
+                    <input name='"+prefix+"_amount"+i+"' type='text' placeholder='' required\
+                        class='form-control input-md'>\
+                </div>\
+            </td>\n";
     }
-    function cardNum(i){
-        return "<td class='form-group has-feedback'><input pattern='^[0-9]{8,}$' maxlength='16' name='account"
-            +i+"' type='text' placeholder='' class='form-control input-md'></td>\n";
+    function cardNum(prefix, i){
+        return "<td>\
+                <div class='form-group has-feedback'>\
+                    <input pattern='^[0-9]{8,}$' maxlength='16' required\
+                        name='"+prefix+"_account"+i+"' type='text' placeholder='' class='form-control input-md'>\
+                </div>\
+            </td>\n";
     }
-    $(document).ready(function(){
-        var spendTypes = "<td class='form-group has-feedback col-md-2'>\
-            <select name='spendType' class='form-control'>\
+    function bankName(prefix, i){
+        return "<td>\
+                <div class='form-group has-feedback'>\
+                    <input name='"+prefix+"_bankName"+ i + "' type='text' placeholder='' required\
+                        class='form-control input-md'>\
+                </div>\
+            </td>\n";
+    }
+    function spendTypes(prefix, i){
+        return "<td class='form-group has-feedback col-md-2'>\
+            <select name='"+prefix+"_spendType"+i+"' class='form-control'>\
                 <option value='1'>办公用品</option>\
                 <option value='2'>书报资料</option>\
                 <option value='3'>印刷费</option>\
@@ -44,56 +64,65 @@
                 <option value='14'>设备购置</option>\
                 <option value='15'>其它</option>\
             </select></td>";
+    }
+    $(document).ready(function(){
         var i=1;
         $("#add_row").click(function(){
             $('#tab_icbcCard').append('<tr id="addr'+i+'"></tr>');
-            var holder = cardHolder(i);
             $('#addr'+i).html(
-                "<td>"+ i +"</td>\n" + cardHolder(i) +
+                "<td>"+ i +"</td>\n" + cardHolder('icbc', i) +
                 "<td>\
-                    <input name='date"+i+"' type='text' placeholder='YYYY-mm-dd'' class='form-control input-md'>\
-                </td>\n" + amount(i) + 
+                    <div class='form-group has-feedback'>\
+                        <input name='icbc_date"+i+"' type='text' placeholder='YYYY-mm-dd' required\
+                            class='form-control input-md'>\
+                    </div>\
+                </td>\n" + amount('icbc', i) + 
                 "<td>\
-                    <input name='actualAmount"+i+"' type='text' placeholder='' class='form-control input-md'>\
-                </td>\n" + cardNum(i) + spendTypes);
+                    <div class='form-group has-feedback'>\
+                        <input name='icbc_actualAmount"+i+"' type='text' placeholder='' required\
+                            class='form-control input-md'>\
+                    </div>\
+                </td>\n" + cardNum('icbc', i) + spendTypes('icbc', i));
             i++; 
+            $('#streamForm').validator()
         });
         $("#delete_row").click(function(){
             if(i>1){
                 $("#addr"+(i-1)).html('');
                 i--;
+                $('#streamForm').validator()
             }
         });
-        function bankName(i){
-            return "<td><input name='bankName" 
-                + i + "' type='text' placeholder='' class='form-control input-md'></td>\n";
-        }
         var i_ccb = 1;
         $("#add_row_ccb").click(function(){
             $('#tab_ccbCard').append('<tr id="addr_ccb'+i_ccb+'"></tr>');
             $('#addr_ccb'+i_ccb).html(
-                "<td>"+i_ccb+"</td>\n" + cardHolder(i_ccb) + amount(i_ccb) + cardNum(i_ccb) + bankName(i_ccb) 
-                    + spendTypes +"</td>");
+                "<td>"+i_ccb+"</td>\n" + cardHolder('ccb', i_ccb) + amount('ccb', i_ccb) + cardNum('ccb', i_ccb) 
+                    + bankName('ccb', i_ccb) + spendTypes('ccb', i) +"</td>");
             i_ccb++;
+            $('#streamForm').validator()
         })
         $("#delete_row_ccb").click(function(){
             if(i_ccb>1){
                 $("#addr_ccb"+(i_ccb-1)).html('');
                 i_ccb--;
+                $('#streamForm').validator()
             }
         })
         var i_com = 1;
         $("#add_row_com").click(function(){
             $('#tab_companyAccount').append('<tr id="addr_com' + i_com + '"></tr>');
             $('#addr_com'+i_com).html(
-                "<td>"+i_com+"</td>\n" + cardHolder(i_com) + amount(i_com) + cardNum(i_com) + bankName(i_com)
-                    + spendTypes + "</td>");
+                "<td>"+i_com+"</td>\n" + cardHolder('company', i_com) + amount('company', i_com) + cardNum('company', i_com) 
+                    + bankName('company', i_com) + spendTypes('company', i) + "</td>");
             i_com++;
+            $('#streamForm').validator()
         })
         $('#delete_row_com').click(function(){
             if(i_com>1){
                 $("#addr_com"+(i_com-1)).html('');
                 i_com--;
+                $('#streamForm').validator()
             }
         })
     })
@@ -102,10 +131,22 @@
 
 <body>
     <div class="container" style="max-width:1000px">
-    <form data-toggle="validator" role="form" lass="form" action="" method="post" style="margin:20px 0px 0px 0px">
+    {% if errorMsg %}
+        <div class="alert alert-danger">  
+            <button type="button" class="close" data-dismiss="alert">×</button>  
+            <h4>{{errorMsg}}</h4>  
+        </div>  
+    {% endif %}
+    {% if warningMsg %}
+        <div class="alert alert-info">  
+            <button type="button" class="close" data-dismiss="alert">×</button>  
+            <h4>{{warningMsg}}</h4>  
+        </div>  
+    {% endif %}
+    <form id="streamForm" data-toggle="validator" role="form" lass="form" action="" method="post" style="margin:20px 0px 0px 0px">
         {% csrf_token %}
         <div class="form-group">  
-            <button type="submit" class="btn btn-primary">创建</button>
+            <input name="commonStreamForm" type="submit" class="btn btn-primary" value="创建"></input>
         </div>
         <div class="well">
             <h3 align="center"><strong>合肥师范学院单据报销</strong></h3>
@@ -134,6 +175,15 @@
             <div class="form-group">
                 {% bootstrap_field form.streamDiscript %}
             </div>
+            <div class="row">
+                <div class="form-group col-md-3">
+                    {% bootstrap_field form.projectLeaderName %}
+                </div>
+                <div class="form-group col-md-3">
+                    {% bootstrap_field form.projectLeaderWorkId %}
+                </div>
+            </div>
+            <div class="form-group"></div>
             <label for="tab_icbcCard" class="control-label">公务卡刷卡记录</label>
             <table class="table table-bordered table-hover" id="tab_icbcCard">
                 <thead>
@@ -148,11 +198,116 @@
                     </tr>
                 </thead>
                 <tbody>
+                {% for item in list %}
+                    <tr id="addr{{ forloop.counter }}">
+                        <td>{{forloop.counter}}</td>
+                        <td><div class='form-group has-feedback'>
+                            <input name='icbc_cardHolderName{{ forloop.counter }}' type='text' placeholder='持卡人姓名' required
+                                value="{{ item.name }}" class='form-control input-md col-md-1'>
+                        </div></td>
+                        <td><div class='form-group has-feedback'>
+                            <input name='icbc_date{{ forloop.counter }}' type='text' placeholder='YYYY-mm-dd' required
+                                value="{{ item.date }}" class='form-control input-md'>
+                        </div></td>
+                        <td><div class='form-group has-feedback'>
+                            <input name='icbc_amount{{ forloop.counter }}' type='text' placeholder='' required
+                                value="{{ item.amount }}" class='form-control input-md'>
+                        </div></td>
+                        <td><div class='form-group has-feedback'>
+                            <input name='icbc_actualAmount{{ forloop.counter }}' type='text' placeholder='' required
+                                value="{{ item.actualAmount }}" class='form-control input-md'>
+                        </div></td>
+                        <td><div class='form-group has-feedback'>
+                            <input pattern='^[0-9]{8,}$' maxlength='16' required
+                                name='icbc_account{{ forloop.counter }}' type='text' placeholder='' 
+                                value="{{ item.icbcCard }}" class='form-control input-md'>
+                        </div></td>
+                        <td class="col-md-2"><div class='form-group has-feedback'>
+                            <select name='icbc_spendType{{ forloop.counter }}' class='form-control'>
+                                {% ifequal item.payType '1' %}
+                                <option selected="selected" value='1'>办公用品</option>
+                                {% else %}
+                                <option value='1'>办公用品</option>
+                                {% endifequal %}
+                                {% ifequal item.payType '2' %}
+                                <option selected="selected" value='2'>书报资料</option>
+                                {% else %}
+                                <option value='2'>书报资料</option>
+                                {% endifequal %}
+                                {% ifequal item.payType '3' %}
+                                <option selected="selected" value='3'>印刷费</option>
+                                {% else %}
+                                <option value='3'>印刷费</option>
+                                {% endifequal %}
+                                {% ifequal item.payType '4' %}
+                                <option selected="selected" value='4'>邮电费</option>
+                                {% else %}
+                                <option value='4'>邮电费</option>
+                                {% endifequal %}
+                                {% ifequal item.payType '5' %}
+                                <option selected="selected" value='5'>住宿费</option>
+                                {% else %}
+                                <option value='5'>住宿费</option>
+                                {% endifequal %}
+                                {% ifequal item.payType '6' %}
+                                <option selected="selected" value='6'>出国费</option>
+                                {% else %}
+                                <option value='6'>出国费</option>
+                                {% endifequal %}
+                                {% ifequal item.payType '7' %}
+                                <option selected="selected" value='7'>维修维护</option>
+                                {% else %}
+                                <option value='7'>维修维护</option>
+                                {% endifequal %}
+                                {% ifequal item.payType '8' %}
+                                <option selected="selected" value='8'>医疗费</option>
+                                {% else %}
+                                <option value='8'>医疗费</option>
+                                {% endifequal %}
+                                {% ifequal item.payType '9' %}
+                                <option selected="selected" value='9'>会议费</option>
+                                {% else %}
+                                <option value='9'>会议费</option>
+                                {% endifequal %}
+                                {% ifequal item.payType '10' %}
+                                <option selected="selected" value='10'>培训费</option>
+                                {% else %}
+                                <option value='10'>培训费</option>
+                                {% endifequal %}
+                                {% ifequal item.payType '11' %}
+                                <option selected="selected" value='11'>招待费</option>
+                                {% else %}
+                                <option value='11'>招待费</option>
+                                {% endifequal %}
+                                {% ifequal item.payType '12' %}
+                                <option selected="selected" value='12'>交通费</option>
+                                {% else %}
+                                <option value='12'>交通费</option>
+                                {% endifequal %}
+                                {% ifequal item.payType '13' %}
+                                <option selected="selected" value='13'>专用材料</option>
+                                {% else %}
+                                <option value='13'>专用材料</option>
+                                {% endifequal %}
+                                {% ifequal item.payType '14' %}
+                                <option selected="selected" value='14'>设备购置</option>
+                                {% else %}
+                                <option value='14'>设备购置</option>
+                                {% endifequal %}
+                                {% ifequal item.payType '15' %}
+                                <option selected="selected" value='15'>其它</option>
+                                {% else %}
+                                <option value='15'>其它</option>
+                                {% endifequal %}
+                            </select>
+                        </div></td>
+                    </tr>
+                {% endfor %}
                 </tbody>
             </table>
             <div class="row">
                 <div class="col-md-1">
-                    <a id="add_row" class="btn btn-default">增加一条刷卡记录</a>
+                    <a id="add_row" class="btn btn-default">增加一条记录</a>
                 </div>
                 <div class="col-md-9"></div>
                 <div class="col-md-1">
