@@ -154,6 +154,34 @@
                 {% csrf_token %}  
                 <button type="submit" name="newFiStream" class="btn btn-success">
                     <span class="glyphicon glyphicon-plus-sign" aria-hidden="true"></span> 新增报销单</button>
+                {% if orderList %}
+                <table class="table table-bordered table-hover" id="tab_order">
+                    <thead>
+                        <tr>
+                            <th class="text-center col-md-1">#</th>
+                            <th class="text-center col-md-2">创建日期</th>
+                            <th class="text-center">经费所属部门</th>
+                            <th class="text-center col-md-3">项目名称</th>
+                            <th class="text-center">目前状态</th>
+                            <th class="text-center col-md-1">详细</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                    {% for order in orderList %}
+                        <tr>
+                            <td class="text-center">{{ forloop.counter }}</td>
+                            <td class="text-center">{{ order.applyDate }}</td>
+                            <td class="text-center">{{ order.supportDept.name }}</td>
+                            <td class="text-center">{{ order.projectName }}</td>
+                            <td class="text-center">{{ order.currentStage }}</td>
+                            <td class="text-center">
+                                <input type="submit" class="btn btn-default" name="order{{ forloop.counter }}" value="查看">
+                            </td>
+                        </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+                {% endif %}
             </form>
             {% if signer %}
             <form class="signList" method="post">

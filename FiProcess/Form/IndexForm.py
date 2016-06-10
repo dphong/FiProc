@@ -7,7 +7,7 @@ from django.template.context import RequestContext
 from django.contrib import messages, auth
 from django.contrib.auth.hashers import check_password, make_password
 
-from ..models import Stuff, StuffCheck
+from ..models import Stuff, StuffCheck, FiStream, SpendProof, IcbcCardRecord, CompanyPayRecord, CashPay
 from CommonStreamForm import CommonStreamForm
 
 
@@ -131,6 +131,14 @@ class IndexForm(forms.Form):
             return self.approveStuffCheck(request)
         elif "newFiStream" in request.POST:
             return HttpResponseRedirect(reverse('index', args={'newstream'}))
+        username = request.session['username']
+        querySet = FiStream.objects.filter(applicante__username=username)
+        i = 1
+        for item in querySet:
+            if ("order" + str(i)) in request.POST:
+                request.session['orderId'] = item.id
+                return HttpResponseRedirect(reverse('index', args={'streamDetail'}))
+            i = i + 1
         return self.logout(request)
 
     def get(self, request):
@@ -138,12 +146,23 @@ class IndexForm(forms.Form):
             messages.add_message(request, messages.ERROR, '登录失败!')
             return HttpResponseRedirect(reverse('login'))
         userInfoForm = self.getUserInfoForm(request)
+        username = request.session['username']
         if request.user.is_authenticated():
-            print len(StuffCheck.objects.all())
             return render_to_response('FiProcess/index.html',
                 RequestContext(request, {'userInfoForm': userInfoForm,
+                    'orderList': FiStream.objects.filter(applicante__username=username),
                     'userCheckList': StuffCheck.objects.all(), 'is_sysAdmin': True}))
-        return render_to_response('FiProcess/index.html', RequestContext(request, {'userInfoForm': userInfoForm}))
+        return render_to_response('FiProcess/index.html',
+            RequestContext(request, {'userInfoForm': userInfoForm,
+                'orderList': FiStream.objects.filter(applicante__username=username)}))
+
+    def getStuffFromRequest(self, request):
+        username = request.session['username']
+        stuff = Stuff.objects.filter(username__exact=username)
+        if not stuff or stuff.count() > 1:
+            return None
+        stuff = Stuff.objects.get(username__exact=username)
+        return stuff
 
     def getUserInfoForm(self, request):
         stuff = self.getStuffFromRequest(request)
@@ -165,7 +184,7 @@ class IndexForm(forms.Form):
         streamType = request.POST['newStreamType']
         if streamType == 'common':
             form = CommonStreamForm(request.POST)
-            return form.showCommonStream(request)
+            return form.showCommonStream(request, self)
         if streamType == 'travel':
             return render_to_response('FiProcess/travelStream.html', RequestContext(request))
         if streamType == 'labor':
@@ -177,5 +196,15 @@ class IndexForm(forms.Form):
             return self.newFiStreamType(request)
         if "commonStreamForm" in request.POST:
             form = CommonStreamForm(request.POST)
-            return form.commonStreamPost(request)
+            return form.commonStreamPost(request, self)
         return render_to_response('FiProcess/newStream.html', RequestContext(request))
+
+    def streamDetailGet(self, request):
+        orderId = request.session['orderId']
+        spendProofQuery = SpendProof.objects.filter(fiStream__id=orderId)
+        icbcQuery = IcbcCardRecord.objects.filter(spendProof__fiStream__id=orderId)
+        ccbQuery = CashPay.objects.filter(spendProof__fiStream__id=orderId)
+        comQuery = CompanyPayRecord.objects.filter(spendProof__fiStream__id=orderId)
+        return render_to_response('FiProcess/commonStreamDetail.html',
+            RequestContext(request, {'proofList': spendProofQuery, 'icbcList': icbcQuery,
+                'ccbList': ccbQuery, 'comList': comQuery}))

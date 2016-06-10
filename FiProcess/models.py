@@ -43,6 +43,8 @@ class FiStream(models.Model):
     applyDate = models.DateTimeField()
     supportDept = models.ForeignKey(Department, on_delete=models.CASCADE)
     projectLeader = models.ForeignKey(Stuff, on_delete=models.CASCADE, related_name="projectLeader")
+    # stage: 'create' 'project' 'department1' 'department2' 'school1' 'school2' 'school3'
+    #        'financial' 'finish'
     currentStage = models.CharField(max_length=64)
     projectName = models.CharField(max_length=256)
     streamDiscript = models.CharField(max_length=4096)
@@ -55,8 +57,8 @@ class SpendProof(models.Model):
     proofDiscript = models.CharField(max_length=4096)
 
 
-class cashPay(models.Model):
-    spendProof = models.ForeignKey(FiStream, on_delete=models.CASCADE)
+class CashPay(models.Model):
+    spendProof = models.ForeignKey(SpendProof, on_delete=models.CASCADE)
     receiverWorkId = models.CharField(max_length=16)
     receiverName = models.CharField(max_length=64)
     receiveCard = models.CharField(max_length=19)

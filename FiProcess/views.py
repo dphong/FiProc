@@ -28,11 +28,14 @@ def register(request):
 
 
 def index(request, target=''):
+    print target
     if len(target) > 0:
         if request.method == 'GET':
             form = IndexForm(request.GET)
             if target == "newstream":
                 return form.newStreamGet(request)
+            if target == "streamDetail":
+                return form.streamDetailGet(request)
         if request.method == 'POST':
             form = IndexForm(request.POST)
             if target == "newstream":
