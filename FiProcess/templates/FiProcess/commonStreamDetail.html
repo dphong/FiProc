@@ -16,6 +16,16 @@
  </head>
  <body>
     <div class="container" style="max-width: 1000px">
+    {% if messages %}
+        {% for message in messages %}
+            {% if message.level == DEFAULT_MESSAGE_LEVELS.INFO %}
+                <div class="alert alert-success">  
+                    <button type="button" class="close" data-dismiss="alert">×</button>  
+                    <h4>{{message}}</h4>
+                </div>  
+            {% endif %}
+        {% endfor %}
+    {% endif %}
     <div class="well">  
         {% if warningMsg %}
         <div class="alert alert-info">
@@ -27,14 +37,96 @@
         {% endif %}
         <form class="form" action="" method="post">  
             {% csrf_token %} 
-            <div class="form-group">  
-                <button type="submit" class="btn btn-primary">生成报销单</button>
-                <input name="returnStream" type="submit" class="btn btn-primary" value="返回修改"></input>
-                {% if proofList %}
-                <h4>PROOF!</h4>
-                {% endif %}
+            <input name="createStream" type="submit" class="btn btn-primary" value="生成报销单"></input>
+            <input name="returnStream" type="submit" class="btn btn-primary" value="修改"></input>
+            <div class="row">
+                <div class="col-md-3">
+                    {% bootstrap_field form.department %}
+                </div>
+                <div class="col-md-2">
+                    {% bootstrap_field form.name %}
+                </div>
+                <div class="col-md-2">
+                    {% bootstrap_field form.phone %}
+                </div>
+                <div class="col-md-2">
+                    {% bootstrap_field form.applyDate %}
+                </div>
             </div>
+            <label class="control-label">开支类别及金额</label>
+            <table class="table table-bordered">
+                <thead> <tr>
+                    {% for typeItem in typeList %}
+                    <th class="text-center"> {{ typeItem.type }} </th>
+                    {% endfor %}
+                    <th class="text-center">合计</th>
+                </tr> </thead>
+                <tbody><tr>
+                    {% for typeItem in typeList %}
+                    <td class="text-center"> {{ typeItem.amount }} </td>
+                    {% endfor %}
+                    <td class="text-center">{{ form.amount.value }}</td>
+                </tr></tbody>
+            </table>
+            {% if icbcList %}
+            <label class="control-label">公务卡刷卡记录</label>
+            <table class="table table-bordered">
+                <thead><tr>
+                    <th class="text-center">姓名</th>
+                    <th class="text-center">日期</th>
+                    <th class="text-center">金额</th>
+                    <th class="text-center">实报</th>
+                    <th class="text-center">卡号</th>
+                </tr></thead>
+                {% for icbc in icbcList %}
+                <tbody><tr>
+                    <td class="text-center">{{ icbc.stuff.name }}</td>
+                    <td class="text-center">{{ icbc.date }}</td>
+                    <td class="text-center">{{ icbc.spendProof.spendAmount }}</td>
+                    <td class="text-center">{{ icbc.cantApplyAmount }}</td>
+                    <td class="text-center">{{ icbc.stuff.icbcCard }}</td>
+                </tr></tbody>
+                {% endfor %}
+            </table>
+            {% endif %}
+            {% if ccbList %}
+            <label class="control-label">银行卡转账</label>
+            <table class="table table-bordered">
+                <thead><tr>
+                    <th class="text-center">姓名</th>
+                    <th class="text-center">金额</th>
+                    <th class="text-center">卡号</th>
+                </tr></thead>
+                {% for ccb in ccbList %}
+                <tbody><tr>
+                    <td class="text-center">{{ ccb.receiverName }}</td>
+                    <td class="text-center">{{ ccb.spendProof.spendAmount }}</td>
+                    <td class="text-center">{{ ccb.receiveCard }}</td>
+                </tr></tbody>
+                {% endfor %}
+            </table>
+            {% endif %}
+            {% if comList %}
+            <label class="control-label">对公转账</label>
+            <table class="table table-bordered">
+                <thead><tr>
+                    <th class="text-center">公司</th>
+                    <th class="text-center">金额</th>
+                    <th class="text-center">卡号</th>
+                    <th class="text-center">开户行</th>
+                </tr></thead>
+                {% for com in comList %}
+                <tbody><tr>
+                    <td class="text-center">{{ com.companyName }}</td>
+                    <td class="text-center">{{ com.spendProof.spendAmount }}</td>
+                    <td class="text-center">{{ com.bankAccount }}</td>
+                    <td class="text-center">{{ com.bankName }}</td>
+                </tr></tbody>
+                {% endfor %}
+            </table>
+            {% endif %}
         </form>
+        <a href={% url 'index' '' %} class="btn btn-large btn-default">返回</a>
     </div>
     </div>
  </body>

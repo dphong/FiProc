@@ -43,15 +43,18 @@ class FiStream(models.Model):
     applyDate = models.DateTimeField()
     supportDept = models.ForeignKey(Department, on_delete=models.CASCADE)
     projectLeader = models.ForeignKey(Stuff, on_delete=models.CASCADE, related_name="projectLeader")
-    # stage: 'create' 'project' 'department1' 'department2' 'school1' 'school2' 'school3'
+    # stage: 'create' 'project' 'department1' 'department2' 'projectDepartment' 'school1' 'school2' 'school3'
     #        'financial' 'finish'
     currentStage = models.CharField(max_length=64)
     projectName = models.CharField(max_length=256)
     streamDiscript = models.CharField(max_length=4096)
+    # type: 'common' 'travel' 'labor'
+    streamType = models.CharField(max_length=16)
 
 
 class SpendProof(models.Model):
     fiStream = models.ForeignKey(FiStream, on_delete=models.CASCADE)
+    # spendType: form '1' to '15'
     spendType = models.CharField(max_length=64)
     spendAmount = models.DecimalField(max_digits=15, decimal_places=2)
     proofDiscript = models.CharField(max_length=4096)
@@ -72,7 +75,6 @@ class IcbcCardRecord(models.Model):
     spendProof = models.ForeignKey(SpendProof, on_delete=models.CASCADE)
     stuff = models.ForeignKey(Stuff, on_delete=models.CASCADE)
     date = models.DateTimeField()
-    spendAmount = models.DecimalField(max_digits=10, decimal_places=2)
     cantApplyAmount = models.DecimalField(max_digits=10, decimal_places=2)
     cantApplyReason = models.CharField(max_length=1024)
 

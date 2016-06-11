@@ -3,6 +3,8 @@ from django import forms
 from django.shortcuts import render_to_response
 from django.template.context import RequestContext
 from django.http import HttpResponseRedirect
+from django.core.urlresolvers import reverse
+from django.contrib import messages
 from django.forms import ModelForm
 from datetime import datetime
 from decimal import Decimal
@@ -193,10 +195,13 @@ class CommonStreamForm(ModelForm):
         for com in companyList:
             self.saveCompanyRecord(stream, com)
         if len(warningMsg):
-            return HttpResponseRedirect('FiProcess/commonStreamDetail.html',
-                RequestContext(request, {'streamId': stream.id, 'warningMsg': warningMsg}))
-        return HttpResponseRedirect('FiProcess/commonStreamDetail.html',
-            RequestContext(request, {'streamId': stream.Id}))
+            msg = ''
+            for tmp in warningMsg:
+                msg += tmp + ' '
+            messages.add_message(request, messages.INFO, msg)
+            request.session['orderId'] = stream.id
+            return HttpResponseRedirect(reverse('index', args={'streamDetail'}))
+        return HttpResponseRedirect(reverse('index', args={'streamDetail'}))
 
     def saveIcbcRecord(self, stream, icbc, request, indexForm):
         spendProof = SpendProof()
@@ -240,7 +245,7 @@ class CommonStreamForm(ModelForm):
         ccbRec = CashPay()
         ccbRec.spendProof = spendProof
         ccbRec.receiverName = ccb.name
-        ccbRec.receiverCard = ccb.ccbCard
+        ccbRec.receiveCard = ccb.ccbCard
         ccbRec.receiverTitle = ''
         ccbRec.bankName = ccb.bankName
         ccbRec.workDate = datetime.today()
@@ -252,3 +257,59 @@ class CommonStreamForm(ModelForm):
             ccbRec.receiverWorkId = '0'
             ccbRec.receiverBelong = ''
         ccbRec.save()
+
+    def modifyForm(self, request):
+        fiStreamId = request.session['orderId']
+        try:
+            fiStream = FiStream.objects.get(id=fiStreamId)
+        except:
+            return HttpResponseRedirect(reverse('error'))
+        form = CommonStreamForm(
+            initial={
+                'department': fiStream.applicante.department.name,
+                'name': fiStream.applicante.name,
+                'workId': fiStream.applicante.workId,
+                'applyDate': fiStream.applyDate.strftime('%Y-%m-%d'),
+                'projectLeaderWorkId': fiStream.applicante.workId,
+                'projectLeaderName': fiStream.applicante.name,
+                'projectName': fiStream.projectName,
+                'supportDept': fiStream.supportDept,
+                'streamDiscript': fiStream.streamDiscript,
+            }
+        )
+
+        icbcQuery = IcbcCardRecord.objects.filter(spendProof__fiStream__id=fiStreamId)
+        ccbQuery = CashPay.objects.filter(spendProof__fiStream__id=fiStreamId)
+        comQuery = CompanyPayRecord.objects.filter(spendProof__fiStream__id=fiStreamId)
+        icbcList = []
+        ccbList = []
+        companyList = []
+
+        for icbc in icbcQuery:
+            record = self.IcbcPay()
+            record.name = icbc.stuff.name
+            record.date = icbc.date.strftime('%Y-%m-%d')
+            record.amount = icbc.spendProof.spendAmount
+            record.actualAmount = icbc.spendProof.spendAmount - icbc.cantApplyAmount
+            record.icbcCard = icbc.stuff.icbcCard
+            record.payType = icbc.spendProof.spendType
+            icbcList.append(record)
+        for ccb in ccbQuery:
+            record = self.CashPay()
+            record.name = ccb.receiverName
+            record.amount = ccb.spendProof.spendAmount
+            record.ccbCard = ccb.receiveCard
+            record.bankName = ccb.bankName
+            record.payType = ccb.spendProof.spendType
+            ccbList.append(record)
+        for com in comQuery:
+            record = self.CashPay()
+            record.name = com.companyName
+            record.amount = com.spendProof.spendAmount
+            record.ccbCard = com.bankAccount
+            record.bankName = com.bankName
+            record.payType = com.spendProof.spendType
+            companyList.append(record)
+
+        return render_to_response('FiProcess/commonStream.html',
+            RequestContext(request, {'form': form, 'list': icbcList, 'ccbList': ccbList, 'companyList': companyList}))

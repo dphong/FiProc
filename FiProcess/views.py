@@ -28,7 +28,6 @@ def register(request):
 
 
 def index(request, target=''):
-    print target
     if len(target) > 0:
         if request.method == 'GET':
             form = IndexForm(request.GET)
@@ -40,6 +39,8 @@ def index(request, target=''):
             form = IndexForm(request.POST)
             if target == "newstream":
                 return form.newStreamPost(request)
+            if target == "streamDetail":
+                return form.streamDetailPost(request)
         return HttpResponseRedirect(reverse('index', args={''}))
     if request.method == 'GET':
         form = IndexForm(request.GET)

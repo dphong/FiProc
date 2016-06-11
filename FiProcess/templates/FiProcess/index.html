@@ -41,6 +41,12 @@
             document.getElementById("submitUserCheck").disabled = countchecked == 0
         })
         {% endif %}
+        {% if orderList %}
+        $('#delOrder').on('show.bs.modal', function(e){
+            var button = e.relatedTarget;
+            document.getElementById("delOrderOk").name = button.name
+        })
+        {% endif %}
         setVisible('{{userInfoForm.currentTab}}')
         $('a[data-toggle="tab"]').on('shown.bs.tab', function (e) {
             var target = $(e.target).attr("href") // activated tab
@@ -52,6 +58,16 @@
 
 <body>  
     <div class="container">
+        {% if messages %}
+            {% for message in messages %}
+                {% if message.level == DEFAULT_MESSAGE_LEVELS.SUCCESS %}
+                    <div class="alert alert-success">  
+                        <button type="button" class="close" data-dismiss="alert">×</button>  
+                        <h4>{{message}}</h4>
+                    </div>  
+                {% endif %}
+            {% endfor %}
+        {% endif %}
         <h2>财务报账审批系统</h2>
         <ul class="nav nav-tabs">
             <li {% if userInfoForm.currentTab == 'user' %}class="active"{% endif %}><a data-toggle="tab" href="user">个人信息</a></li>
@@ -163,7 +179,9 @@
                             <th class="text-center">经费所属部门</th>
                             <th class="text-center col-md-3">项目名称</th>
                             <th class="text-center">目前状态</th>
+                            <th class="text-center">类别</th>
                             <th class="text-center col-md-1">详细</th>
+                            <th class="text-center col-md-1">删除</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -174,13 +192,31 @@
                             <td class="text-center">{{ order.supportDept.name }}</td>
                             <td class="text-center">{{ order.projectName }}</td>
                             <td class="text-center">{{ order.currentStage }}</td>
+                            <td class="text-center"></td>
                             <td class="text-center">
                                 <input type="submit" class="btn btn-default" name="order{{ forloop.counter }}" value="查看">
+                            </td>
+                            <td class="text-center">
+                                <a href="#delOrder" data-toggle="modal" class="btn btn-default" name="delOrder{{ forloop.counter }}" role="button">删除</a>
                             </td>
                         </tr>
                     {% endfor %}
                     </tbody>
                 </table>
+                <!-- Modal -->
+                <div class="modal fade" id="delOrder" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+                    <div class="modal-dialog" role="document">
+                        <div class="modal-content">
+                            <div id="delOrderText" class="modal-body">
+                                报销单删除后将无法恢复，是否确认删除？
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-default" data-dismiss="modal">取消</button>
+                                <button id="delOrderOk" type="submit" class="btn btn-primary">确定</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
                 {% endif %}
             </form>
             {% if signer %}
@@ -213,8 +249,8 @@
                     {% endfor %}
                 </table>
                 <div class="form-group">
-                    <a href="#confirmUserCheck" data-toggle="modal" id="userCheckOK" class="userCheckButton btn btn-primary" role="button" data-toggle="modal" >审核通过</a>
-                    <a href="#confirmUserCheck" data-toggle="modal" id="userCheckDel" class="userCheckButton btn btn-danger" role="button" data-toggle="modal" >审核不通过,删除</a>
+                    <a href="#confirmUserCheck" data-toggle="modal" id="userCheckOK" class="userCheckButton btn btn-primary" role="button">审核通过</a>
+                    <a href="#confirmUserCheck" data-toggle="modal" id="userCheckDel" class="userCheckButton btn btn-danger" role="button">审核不通过,删除</a>
                 </div>
                 <!-- Modal -->
                 <div class="modal fade" id="confirmUserCheck" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">

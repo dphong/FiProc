@@ -7,8 +7,10 @@ from django.template.context import RequestContext
 from django.contrib import messages, auth
 from django.contrib.auth.hashers import check_password, make_password
 
-from ..models import Stuff, StuffCheck, FiStream, SpendProof, IcbcCardRecord, CompanyPayRecord, CashPay
+
+from ..models import Stuff, StuffCheck, FiStream
 from CommonStreamForm import CommonStreamForm
+from CommonStreamDetail import CommonStreamDetail
 
 
 class UserInfoForm(forms.Form):
@@ -138,23 +140,55 @@ class IndexForm(forms.Form):
             if ("order" + str(i)) in request.POST:
                 request.session['orderId'] = item.id
                 return HttpResponseRedirect(reverse('index', args={'streamDetail'}))
+            if ("delOrder" + str(i)) in request.POST:
+                item.delete()
+                messages.add_message(request, messages.SUCCESS, item.projectName + u'报销单删除成功')
+                return HttpResponseRedirect(reverse('index', args={''}))
             i = i + 1
         return self.logout(request)
+
+    def getOrderList(self, request):
+        username = request.session['username']
+        streamList = FiStream.objects.filter(applicante__username=username)
+        orderList = []
+        for item in streamList:
+            item.applyDate = item.applyDate.strftime('%Y-%m-%d')
+            if item.currentStage == 'create':
+                item.currentStage = u'未提交'
+            elif item.currentStage == 'project':
+                item.currentStage = u'项目负责人审核'
+            elif item.currentStage == 'department1':
+                item.currentStage = u'部门负责人审核'
+            elif item.currentStage == 'department2':
+                item.currentStage = u'部门书记审核'
+            elif item.currentStage == 'projectDepartment':
+                item.currentStage = u'项目部门负责人审核'
+            elif item.currentStage == 'school1':
+                item.currentStage = u'分管校领导审核'
+            elif item.currentStage == 'school2':
+                item.currentStage = u'财务校领导审核'
+            elif item.currentStage == 'school3':
+                item.currentStage = u'学校书记审核'
+            elif item.currentStage == 'financial':
+                item.currentStage = u'财务处审核'
+            elif item.currentStage == 'finish':
+                item.currentStage = u'报销完成'
+            orderList.append(item)
+        return orderList
 
     def get(self, request):
         if 'username' not in request.session:
             messages.add_message(request, messages.ERROR, '登录失败!')
             return HttpResponseRedirect(reverse('login'))
         userInfoForm = self.getUserInfoForm(request)
-        username = request.session['username']
         if request.user.is_authenticated():
             return render_to_response('FiProcess/index.html',
                 RequestContext(request, {'userInfoForm': userInfoForm,
-                    'orderList': FiStream.objects.filter(applicante__username=username),
+                    'orderList': self.getOrderList(request),
                     'userCheckList': StuffCheck.objects.all(), 'is_sysAdmin': True}))
         return render_to_response('FiProcess/index.html',
             RequestContext(request, {'userInfoForm': userInfoForm,
-                'orderList': FiStream.objects.filter(applicante__username=username)}))
+                'orderList': self.getOrderList(request)}))
 
     def getStuffFromRequest(self, request):
         username = request.session['username']
@@ -173,11 +207,14 @@ class IndexForm(forms.Form):
                      'phoneNumber': stuff.phoneNumber, 'department': stuff.department.name,
                      'icbcCard': stuff.icbcCard, 'ccbCard': stuff.ccbCard, }
         )
-        userInfoForm.currentTab = 'user'
+        userInfoForm.currentTab = 'order'
         return userInfoForm
 
     # new process stream
     def newStreamGet(self, request):
+        if 'orderId' in request.session:
+            form = CommonStreamForm(request.GET)
+            return form.modifyForm(request)
         return render_to_response('FiProcess/newStream.html', RequestContext(request))
 
     def newFiStreamType(self, request):
@@ -200,11 +237,12 @@ class IndexForm(forms.Form):
         return render_to_response('FiProcess/newStream.html', RequestContext(request))
 
     def streamDetailGet(self, request):
-        orderId = request.session['orderId']
-        spendProofQuery = SpendProof.objects.filter(fiStream__id=orderId)
-        icbcQuery = IcbcCardRecord.objects.filter(spendProof__fiStream__id=orderId)
-        ccbQuery = CashPay.objects.filter(spendProof__fiStream__id=orderId)
-        comQuery = CompanyPayRecord.objects.filter(spendProof__fiStream__id=orderId)
-        return render_to_response('FiProcess/commonStreamDetail.html',
-            RequestContext(request, {'proofList': spendProofQuery, 'icbcList': icbcQuery,
-                'ccbList': ccbQuery, 'comList': comQuery}))
+        detail = CommonStreamDetail(request.GET)
+        return detail.renderPage(request)
+
+    def streamDetailPost(self, request):
+        if 'returnStream' in request.POST:
+            return HttpResponseRedirect(reverse('index', args={'newstream'}))
+        if 'createStream' in request.POST:
+            return 
+        return HttpResponseRedirect(reverse('error'))
