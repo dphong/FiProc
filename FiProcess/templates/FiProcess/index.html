@@ -16,7 +16,7 @@
     $(document).ready(function(){
         $.fn.validator.Constructor.INPUT_SELECTOR = ':input:not([type="submit"], button):enabled'
         function setVisible(target){
-            var targetList = new Array("user", "order", "changepsw", "signList", "stuffCheck")
+            var targetList = new Array("user", "order", "changepsw", "signList", "staffCheck")
             var formList = new Array("form.userInfo", "form.orderList", "form.changePsw", "form.signList", "form.userRegList")
             for (var i = 0; i < targetList.length; i++){
                 if (targetList[i] == target){
@@ -79,7 +79,7 @@
             <li {% if userInfoForm.currentTab == 'signList' %}class="active"{% endif %}><a data-toggle="tab" href="signList">待审批单据</a></li>
             {% endif %}
             {% if is_sysAdmin %}
-            <li {% if userInfoForm.currentTab == 'stuffCheck' %}class="active"{% endif %}><a data-toggle="tab" href="stuffCheck">用户注册申请</a></li>
+            <li {% if userInfoForm.currentTab == 'staffCheck' %}class="active"{% endif %}><a data-toggle="tab" href="staffCheck">用户注册申请</a></li>
             {% endif %}
             <form class="form" method="post">
                 {% csrf_token %}  
@@ -240,11 +240,11 @@
                     {% for user in userCheckList %}
                         <tr>
                             <td><input name="userCheckId" type="checkbox" value={{user.id}}></td>
-                            <td>{{user.stuff.name}}</td>
-                            <td>{{user.stuff.workId}}</td>
-                            <td>{{user.stuff.department.name}}</td>
-                            <td>{{user.stuff.phoneNumber}}</td>
-                            <td>{{user.stuff.username}}</td>
+                            <td>{{user.staff.name}}</td>
+                            <td>{{user.staff.workId}}</td>
+                            <td>{{user.staff.department.name}}</td>
+                            <td>{{user.staff.phoneNumber}}</td>
+                            <td>{{user.staff.username}}</td>
                         </tr>
                     {% endfor %}
                 </table>

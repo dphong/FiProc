@@ -9,7 +9,7 @@ from django.forms import ModelForm
 from datetime import datetime
 from decimal import Decimal
 
-from ..models import Stuff, FiStream, SpendProof, CashPay, IcbcCardRecord, CompanyPayRecord
+from ..models import Staff, FiStream, SpendProof, CashPay, IcbcCardRecord, CompanyPayRecord
 
 
 class CommonStreamForm(ModelForm):
@@ -78,13 +78,13 @@ class CommonStreamForm(ModelForm):
             self.payType = 0
 
     def showCommonStream(self, request, indexForm):
-        stuff = indexForm.getStuffFromRequest(request)
-        if not stuff:
+        staff = indexForm.getStaffFromRequest(request)
+        if not staff:
             return indexForm.logout(request, '用户信息异常，请保存本条错误信息，并联系管理员')
         form = CommonStreamForm(
-            initial={'department': stuff.department.name,
-                'name': stuff.name, 'workId': stuff.workId, 'applyDate': datetime.today(),
-                'projectLeaderWorkId': stuff.workId, 'projectLeaderName': stuff.name}
+            initial={'department': staff.department.name,
+                'name': staff.name, 'workId': staff.workId, 'applyDate': datetime.today(),
+                'projectLeaderWorkId': staff.workId, 'projectLeaderName': staff.name}
         )
         return render_to_response('FiProcess/commonStream.html', RequestContext(request, {'form': form}))
 
@@ -129,7 +129,7 @@ class CommonStreamForm(ModelForm):
             if actualAmount > amount:
                 errorMsg.append(u'第' + str(i) + u'条公务卡实报金额大于消费金额')
             try:
-                Stuff.objects.get(name__exact=icbc.name, icbcCard__exact=icbc.icbcCard)
+                Staff.objects.get(name__exact=icbc.name, icbcCard__exact=icbc.icbcCard)
             except:
                 errorMsg.append(u'第' + str(i) + u'条公务卡未在系统中注册')
             i = i + 1
@@ -152,7 +152,7 @@ class CommonStreamForm(ModelForm):
             except:
                 errorMsg.append(u'请正确填写第' + str(i) + u'条现金支付的金额')
             try:
-                Stuff.objects.get(name__exact=ccb.name, ccbCard__exact=ccb.ccbCard)
+                Staff.objects.get(name__exact=ccb.name, ccbCard__exact=ccb.ccbCard)
             except:
                 warningMsg.append(u'第' + str(i) + u'条现金支付的工资卡未在系统中注册，请核对无误')
             i = i + 1
@@ -181,11 +181,11 @@ class CommonStreamForm(ModelForm):
                 RequestContext(request, {'form': form, 'errorMsg': errorMsg,
                     'list': icbcList, 'ccbList': ccbList, 'companyList': companyList}))
 
-        stuff = indexForm.getStuffFromRequest(request)
-        if not stuff:
+        staff = indexForm.getStaffFromRequest(request)
+        if not staff:
             return indexForm.logout(request, u'用户信息异常，请保存本条错误信息，并联系管理员')
-        stream.applicante = stuff
-        stream.projectLeader = stuff
+        stream.applicante = staff
+        stream.projectLeader = staff
         stream.currentStage = 'create'
         stream.save()
         for icbc in icbcList:
@@ -213,7 +213,7 @@ class CommonStreamForm(ModelForm):
         icbcCardRec = IcbcCardRecord()
         icbcCardRec.spendProof = spendProof
         try:
-            icbcCardRec.stuff = Stuff.objects.get(name__exact=icbc.name, icbcCard__exact=icbc.icbcCard)
+            icbcCardRec.staff = Staff.objects.get(name__exact=icbc.name, icbcCard__exact=icbc.icbcCard)
         except:
             return indexForm.logout(request, '用户信息异常，请保存本条错误信息，并联系管理员')
         icbcCardRec.date = icbc.date
@@ -250,9 +250,9 @@ class CommonStreamForm(ModelForm):
         ccbRec.bankName = ccb.bankName
         ccbRec.workDate = datetime.today()
         try:
-            stuff = Stuff.objects.get(name__exact=ccb.name, ccbCard__exact=ccb.ccbCard)
-            ccbRec.receiverWorkId = stuff.workId
-            ccbRec.receiverBelong = stuff.department.name
+            staff = Staff.objects.get(name__exact=ccb.name, ccbCard__exact=ccb.ccbCard)
+            ccbRec.receiverWorkId = staff.workId
+            ccbRec.receiverBelong = staff.department.name
         except:
             ccbRec.receiverWorkId = '0'
             ccbRec.receiverBelong = ''
@@ -287,11 +287,11 @@ class CommonStreamForm(ModelForm):
 
         for icbc in icbcQuery:
             record = self.IcbcPay()
-            record.name = icbc.stuff.name
+            record.name = icbc.staff.name
             record.date = icbc.date.strftime('%Y-%m-%d')
             record.amount = icbc.spendProof.spendAmount
             record.actualAmount = icbc.spendProof.spendAmount - icbc.cantApplyAmount
-            record.icbcCard = icbc.stuff.icbcCard
+            record.icbcCard = icbc.staff.icbcCard
             record.payType = icbc.spendProof.spendType
             icbcList.append(record)
         for ccb in ccbQuery:

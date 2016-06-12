@@ -8,7 +8,7 @@ from django.contrib import messages, auth
 from django.contrib.auth.hashers import check_password, make_password
 
 
-from ..models import Stuff, StuffCheck, FiStream
+from ..models import Staff, StaffCheck, FiStream
 from CommonStreamForm import CommonStreamForm
 from CommonStreamDetail import CommonStreamDetail
 
@@ -62,14 +62,14 @@ class IndexForm(forms.Form):
         messages.add_message(request, messages.SUCCESS, message)
         return HttpResponseRedirect(reverse('login'))
 
-    def queryStuff(self, userName, password, pswWrongMsg="密码错误"):
-        stuff = Stuff.objects.filter(username__exact=userName)
-        if stuff.count() > 1:
+    def queryStaff(self, userName, password, pswWrongMsg="密码错误"):
+        staff = Staff.objects.filter(username__exact=userName)
+        if staff.count() > 1:
             raise Exception("用户名查询重复,请联系管理员")
-        stuff = Stuff.objects.get(username__exact=userName)
-        if not check_password(password, stuff.password):
+        staff = Staff.objects.get(username__exact=userName)
+        if not check_password(password, staff.password):
             raise Exception(pswWrongMsg)
-        return stuff
+        return staff
 
     def saveUserInfoForm(self, request):
         userInfoForm = UserInfoForm(request.POST)
@@ -77,15 +77,15 @@ class IndexForm(forms.Form):
         try:
             if not userInfoForm.is_valid():
                 raise Exception("字段内容错误")
-            stuff = self.queryStuff(userInfoForm.cleaned_data['username'], userInfoForm.cleaned_data['password'])
+            staff = self.queryStaff(userInfoForm.cleaned_data['username'], userInfoForm.cleaned_data['password'])
         except Exception, e:
             return render_to_response('FiProcess/index.html',
                 RequestContext(request, {'userInfoForm': userInfoForm, 'saveFailedMsg': str(e)})
             )
-        stuff.phoneNumber = userInfoForm.cleaned_data['phoneNumber']
-        stuff.icbcCard = userInfoForm.cleaned_data['icbcCard']
-        stuff.ccbCard = userInfoForm.cleaned_data['ccbCard']
-        stuff.save()
+        staff.phoneNumber = userInfoForm.cleaned_data['phoneNumber']
+        staff.icbcCard = userInfoForm.cleaned_data['icbcCard']
+        staff.ccbCard = userInfoForm.cleaned_data['ccbCard']
+        staff.save()
         userInfoForm.password = ''
         return render_to_response('FiProcess/index.html',
             RequestContext(request, {'userInfoForm': userInfoForm, 'saveSuccess': True})
@@ -97,31 +97,31 @@ class IndexForm(forms.Form):
         originPsw = request.POST['originPsw']
         newPsw = request.POST['changePsw']
         try:
-            stuff = self.queryStuff(request.session['username'], originPsw, "原密码错误")
+            staff = self.queryStaff(request.session['username'], originPsw, "原密码错误")
         except Exception, e:
             return render_to_response('FiProcess/index.html',
                 RequestContext(request, {'userInfoForm': userInfoForm, 'saveFailedMsg': str(e)})
             )
         print 'new password is ' + newPsw
-        stuff.password = make_password(newPsw)
-        stuff.save()
+        staff.password = make_password(newPsw)
+        staff.save()
         return render_to_response('FiProcess/index.html',
             RequestContext(request, {'userInfoForm': userInfoForm, 'saveSuccess': True})
         )
 
-    def approveStuffCheck(self, request):
+    def approveStaffCheck(self, request):
         userInfoForm = self.getUserInfoForm(request)
-        userInfoForm.currentTab = "stuffCheck"
+        userInfoForm.currentTab = "staffCheck"
         toDelIdList = request.POST.getlist('userCheckId')
-        querySet = StuffCheck.objects.filter(id__in=toDelIdList)
+        querySet = StaffCheck.objects.filter(id__in=toDelIdList)
         if 'userCheckDel' in request.POST:
-            for stuff in querySet:
-                stuff.stuff.delete()
+            for staff in querySet:
+                staff.staff.delete()
         elif 'userCheckOK'in request.POST:
             querySet.delete()
         return render_to_response('FiProcess/index.html',
             RequestContext(request, {'userInfoForm': userInfoForm,
-                'userCheckList': StuffCheck.objects.all(), 'is_sysAdmin': True, 'saveSuccess': True})
+                'userCheckList': StaffCheck.objects.all(), 'is_sysAdmin': True, 'saveSuccess': True})
         )
 
     def post(self, request):
@@ -130,7 +130,7 @@ class IndexForm(forms.Form):
         elif "changePassword" in request.POST:
             return self.saveNewPassword(request)
         elif "userCheckId" in request.POST:
-            return self.approveStuffCheck(request)
+            return self.approveStaffCheck(request)
         elif "newFiStream" in request.POST:
             return HttpResponseRedirect(reverse('index', args={'newstream'}))
         username = request.session['username']
@@ -185,27 +185,27 @@ class IndexForm(forms.Form):
             return render_to_response('FiProcess/index.html',
                 RequestContext(request, {'userInfoForm': userInfoForm,
                     'orderList': self.getOrderList(request),
-                    'userCheckList': StuffCheck.objects.all(), 'is_sysAdmin': True}))
+                    'userCheckList': StaffCheck.objects.all(), 'is_sysAdmin': True}))
         return render_to_response('FiProcess/index.html',
             RequestContext(request, {'userInfoForm': userInfoForm,
                 'orderList': self.getOrderList(request)}))
 
-    def getStuffFromRequest(self, request):
+    def getStaffFromRequest(self, request):
         username = request.session['username']
-        stuff = Stuff.objects.filter(username__exact=username)
-        if not stuff or stuff.count() > 1:
+        staff = Staff.objects.filter(username__exact=username)
+        if not staff or staff.count() > 1:
             return None
-        stuff = Stuff.objects.get(username__exact=username)
-        return stuff
+        staff = Staff.objects.get(username__exact=username)
+        return staff
 
     def getUserInfoForm(self, request):
-        stuff = self.getStuffFromRequest(request)
-        if not stuff:
+        staff = self.getStaffFromRequest(request)
+        if not staff:
             return self.logout(request, '用户信息异常，请保存本条错误信息，并联系管理员')
         userInfoForm = UserInfoForm(
-            initial={'username': stuff.username, 'name': stuff.name, 'workId': stuff.workId,
-                     'phoneNumber': stuff.phoneNumber, 'department': stuff.department.name,
-                     'icbcCard': stuff.icbcCard, 'ccbCard': stuff.ccbCard, }
+            initial={'username': staff.username, 'name': staff.name, 'workId': staff.workId,
+                     'phoneNumber': staff.phoneNumber, 'department': staff.department.name,
+                     'icbcCard': staff.icbcCard, 'ccbCard': staff.ccbCard, }
         )
         userInfoForm.currentTab = 'order'
         return userInfoForm

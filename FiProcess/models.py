@@ -7,15 +7,15 @@ from django.utils.encoding import python_2_unicode_compatible
 @python_2_unicode_compatible  # only if you need to support Python 2
 class Department(models.Model):
     name = models.CharField(max_length=128)
-    secretaryId = models.IntegerField(default=-1)
-    chiefId = models.IntegerField(default=-1)
+    secretary = models.ForeignKey('Staff', blank=True, null=True, related_name='secretary')
+    chief = models.ForeignKey('Staff', blank=True, null=True, related_name='chief')
 
     def __str__(self):
         return self.name
 
 
 @python_2_unicode_compatible  # only if you need to support Python 2
-class Stuff(models.Model):
+class Staff(models.Model):
     # may be change to staff :)
     username = models.CharField(max_length=64)
     name = models.CharField(max_length=64)
@@ -30,19 +30,25 @@ class Stuff(models.Model):
         return self.name
 
 
-class StuffCheck(models.Model):
-    stuff = models.ForeignKey(Stuff, on_delete=models.CASCADE)
+class StaffCheck(models.Model):
+    staff = models.ForeignKey(Staff, on_delete=models.CASCADE)
 
 
+@python_2_unicode_compatible  # only if you need to support Python 2
 class SchoolMaster(models.Model):
-    stuff = models.ForeignKey(Stuff, on_delete=models.CASCADE)
+    staff = models.ForeignKey(Staff, on_delete=models.CASCADE)
+    # duty: 'school1' 'school2' 'school3'
+    duty = models.CharField(max_length=16)
+
+    def __str__(self):
+        return self.staff.name
 
 
 class FiStream(models.Model):
-    applicante = models.ForeignKey(Stuff, on_delete=models.CASCADE, related_name="applicante")
+    applicante = models.ForeignKey(Staff, on_delete=models.CASCADE, related_name="applicante")
     applyDate = models.DateTimeField()
     supportDept = models.ForeignKey(Department, on_delete=models.CASCADE)
-    projectLeader = models.ForeignKey(Stuff, on_delete=models.CASCADE, related_name="projectLeader")
+    projectLeader = models.ForeignKey(Staff, on_delete=models.CASCADE, related_name="projectLeader")
     # stage: 'create' 'project' 'department1' 'department2' 'projectDepartment' 'school1' 'school2' 'school3'
     #        'financial' 'finish'
     currentStage = models.CharField(max_length=64)
@@ -73,7 +79,7 @@ class CashPay(models.Model):
 
 class IcbcCardRecord(models.Model):
     spendProof = models.ForeignKey(SpendProof, on_delete=models.CASCADE)
-    stuff = models.ForeignKey(Stuff, on_delete=models.CASCADE)
+    staff = models.ForeignKey(Staff, on_delete=models.CASCADE)
     date = models.DateTimeField()
     cantApplyAmount = models.DecimalField(max_digits=10, decimal_places=2)
     cantApplyReason = models.CharField(max_length=1024)

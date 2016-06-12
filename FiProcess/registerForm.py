@@ -7,13 +7,13 @@ from django.contrib import messages
 from django.core.urlresolvers import reverse
 from django.contrib.auth.hashers import make_password
 
-from .models import Stuff
+from .models import Staff
 
 
 class RegisterForm(ModelForm):
 
     class Meta:
-        model = Stuff
+        model = Staff
         fields = ['username', 'name', 'workId', 'phoneNumber', 'department', 'icbcCard', 'ccbCard', 'password']
         labels = {
             'department': u'部门'
@@ -26,23 +26,24 @@ class RegisterForm(ModelForm):
         return render_to_response('FiProcess/register.html', RequestContext(request, {'form': form, 'register_success': True}))
 
     def post(self, request):
-        inst = Stuff()
+        inst = Staff()
         form = RegisterForm(request.POST, instance=inst)
         if form.is_valid():
             # username and work id duplication check
-            username = Stuff.objects.filter(username=inst.username)
-            workId = Stuff.objects.filter(workId=inst.workId)
+            username = Staff.objects.filter(username=inst.username)
             message = ""
             if username:
                 message = u"用户" + inst.username + u"已存在"
-            if workId:
-                message = u"工号" + inst.workId + u"已注册"
+            if inst.workId != '0':
+                workId = Staff.objects.filter(workId=inst.workId)
+                if workId:
+                    message = u"工号" + inst.workId + u"已注册"
             if len(message) > 0:
-                return render('FiProcess/register.html', {'form': form, 'message': message})
+                return render_to_response('FiProcess/register.html', RequestContext(request, {'form': form, 'message': message}))
             inst.password = make_password(inst.password)
             inst.save()
-            inst.stuffcheck_set.create()
+            inst.staffcheck_set.create()
             messages.add_message(request, messages.INFO, inst.username)
             return HttpResponseRedirect(reverse('login'))
         else:
-            return render('FiProcess/register.html', {'form': form, 'register_success': False})
+            return render_to_response('FiProcess/register.html', RequestContext(request, {'form': form, 'register_success': False}))

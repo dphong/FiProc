@@ -7,7 +7,7 @@ from django.contrib.auth.hashers import check_password
 from django.http import HttpResponseRedirect
 from django.core.urlresolvers import reverse
 
-from ..models import Stuff
+from ..models import Staff
 
 
 class LoginForm(forms.Form):
@@ -58,9 +58,9 @@ class LoginForm(forms.Form):
         username = clean_data.get('username')
         password = clean_data.get('password')
         try:
-            stuff = Stuff.objects.get(username__exact=username)
+            staff = Staff.objects.get(username__exact=username)
         except:
             raise forms.ValidationError(u"用户不存在或密码错误")
-        if not check_password(password, stuff.password):
+        if not check_password(password, staff.password):
             raise forms.ValidationError(u"密码错误")
         return clean_data
