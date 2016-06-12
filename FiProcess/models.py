@@ -58,6 +58,14 @@ class FiStream(models.Model):
     streamType = models.CharField(max_length=16)
 
 
+class SignRecord(models.Model):
+    stream = models.ForeignKey(FiStream, on_delete=models.CASCADE)
+    signer = models.ForeignKey(Staff, on_delete=models.CASCADE)
+    signTime = models.DateTimeField()
+    signed = models.BooleanField(default=False)
+    signImage = models.CharField(max_length=10000)
+
+
 class SpendProof(models.Model):
     fiStream = models.ForeignKey(FiStream, on_delete=models.CASCADE)
     # spendType: form '1' to '15'
