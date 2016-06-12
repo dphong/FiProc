@@ -186,6 +186,10 @@ class IndexForm(forms.Form):
                 RequestContext(request, {'userInfoForm': userInfoForm,
                     'orderList': self.getOrderList(request),
                     'userCheckList': StaffCheck.objects.all(), 'is_sysAdmin': True}))
+        querySet = StaffCheck.objects.filter(staff__username__exact=request.session['username'])
+        if querySet.count() > 0:
+            return render_to_response('FiProcess/index.html',
+                RequestContext(request, {'userInfoForm': userInfoForm, 'unCheckStaff': True}))
         return render_to_response('FiProcess/index.html',
             RequestContext(request, {'userInfoForm': userInfoForm,
                 'orderList': self.getOrderList(request)}))
