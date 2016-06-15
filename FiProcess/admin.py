@@ -7,7 +7,7 @@ class DepartmentAdmin(admin.ModelAdmin):
 
 
 class SchoolMasterAdmin(admin.ModelAdmin):
-    list_display = ('staff', 'duty')
+    list_display = ('staff', 'duty', 'dutyDiscript')
 
 # Register your models here.
 admin.site.register(Department, DepartmentAdmin)

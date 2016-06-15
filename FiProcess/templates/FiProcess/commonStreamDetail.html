@@ -26,6 +26,12 @@
             {% endif %}
         {% endfor %}
     {% endif %}
+    {% if signErrorMsg %}
+        <div class="alert alert-danger">  
+            <button type="button" class="close" data-dismiss="alert">×</button>  
+            <h4>{{signErrorMsg}}</h4>
+        </div> 
+    {% endif %}
     <div class="well">  
         {% if warningMsg %}
         <div class="alert alert-info">
@@ -37,8 +43,14 @@
         {% endif %}
         <form class="form" action="" method="post">  
             {% csrf_token %} 
-            <input name="createStream" type="submit" class="btn btn-primary" value="生成报销单"></input>
-            <input name="returnStream" type="submit" class="btn btn-primary" value="修改"></input>
+            {% ifequal form.currentStage.value "create" %}
+            <input name="createStream" type="submit" class="btn btn-primary" {% if signErrorMsg %}disabled=True{%endif%} value="生成报销单"></input>
+            <input name="returnStream" type="submit" class="btn btn-primary" value="复制"></input>
+            {% else %}
+            <div class="alert alert-success">  
+                <h4>{{ form.currentStage.value }}</h4>
+            </div>  
+            {% endifequal %}
             <div class="row">
                 <div class="col-md-3">
                     {% bootstrap_field form.department %}
@@ -52,6 +64,58 @@
                 <div class="col-md-2">
                     {% bootstrap_field form.applyDate %}
                 </div>
+                <div class="col-md-3">
+                    {% bootstrap_field form.supportDept %}
+                </div>
+            </div>
+            {% if sign1 %}
+            <div class="form-group">
+                <label for="sign1">部门负责人审核:</label>
+                <select class="form-control" name="sign1">
+                    <option>{{ sign1.chief.name }}</option>
+                    <option>{{ sign1.secretary.name }}</option>
+                </select>
+            </div>
+            {% endif %}
+            <div class="row">
+            {% if sign12 %}
+                <div class="col-md-2">
+                    <label for="sign1">部门负责人审核:</label>
+                    <input type="text" class="form-control" name="sign1" value="{{ sign12.chief.name }}" readonly="readonly">
+                </div>
+                <div class="col-md-2">
+                    <label for="sign2">部门书记审核</label>
+                    <input type="text" class="form-control" name="sign2" value="{{ sign12.secretary.name }}" readonly="readonly">
+                </div>
+            {% endif %}
+            {% if sign11 %}
+                <div class="col-md-2">
+                    <label for="sign1">部门负责人审核:</label>
+                    <input type="text" class="form-control" name="sign1" value="{{ sign11.chief.name }}" readonly="readonly">
+                </div>
+            {% endif %}
+            {% if schoolSign1 %}
+                <div class="col-md-3">
+                    <label for="schoolSign1">分管校领导审核:</label>
+                    <select class="form-control" name="schoolSign1">
+                    {% for signer in schoolSign1 %}
+                        <option value="{{ signer.staff.username }}">{{ signer.staff.name }}({{ signer.dutyDiscript }})</option>
+                    {% endfor %}
+                    </select>
+                </div>
+            {% endif %}
+            {% if schoolSign2 %}
+                <div class="col-md-3">
+                    <label for="schoolSign2">分管财务校领导审核:</label>
+                    <input type="text" class="form-control" name="schoolSign2" value="{{ schoolSign2.staff.name }}" readonly="readonly">
+                </div>
+            {% endif %}
+            {% if schoolSign3 %}
+                <div class="col-md-2">
+                    <label for="schoolSign3">学校负责人审核:</label>
+                    <input type="text" class="form-control" name="schoolSign3" value="{{ schoolSign3.staff.name }}" readonly="readonly">
+                </div>
+            {% endif %}
             </div>
             <label class="control-label">开支类别及金额</label>
             <table class="table table-bordered">

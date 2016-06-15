@@ -66,6 +66,12 @@
                         <h4>{{message}}</h4>
                     </div>  
                 {% endif %}
+                {% if message.level == DEFAULT_MESSAGE_LEVELS.ERROR %}
+                    <div class="alert alert-danger">  
+                        <button type="button" class="close" data-dismiss="alert">×</button>  
+                        <h4>{{message}}</h4>
+                    </div> 
+                {% endif %}
             {% endfor %}
         {% endif %}
         <h2>财务报账审批系统</h2>

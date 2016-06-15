@@ -39,6 +39,7 @@ class SchoolMaster(models.Model):
     staff = models.ForeignKey(Staff, on_delete=models.CASCADE)
     # duty: 'school1' 'school2' 'school3'
     duty = models.CharField(max_length=16)
+    dutyDiscript = models.CharField(max_length=64, default="")
 
     def __str__(self):
         return self.staff.name
@@ -63,7 +64,8 @@ class SignRecord(models.Model):
     signer = models.ForeignKey(Staff, on_delete=models.CASCADE)
     signTime = models.DateTimeField()
     signed = models.BooleanField(default=False)
-    signImage = models.CharField(max_length=10000)
+    signImage = models.CharField(max_length=10000, default="")
+    stage = models.CharField(max_length=64)
 
 
 class SpendProof(models.Model):

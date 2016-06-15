@@ -4,8 +4,12 @@ from django.shortcuts import render_to_response
 from django.template.context import RequestContext
 from django.http import HttpResponseRedirect
 from django.core.urlresolvers import reverse
+from django.contrib import messages
 
-from ..models import FiStream, IcbcCardRecord, CompanyPayRecord, CashPay
+from datetime import datetime
+
+from ..models import FiStream, IcbcCardRecord, CompanyPayRecord
+from ..models import CashPay, SchoolMaster, SignRecord
 
 
 class CommonStreamDetail(forms.Form):
@@ -39,8 +43,16 @@ class CommonStreamDetail(forms.Form):
             attrs={'readonly': 'readonly'}
         ),
     )
+    supportDept = forms.CharField(
+        label=u'经费来源所属部门',
+        widget=forms.TextInput(
+            attrs={'readonly': 'readonly'}
+        ),
+    )
+    currentStage = forms.CharField()
 
     class TypeAmount:
+
         def __init__(self):
             self.type = ''
             self.amount = 0.0
@@ -116,6 +128,14 @@ class CommonStreamDetail(forms.Form):
             typeAmount[int(com.spendProof.spendType)] += com.spendProof.spendAmount
             comList.append(com)
         typeList = self.getTypeAmountList(typeAmount)
+        if stream.currentStage != 'create':
+            try:
+                sign = SignRecord.objects.get(stream__id__exact=stream.id,
+                                              stage__exact=stream.currentStage)
+            except:
+                messages.add_message(request, messages.ERROR, '审核状态异常')
+                return HttpResponseRedirect(reverse('index', args={''}))
+            stream.currentStage = u"报销单由 '" + sign.signer.name + u"' 审核中"
         form = CommonStreamDetail(
             initial={
                 'department': stream.applicante.department.name,
@@ -123,8 +143,159 @@ class CommonStreamDetail(forms.Form):
                 'phone': stream.applicante.phoneNumber,
                 'applyDate': stream.applyDate.strftime('%Y-%m-%d'),
                 'amount': amount,
+                'supportDept': stream.supportDept.name,
+                'currentStage': stream.currentStage,
             }
         )
+
+        if not stream.supportDept.chief:
+            return render_to_response('FiProcess/commonStreamDetail.html',
+                RequestContext(request, {'form': form, 'typeList': typeList, 'icbcList': icbcList,
+                    'ccbList': ccbList, 'comList': comList,
+                    'signErrorMsg': u'所属部门负责人不存在!'}))
+        if amount <= 3000 and stream.supportDept.secretary:
+            return render_to_response('FiProcess/commonStreamDetail.html',
+                RequestContext(request, {'form': form, 'typeList': typeList, 'icbcList': icbcList,
+                    'ccbList': ccbList, 'comList': comList,
+                    'sign1': stream.supportDept}))
+        if amount <= 5000:
+            if stream.supportDept.secretary:
+                return render_to_response('FiProcess/commonStreamDetail.html',
+                    RequestContext(request, {'form': form, 'typeList': typeList, 'icbcList': icbcList,
+                        'ccbList': ccbList, 'comList': comList,
+                        'sign12': stream.supportDept}))
+            else:
+                return render_to_response('FiProcess/commonStreamDetail.html',
+                    RequestContext(request, {'form': form, 'typeList': typeList, 'icbcList': icbcList,
+                        'ccbList': ccbList, 'comList': comList,
+                        'sign11': stream.supportDept}))
+        if amount <= 10000:
+            if stream.supportDept.secretary:
+                return render_to_response('FiProcess/commonStreamDetail.html',
+                    RequestContext(request, {'form': form, 'typeList': typeList, 'icbcList': icbcList,
+                        'ccbList': ccbList, 'comList': comList,
+                        'sign12': stream.supportDept,
+                        'schoolSign1': SchoolMaster.objects.filter(duty__exact='school1')}))
+            else:
+                return render_to_response('FiProcess/commonStreamDetail.html',
+                    RequestContext(request, {'form': form, 'typeList': typeList, 'icbcList': icbcList,
+                        'ccbList': ccbList, 'comList': comList,
+                        'sign11': stream.supportDept,
+                        'schoolSign1': SchoolMaster.objects.filter(duty__exact='school1')}))
+        if amount <= 200000:
+            if stream.supportDept.secretary:
+                return render_to_response('FiProcess/commonStreamDetail.html',
+                    RequestContext(request, {'form': form, 'typeList': typeList, 'icbcList': icbcList,
+                        'ccbList': ccbList, 'comList': comList,
+                        'sign12': stream.supportDept,
+                        'schoolSign1': SchoolMaster.objects.filter(duty__exact='school1'),
+                        'schoolSign2': SchoolMaster.objects.get(duty__exact='school2')}))
+            else:
+                return render_to_response('FiProcess/commonStreamDetail.html',
+                    RequestContext(request, {'form': form, 'typeList': typeList, 'icbcList': icbcList,
+                        'ccbList': ccbList, 'comList': comList,
+                        'sign11': stream.supportDept,
+                        'schoolSign1': SchoolMaster.objects.filter(duty__exact='school1'),
+                        'schoolSign2': SchoolMaster.objects.get(duty__exact='school2')}))
+        # more than 20k
+        if stream.supportDept.secretary:
+            return render_to_response('FiProcess/commonStreamDetail.html',
+                RequestContext(request, {'form': form, 'typeList': typeList, 'icbcList': icbcList,
+                    'ccbList': ccbList, 'comList': comList,
+                    'sign12': stream.supportDept,
+                    'schoolSign1': SchoolMaster.objects.filter(duty__exact='school1'),
+                    'schoolSign2': SchoolMaster.objects.get(duty__exact='school2'),
+                    'schoolSign3': SchoolMaster.objects.get(duty__exact='school3')}))
         return render_to_response('FiProcess/commonStreamDetail.html',
             RequestContext(request, {'form': form, 'typeList': typeList, 'icbcList': icbcList,
-                'ccbList': ccbList, 'comList': comList}))
+                'ccbList': ccbList, 'comList': comList,
+                'sign11': stream.supportDept,
+                'schoolSign1': SchoolMaster.objects.filter(duty__exact='school1'),
+                'schoolSign2': SchoolMaster.objects.get(duty__exact='school2'),
+                'schoolSign3': SchoolMaster.objects.get(duty__exact='school3')}))
+
+    def onGetPost(self, request):
+        if 'returnStream' in request.POST:
+            return HttpResponseRedirect(reverse('index', args={'newstream'}))
+        if 'createStream' in request.POST:
+            if 'orderId' not in request.session:
+                messages.add_message(request, messages.ERROR, '提交报销单失败')
+                return HttpResponseRedirect(reverse('index', args={''}))
+            orderId = request.session['orderId']
+            del request.session['orderId']
+            try:
+                stream = FiStream.objects.get(id=orderId)
+            except:
+                messages.add_message(request, messages.ERROR, '查找报销单失败')
+                return HttpResponseRedirect(reverse('index', args={''}))
+            sign1 = SignRecord()
+            sign1.stream = stream
+            if 'sign1' in request.POST:
+                signer = request.POST['sign1']
+            else:
+                messages.add_message(request, messages.ERROR, '提交报销单失败, 未指定部门负责人')
+                return HttpResponseRedirect(reverse('index', args={''}))
+            if stream.supportDept.chief and stream.supportDept.chief.name == signer:
+                sign1.signer = stream.supportDept.chief
+            elif stream.supportDept.secretary and stream.supportDept.secretary.name == signer:
+                sign1.signer = stream.supportDept.secretary
+            else:
+                messages.add_message(request, messages.ERROR, '提交报销单失败, 查找部门负责人失败')
+                return HttpResponseRedirect(reverse('index', args={''}))
+            sign1.signTime = datetime.now()
+            sign1.stage = 'department1'
+            sign1.save()
+            stream.currentStage = 'department1'
+            stream.save()
+            if 'sign2' in request.POST:
+                sign2 = SignRecord()
+                sign2.stream = stream
+                signer = request.POST['sign2']
+                if stream.supportDept.secretary and stream.supportDept.secretary.name == signer:
+                    sign2.signer = stream.supportDept.secretary
+                else:
+                    messages.add_message(request, messages.ERROR, '提交报销单失败, 查找部门书记失败')
+                    return HttpResponseRedirect(reverse('index', args={''}))
+                sign2.signTime = datetime.now()
+                sign2.stage = 'department2'
+                sign2.save()
+            if 'schoolSign1' in request.POST:
+                schoolSign1 = SignRecord()
+                schoolSign1.stream = stream
+                signer = request.POST['schoolSign1']
+                try:
+                    schoolSign1.signer = SchoolMaster.objects.get(staff__username=signer).staff
+                except Exception, e:
+                    print e
+                    messages.add_message(request, messages.ERROR, '提交报销单失败, 查找分管校长信息失败')
+                    return HttpResponseRedirect(reverse('index', args={''}))
+                schoolSign1.signTime = datetime.now()
+                schoolSign1.stage = 'school1'
+                schoolSign1.save()
+            if 'schoolSign2' in request.POST:
+                schoolSign2 = SignRecord()
+                schoolSign2.stream = stream
+                signer = request.POST['schoolSign2']
+                try:
+                    schoolSign2.signer = SchoolMaster.objects.get(staff__name__exact=signer).staff
+                except:
+                    messages.add_message(request, messages.ERROR, '提交报销单失败, 查找主管财务校长信息失败')
+                    return HttpResponseRedirect(reverse('index', args={''}))
+                schoolSign2.signTime = datetime.now()
+                schoolSign2.stage = 'school2'
+                schoolSign2.save()
+            if 'schoolSign3' in request.POST:
+                schoolSign3 = SignRecord()
+                schoolSign3.stream = stream
+                signer = request.POST['schoolSign3']
+                try:
+                    schoolSign3.signer = SchoolMaster.objects.get(staff__name__exact=signer).staff
+                except:
+                    messages.add_message(request, messages.ERROR, '提交报销单失败, 查找校长信息失败')
+                    return HttpResponseRedirect(reverse('index', args={''}))
+                schoolSign3.signTime = datetime.now()
+                schoolSign3.stage = 'school3'
+                schoolSign3.save()
+            messages.add_message(request, messages.SUCCESS, '提交报销单成功')
+            return HttpResponseRedirect(reverse('index', args={''}))
+        return HttpResponseRedirect(reverse('error'))

@@ -117,9 +117,7 @@ class CommonStreamForm(ModelForm):
             except:
                 errorMsg.append(u'请正确填写第' + str(i) + u'条公务卡刷卡日期')
             try:
-                print icbc.amount
                 amount = float(icbc.amount)
-                print 'float is ' + str(amount)
             except:
                 errorMsg.append(u'请正确填写第' + str(i) + u'条公务卡刷卡金额')
             try:
@@ -260,6 +258,7 @@ class CommonStreamForm(ModelForm):
 
     def modifyForm(self, request):
         fiStreamId = request.session['orderId']
+        del request.session['orderId']
         try:
             fiStream = FiStream.objects.get(id=fiStreamId)
         except:

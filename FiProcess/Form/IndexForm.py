@@ -177,6 +177,8 @@ class IndexForm(forms.Form):
         return orderList
 
     def get(self, request):
+        if 'orderId' in request.session:
+            del request.session['orderId']
         if 'username' not in request.session:
             messages.add_message(request, messages.ERROR, '登录失败!')
             return HttpResponseRedirect(reverse('login'))
@@ -245,8 +247,5 @@ class IndexForm(forms.Form):
         return detail.renderPage(request)
 
     def streamDetailPost(self, request):
-        if 'returnStream' in request.POST:
-            return HttpResponseRedirect(reverse('index', args={'newstream'}))
-        if 'createStream' in request.POST:
-            return 
-        return HttpResponseRedirect(reverse('error'))
+        detail = CommonStreamDetail(request.POST)
+        return detail.onGetPost(request)
