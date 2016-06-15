@@ -252,12 +252,12 @@ class IndexForm(forms.Form):
         return signList
 
     def get(self, request):
-        userInfoForm = self.getUserInfoForm(request)
         if 'orderId' in request.session:
             del request.session['orderId']
         if 'username' not in request.session:
             messages.add_message(request, messages.ERROR, '登录失败!')
             return HttpResponseRedirect(reverse('login'))
+        userInfoForm = self.getUserInfoForm(request)
         return self.render(request, userInfoForm)
 
     def getStaffFromRequest(self, request):

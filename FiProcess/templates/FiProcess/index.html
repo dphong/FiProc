@@ -180,7 +180,7 @@
                 <button type="submit" name="newFiStream" class="btn btn-success">
                     <span class="glyphicon glyphicon-plus-sign" aria-hidden="true"></span> 新增报销单</button>
                 {% if orderList %}
-                <table class="table table-bordered table-hover" id="tab_order">
+                <table class="table table-bordered table-hover table-striped" id="tab_order">
                     <thead>
                         <tr>
                             <th class="text-center col-md-1">#</th>
@@ -239,7 +239,7 @@
             {% if signList %}
             <form class="signList" method="post">
                 {% csrf_token %}                  
-                <table class="table table-bordered table-hover" id="tab_sign">
+                <table class="table table-bordered table-hover table-striped" id="tab_sign">
                     <thead>
                         <tr>
                             <th class="text-center col-md-1">#</th>
