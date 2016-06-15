@@ -8,7 +8,7 @@ from django.contrib import messages, auth
 from django.contrib.auth.hashers import check_password, make_password
 
 
-from ..models import Staff, StaffCheck, FiStream
+from ..models import Staff, StaffCheck, FiStream, SignRecord
 from CommonStreamForm import CommonStreamForm
 from CommonStreamDetail import CommonStreamDetail
 
@@ -54,6 +54,7 @@ class UserInfoForm(forms.Form):
 
 
 class IndexForm(forms.Form):
+
     def logout(self, request, message='注销成功！'):
         if request.user.is_authenticated():
             auth.logout(request)
@@ -102,7 +103,6 @@ class IndexForm(forms.Form):
             return render_to_response('FiProcess/index.html',
                 RequestContext(request, {'userInfoForm': userInfoForm, 'saveFailedMsg': str(e)})
             )
-        print 'new password is ' + newPsw
         staff.password = make_password(newPsw)
         staff.save()
         return render_to_response('FiProcess/index.html',
@@ -124,6 +124,26 @@ class IndexForm(forms.Form):
                 'userCheckList': StaffCheck.objects.all(), 'is_sysAdmin': True, 'saveSuccess': True})
         )
 
+    def streamStageChange(self, stream):
+        querySet = SignRecord.objects.filter(stream__id=stream.id)
+        if len(querySet) == 0:
+            return 'create'
+        if stream.currentStage == 'finish' or stream.currentStage == 'refuesd':
+            return stream.currentStage
+        stageDict = {'create': 0, 'project': 1, 'department1': 2, 'department2': 3,
+                     'projectDepartment': 4, 'school1': 5, 'school2': 6, 'school3': 7,
+                     'financial': 8, 'finish': 9}
+        minUnsignedStage = ""
+        for item in querySet:
+            if item.signed and (stageDict[item.stage] > stageDict[stream.currentStage]):
+                raise Exception(u"审批状态异常")
+            if not item.signed and (stageDict[item.stage] > stageDict[stream.currentStage]):
+                if len(minUnsignedStage) == 0 or stageDict[item.stage] < stageDict[minUnsignedStage]:
+                    minUnsignedStage = item.stage
+        if len(minUnsignedStage) == 0:
+            minUnsignedStage = 'finish'
+        return minUnsignedStage
+
     def post(self, request):
         if "saveUserInfo" in request.POST:
             return self.saveUserInfoForm(request)
@@ -135,17 +155,45 @@ class IndexForm(forms.Form):
             return HttpResponseRedirect(reverse('index', args={'newstream'}))
         username = request.session['username']
         querySet = FiStream.objects.filter(applicante__username=username)
-        i = 1
         for item in querySet:
-            if ("order" + str(i)) in request.POST:
+            if ("order" + str(item.id)) in request.POST:
                 request.session['orderId'] = item.id
                 return HttpResponseRedirect(reverse('index', args={'streamDetail'}))
-            if ("delOrder" + str(i)) in request.POST:
+            if ("delOrder" + str(item.id)) in request.POST:
                 item.delete()
+                if 'orderId' in request.session:
+                    del request.session['orderId']
                 messages.add_message(request, messages.SUCCESS, item.projectName + u'报销单删除成功')
                 return HttpResponseRedirect(reverse('index', args={''}))
-            i = i + 1
+        querySet = SignRecord.objects.filter(signer__username__exact=username)
+        for item in querySet:
+            if ("sign" + str(item.id)) in request.POST:
+                request.session['signId'] = item.id
+                return HttpResponseRedirect(reverse('index', args={'streamDetail'}))
+            if ("refuseSign" + str(item.id)) in request.POST:
+                item.signed = True
+                item.refused = True
+                item.discript = request.POST['refuseSignReason']
+                item.save()
+                item.stream.currentStage = 'refused'
+                item.stream.save()
+                return HttpResponseRedirect(reverse('index', args={''}))
+            if ("signOk" + str(item.id)) in request.POST:
+                item.signed = True
+                item.discript = request.POST['signOkDiscript']
+                item.save()
+                try:
+                    item.stream.currentStage = self.streamStageChange(item.stream)
+                    item.stream.save()
+                except Exception, e:
+                    messages.add_message(request, messages.SUCCESS, e)
+                    return HttpResponseRedirect(reverse('index', args={''}))
+                messages.add_message(request, messages.SUCCESS, u'报销单审核成功')
+                return HttpResponseRedirect(reverse('index', args={''}))
         return self.logout(request)
+
+    def sortOrder(self, stream):
+        return stream.applyDate
 
     def getOrderList(self, request):
         username = request.session['username']
@@ -173,8 +221,18 @@ class IndexForm(forms.Form):
                 item.currentStage = u'财务处审核'
             elif item.currentStage == 'finish':
                 item.currentStage = u'报销完成'
+            elif item.currentStage == 'refused':
+                item.currentStage = u'拒绝审批'
             orderList.append(item)
-        return orderList
+        return sorted(orderList, key=self.sortOrder, reverse=True)
+
+    def getSignList(self, request):
+        signQuery = SignRecord.objects.filter(signer__username__exact=request.session['username'])
+        signList = []
+        for item in signQuery:
+            if item.stream.currentStage == item.stage and not item.signed:
+                signList.append(item)
+        return signList
 
     def get(self, request):
         if 'orderId' in request.session:
@@ -192,6 +250,11 @@ class IndexForm(forms.Form):
         if querySet.count() > 0:
             return render_to_response('FiProcess/index.html',
                 RequestContext(request, {'userInfoForm': userInfoForm, 'unCheckStaff': True}))
+        signList = self.getSignList(request)
+        if len(signList) > 0:
+            return render_to_response('FiProcess/index.html',
+                RequestContext(request, {'userInfoForm': userInfoForm,
+                    'orderList': self.getOrderList(request), 'signList': signList}))
         return render_to_response('FiProcess/index.html',
             RequestContext(request, {'userInfoForm': userInfoForm,
                 'orderList': self.getOrderList(request)}))

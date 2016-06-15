@@ -199,6 +199,7 @@ class CommonStreamForm(ModelForm):
             messages.add_message(request, messages.INFO, msg)
             request.session['orderId'] = stream.id
             return HttpResponseRedirect(reverse('index', args={'streamDetail'}))
+        request.session['orderId'] = stream.id
         return HttpResponseRedirect(reverse('index', args={'streamDetail'}))
 
     def saveIcbcRecord(self, stream, icbc, request, indexForm):

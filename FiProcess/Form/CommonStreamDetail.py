@@ -50,6 +50,12 @@ class CommonStreamDetail(forms.Form):
         ),
     )
     currentStage = forms.CharField()
+    discript = forms.CharField(
+        label=u'经费使用目的',
+        widget=forms.TextInput(
+            attrs={'readonly': 'readonly'}
+        ),
+    )
 
     class TypeAmount:
 
@@ -100,14 +106,26 @@ class CommonStreamDetail(forms.Form):
         return result
 
     def renderPage(self, request):
-        orderId = request.session['orderId']
-        try:
-            stream = FiStream.objects.get(id=orderId)
-        except:
-            HttpResponseRedirect(reverse('error'))
-        icbcQuery = IcbcCardRecord.objects.filter(spendProof__fiStream__id=orderId)
-        ccbQuery = CashPay.objects.filter(spendProof__fiStream__id=orderId)
-        comQuery = CompanyPayRecord.objects.filter(spendProof__fiStream__id=orderId)
+        if 'signId' in request.session:
+            try:
+                sign = SignRecord.objects.get(id=request.session['signId'])
+                del request.session['signId']
+                stream = sign.stream
+            except:
+                messages.add_message(request, messages.ERROR, '审核记录异常')
+                return HttpResponseRedirect(reverse('index', args={''}))
+        elif 'orderId' in request.session:
+            orderId = request.session['orderId']
+            try:
+                stream = FiStream.objects.get(id=orderId)
+            except:
+                HttpResponseRedirect(reverse('error'))
+        else:
+            messages.add_message(request, messages.ERROR, '操作异常')
+            return HttpResponseRedirect(reverse('index', args={''}))
+        icbcQuery = IcbcCardRecord.objects.filter(spendProof__fiStream__id=stream.id)
+        ccbQuery = CashPay.objects.filter(spendProof__fiStream__id=stream.id)
+        comQuery = CompanyPayRecord.objects.filter(spendProof__fiStream__id=stream.id)
         amount = 0
         typeAmount = [0 for n in range(15)]
         icbcList = []
@@ -128,7 +146,17 @@ class CommonStreamDetail(forms.Form):
             typeAmount[int(com.spendProof.spendType)] += com.spendProof.spendAmount
             comList.append(com)
         typeList = self.getTypeAmountList(typeAmount)
-        if stream.currentStage != 'create':
+        refuseMsg = ""
+        if stream.currentStage == 'refused':
+            refuseMsg = u"本报销单被拒绝审批"
+            signList = SignRecord.objects.filter(stream__id=stream.id)
+            for item in signList:
+                if item.refused:
+                    refuseMsg += u"，拒绝者：" + item.signer.name + u"，拒绝原因：" + item.discript
+            stream.currentStage = refuseMsg
+        elif stream.currentStage == 'finish':
+            stream.currentStage = u'报销审批流程结束'
+        elif stream.currentStage != 'create':
             try:
                 sign = SignRecord.objects.get(stream__id__exact=stream.id,
                                               stage__exact=stream.currentStage)
@@ -142,9 +170,10 @@ class CommonStreamDetail(forms.Form):
                 'name': stream.applicante.name,
                 'phone': stream.applicante.phoneNumber,
                 'applyDate': stream.applyDate.strftime('%Y-%m-%d'),
-                'amount': amount,
+                'amount': str(amount),
                 'supportDept': stream.supportDept.name,
                 'currentStage': stream.currentStage,
+                'discript': stream.streamDiscript,
             }
         )
 
@@ -152,34 +181,40 @@ class CommonStreamDetail(forms.Form):
             return render_to_response('FiProcess/commonStreamDetail.html',
                 RequestContext(request, {'form': form, 'typeList': typeList, 'icbcList': icbcList,
                     'ccbList': ccbList, 'comList': comList,
+                    'signList': SignRecord.objects.filter(stream__id=stream.id),
                     'signErrorMsg': u'所属部门负责人不存在!'}))
         if amount <= 3000 and stream.supportDept.secretary:
             return render_to_response('FiProcess/commonStreamDetail.html',
                 RequestContext(request, {'form': form, 'typeList': typeList, 'icbcList': icbcList,
                     'ccbList': ccbList, 'comList': comList,
+                    'signList': SignRecord.objects.filter(stream__id=stream.id),
                     'sign1': stream.supportDept}))
         if amount <= 5000:
             if stream.supportDept.secretary:
                 return render_to_response('FiProcess/commonStreamDetail.html',
                     RequestContext(request, {'form': form, 'typeList': typeList, 'icbcList': icbcList,
                         'ccbList': ccbList, 'comList': comList,
+                        'signList': SignRecord.objects.filter(stream__id=stream.id),
                         'sign12': stream.supportDept}))
             else:
                 return render_to_response('FiProcess/commonStreamDetail.html',
                     RequestContext(request, {'form': form, 'typeList': typeList, 'icbcList': icbcList,
                         'ccbList': ccbList, 'comList': comList,
+                        'signList': SignRecord.objects.filter(stream__id=stream.id),
                         'sign11': stream.supportDept}))
         if amount <= 10000:
             if stream.supportDept.secretary:
                 return render_to_response('FiProcess/commonStreamDetail.html',
                     RequestContext(request, {'form': form, 'typeList': typeList, 'icbcList': icbcList,
                         'ccbList': ccbList, 'comList': comList,
+                        'signList': SignRecord.objects.filter(stream__id=stream.id),
                         'sign12': stream.supportDept,
                         'schoolSign1': SchoolMaster.objects.filter(duty__exact='school1')}))
             else:
                 return render_to_response('FiProcess/commonStreamDetail.html',
                     RequestContext(request, {'form': form, 'typeList': typeList, 'icbcList': icbcList,
                         'ccbList': ccbList, 'comList': comList,
+                        'signList': SignRecord.objects.filter(stream__id=stream.id),
                         'sign11': stream.supportDept,
                         'schoolSign1': SchoolMaster.objects.filter(duty__exact='school1')}))
         if amount <= 200000:
@@ -187,6 +222,7 @@ class CommonStreamDetail(forms.Form):
                 return render_to_response('FiProcess/commonStreamDetail.html',
                     RequestContext(request, {'form': form, 'typeList': typeList, 'icbcList': icbcList,
                         'ccbList': ccbList, 'comList': comList,
+                        'signList': SignRecord.objects.filter(stream__id=stream.id),
                         'sign12': stream.supportDept,
                         'schoolSign1': SchoolMaster.objects.filter(duty__exact='school1'),
                         'schoolSign2': SchoolMaster.objects.get(duty__exact='school2')}))
@@ -194,6 +230,7 @@ class CommonStreamDetail(forms.Form):
                 return render_to_response('FiProcess/commonStreamDetail.html',
                     RequestContext(request, {'form': form, 'typeList': typeList, 'icbcList': icbcList,
                         'ccbList': ccbList, 'comList': comList,
+                        'signList': SignRecord.objects.filter(stream__id=stream.id),
                         'sign11': stream.supportDept,
                         'schoolSign1': SchoolMaster.objects.filter(duty__exact='school1'),
                         'schoolSign2': SchoolMaster.objects.get(duty__exact='school2')}))
@@ -202,6 +239,7 @@ class CommonStreamDetail(forms.Form):
             return render_to_response('FiProcess/commonStreamDetail.html',
                 RequestContext(request, {'form': form, 'typeList': typeList, 'icbcList': icbcList,
                     'ccbList': ccbList, 'comList': comList,
+                    'signList': SignRecord.objects.filter(stream__id=stream.id),
                     'sign12': stream.supportDept,
                     'schoolSign1': SchoolMaster.objects.filter(duty__exact='school1'),
                     'schoolSign2': SchoolMaster.objects.get(duty__exact='school2'),
@@ -209,6 +247,7 @@ class CommonStreamDetail(forms.Form):
         return render_to_response('FiProcess/commonStreamDetail.html',
             RequestContext(request, {'form': form, 'typeList': typeList, 'icbcList': icbcList,
                 'ccbList': ccbList, 'comList': comList,
+                'signList': SignRecord.objects.filter(stream__id=stream.id),
                 'sign11': stream.supportDept,
                 'schoolSign1': SchoolMaster.objects.filter(duty__exact='school1'),
                 'schoolSign2': SchoolMaster.objects.get(duty__exact='school2'),
@@ -266,7 +305,6 @@ class CommonStreamDetail(forms.Form):
                 try:
                     schoolSign1.signer = SchoolMaster.objects.get(staff__username=signer).staff
                 except Exception, e:
-                    print e
                     messages.add_message(request, messages.ERROR, '提交报销单失败, 查找分管校长信息失败')
                     return HttpResponseRedirect(reverse('index', args={''}))
                 schoolSign1.signTime = datetime.now()

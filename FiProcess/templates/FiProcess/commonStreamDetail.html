@@ -44,7 +44,7 @@
         <form class="form" action="" method="post">  
             {% csrf_token %} 
             {% ifequal form.currentStage.value "create" %}
-            <input name="createStream" type="submit" class="btn btn-primary" {% if signErrorMsg %}disabled=True{%endif%} value="生成报销单"></input>
+            <input name="createStream" type="submit" class="btn btn-primary" {% ifequal form.amount.value "0" %}disabled=True{% endifequal %}{% if signErrorMsg %}disabled=True{% endif %} value="生成报销单"></input>
             <input name="returnStream" type="submit" class="btn btn-primary" value="复制"></input>
             {% else %}
             <div class="alert alert-success">  
@@ -117,6 +117,15 @@
                 </div>
             {% endif %}
             </div>
+            {% if signList %}
+            <label class="form-contorl">审核状态</label>
+            {% for item in signList %}
+            {% if item.signed %}
+            <input type="text" class="form-control" readonly="readonly" name="" value="审核人：{{ item.signer.name }}；审核意见：{{ item.discript }}">
+            {% endif %}
+            {% endfor %}
+            {% endif %}
+            {% bootstrap_field form.discript %}
             <label class="control-label">开支类别及金额</label>
             <table class="table table-bordered">
                 <thead> <tr>

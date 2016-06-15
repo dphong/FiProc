@@ -51,7 +51,7 @@ class FiStream(models.Model):
     supportDept = models.ForeignKey(Department, on_delete=models.CASCADE)
     projectLeader = models.ForeignKey(Staff, on_delete=models.CASCADE, related_name="projectLeader")
     # stage: 'create' 'project' 'department1' 'department2' 'projectDepartment' 'school1' 'school2' 'school3'
-    #        'financial' 'finish'
+    #        'financial' 'finish' 'refused'
     currentStage = models.CharField(max_length=64)
     projectName = models.CharField(max_length=256)
     streamDiscript = models.CharField(max_length=4096)
@@ -64,8 +64,10 @@ class SignRecord(models.Model):
     signer = models.ForeignKey(Staff, on_delete=models.CASCADE)
     signTime = models.DateTimeField()
     signed = models.BooleanField(default=False)
+    refused = models.BooleanField(default=False)
     signImage = models.CharField(max_length=10000, default="")
     stage = models.CharField(max_length=64)
+    discript = models.CharField(max_length=1024, default="")
 
 
 class SpendProof(models.Model):

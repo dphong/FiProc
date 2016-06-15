@@ -47,6 +47,16 @@
             document.getElementById("delOrderOk").name = button.name
         })
         {% endif %}
+        {% if signList %}
+        $('#refuseSign').on('show.bs.modal', function(e){
+            var button = e.relatedTarget;
+            document.getElementById("refuseSignOk").name = button.name
+        })
+        $('#signOk').on('show.bs.modal', function(e){
+            var button = e.relatedTarget;
+            document.getElementById("signOkConfirm").name = button.name
+        })
+        {% endif %}
         setVisible('{{userInfoForm.currentTab}}')
         $('a[data-toggle="tab"]').on('shown.bs.tab', function (e) {
             var target = $(e.target).attr("href") // activated tab
@@ -81,7 +91,7 @@
             {% if not is_sysAdmin %}
             <li {% if userInfoForm.currentTab == 'changepsw' %}class="active"{% endif %}><a data-toggle="tab" href="changepsw">修改密码</a></li>
             {% endif %}
-            {% if signer %}
+            {% if signList %}
             <li {% if userInfoForm.currentTab == 'signList' %}class="active"{% endif %}><a data-toggle="tab" href="signList">待审批单据</a></li>
             {% endif %}
             {% if is_sysAdmin %}
@@ -192,7 +202,7 @@
                             <th class="text-center">目前状态</th>
                             <th class="text-center">类别</th>
                             <th class="text-center col-md-1">详细</th>
-                            <th class="text-center col-md-1">删除</th>
+                            <th class="text-center col-md-1">操作</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -205,10 +215,17 @@
                             <td class="text-center">{{ order.currentStage }}</td>
                             <td class="text-center"></td>
                             <td class="text-center">
-                                <input type="submit" class="btn btn-default" name="order{{ forloop.counter }}" value="查看">
+                                <input type="submit" class="btn btn-default" name="order{{ order.id }}" value="查看">
                             </td>
                             <td class="text-center">
-                                <a href="#delOrder" data-toggle="modal" class="btn btn-default" name="delOrder{{ forloop.counter }}" role="button">删除</a>
+                            {% if order.currentStage == "未提交" %}
+                                <a href="#delOrder" data-toggle="modal" class="btn btn-default"
+                                    name="delOrder{{ order.id }}" role="button">删除</a>
+                            {% endif %}
+                            {% if order.currentStage == "报销完成" %}
+                                <button type="submit" class="btn btn-primary"
+                                    name="fiProc{{ order.id }}" role="button">报销</button>
+                            {% endif %}
                             </td>
                         </tr>
                     {% endfor %}
@@ -231,10 +248,69 @@
                 {% endif %}
             </form>
             {% endif %}
-            {% if signer %}
+            {% if signList %}
             <form class="signList" method="post">
-                {% csrf_token %}  
-                审批
+                {% csrf_token %}                  
+                <table class="table table-bordered table-hover" id="tab_sign">
+                    <thead>
+                        <tr>
+                            <th class="text-center col-md-1">#</th>
+                            <th class="text-center">经费所属部门</th>
+                            <th class="text-center col-md-3">项目名称</th>
+                            <th class="text-center">类别</th>
+                            <th class="text-center col-md-1">详细</th>
+                            <th class="text-center col-md-1">通过</th>
+                            <th class="text-center col-md-1">拒绝</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                    {% for sign in signList %}
+                        <tr>
+                            <td class="text-center">{{ forloop.counter }}</td>
+                            <td class="text-center">{{ sign.stream.supportDept.name }}</td>
+                            <td class="text-center">{{ sign.stream.projectName }}</td>
+                            <td class="text-center"></td>
+                            <td class="text-center">
+                                <input type="submit" class="btn btn-default" name="sign{{ sign.id }}" value="查看">
+                            </td>
+                            <td class="text-center">
+                                <a href="#signOk" data-toggle="modal" class="btn btn-default" name="signOk{{ sign.id }}" role="button">通过</a>
+                            </td>
+                            <td class="text-center">
+                                <a href="#refuseSign" data-toggle="modal" class="btn btn-default" name="refuseSign{{ sign.id }}" role="button">拒绝</a>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+                <!-- Modal -->
+                <div class="modal fade" id="refuseSign" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+                    <div class="modal-dialog" role="document">
+                        <div class="modal-content well">
+                            <label for="refuseSignReason">请输入拒绝理由:</label>
+                            <input type="text" name="refuseSignReason" maxlength=1024 class="form-control" placeholder="拒绝理由">
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-default" data-dismiss="modal">取消</button>
+                                <button id="refuseSignOk" type="submit" class="btn btn-primary">确定</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!-- Modal -->
+                <div class="modal fade" id="signOk" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+                    <div class="modal-dialog" role="document">
+                        <div class="modal-content well">
+                            <label for="signOkPassword">请输入密码:</label>
+                            <input type="password" name="signOkPassword" maxlength="24" class="form-control" placeholder="请输入密码">
+                            <label for="signOkDiscript">请输入留言</label>
+                            <input type="text" name="signOkDiscript" type="submit" class="form-control" maxlength=1024>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-default" data-dismiss="modal">取消</button>
+                                <button id="signOkConfirm" type="submit" class="btn btn-primary">确定</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </form>
             {% endif %}
             {% if is_sysAdmin %}
