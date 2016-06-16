@@ -10,6 +10,15 @@
     <script type="text/javascript" src="{% static 'FiProcess/jquery-2.2.4.min.js' %}"></script>
     <script type="text/javascript" src="{% static 'FiProcess/bootstrap.min.js' %}"></script>
     <script type="text/javascript" src="{% static 'FiProcess/validator.min.js' %}"></script>
+    <script type="text/javascript">
+    $('.js-captcha-refresh').click(function(){
+        $form = $(this).parents('form');
+        $.getJSON($(this).data('url'), {}, function(json) {
+            // This should update your captcha image src and captcha hidden input
+        });
+        return false;
+    });
+    </script>
 </head>  
   
 <body>  
@@ -53,7 +62,7 @@
     {% endif %}
     <h1 align="center">财务报账审批系统</h1>  
     <div class="well">  
-        <form class="form" action="" method="post">  
+        <form class="form" action="." method="post">  
             {% csrf_token %}  
             <div class="form-group has-feedback">
                 <label for="inputName" class="control-label">用户名</label>
@@ -67,6 +76,12 @@
                     <input type="password" data-minlength="6" maxlength="64" class="form-control" id="inputPsw" 
                         name="password" required placeholder="请输入登录密码">
                     <div class="help-block with-errors"></div>
+                </div>
+                <div>
+                    {{ form.captcha }}
+                    <button name='captchaRefresh' class='js-captcha-refresh'>
+                        <span class="glyphicon glyphicon-repeat" aria-hidden="true"></span>
+                    </button>
                 </div>
             </div>
             <p class="form-actions">  

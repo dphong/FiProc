@@ -7,6 +7,8 @@ from django.contrib.auth.hashers import check_password
 from django.http import HttpResponseRedirect
 from django.core.urlresolvers import reverse
 
+from captcha.fields import CaptchaField
+
 from ..models import Staff
 
 
@@ -31,11 +33,16 @@ class LoginForm(forms.Form):
             }
         ),
     )
+    captcha = CaptchaField()
 
     def get(self, request):
-        return render_to_response('FiProcess/login.html', RequestContext(request))
+        form = LoginForm(request.GET)
+        return render_to_response('FiProcess/login.html', RequestContext(request, {'form': form}))
 
     def post(self, request):
+        if 'captchaRefresh' in request.POST:
+            form = LoginForm(request.POST)
+            return render_to_response('FiProcess/login.html', RequestContext(request, {'form': form}))
         if self.is_valid():
             username = request.POST.get('username', '')
             password = request.POST.get('password', '')
@@ -53,7 +60,7 @@ class LoginForm(forms.Form):
 
     def clean(self):
         if not self.is_valid():
-            raise forms.ValidationError(u"用户名和密码错误")
+            raise forms.ValidationError(u"登录错误")
         clean_data = super(LoginForm, self).clean()
         username = clean_data.get('username')
         password = clean_data.get('password')
