@@ -13,7 +13,7 @@ Including another URLconf
     1. Import the include() function: from django.conf.urls import url, include
     2. Add a URL to urlpatterns:  url(r'^blog/', include('blog.urls'))
 """
-from django.conf.urls import url
+from django.conf.urls import url, include
 from django.contrib import admin
 import FiProcess.views
 
@@ -23,4 +23,5 @@ urlpatterns = [
     url(r'register/', FiProcess.views.register, name='register'),
     url(r'^error/', FiProcess.views.error, name='error'),
     url(r'^index/(?P<target>[a-zA-Z]*)$', FiProcess.views.index, name='index'),
+    url(r'^captcha/', include('captcha.urls')),
 ]
