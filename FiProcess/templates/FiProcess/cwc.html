@@ -1,0 +1,49 @@
+<!DOCTYPE html>  
+{% load bootstrap3  %} 
+{% load staticfiles %} 
+<html lang="en">  
+<head>  
+    <meta charset="utf-8">  
+    <title>合肥师范学院劳务费报销</title>
+    <meta name="description" content="">  
+    <link rel="stylesheet" type="text/css" href="{% static 'FiProcess/bootstrap.min.css' %}" /> 
+    <script type="text/javascript" src="{% static 'FiProcess/jquery-2.2.4.min.js' %}"></script>
+    <script type="text/javascript" src="{% static 'FiProcess/bootstrap.min.js' %}"></script>
+    <style type="text/css">
+    </style>
+    <script type="text/javascript">
+    </script>
+</head>
+
+<body>
+    <div class="container" style="max-width:1000px">
+    <h2>财务报账审批系统</h2>
+    <form class="form" method="post">
+        {% csrf_token %}  
+        <button type="submit" name="return" class="btn btn-primary navbar-btn pull-right">返回</button>
+    </form>
+    <ul class="nav nav-tabs">
+    <li class="active"><a data-toggle="tab" href="myStream">我的报销单</a></li>
+    <li><a data-toggle="tab" href="allStream">全部报销单</a></li>
+    <form role="form" class="myStream" action="" method="post" style="margin:20px 0px 20px 0px">
+        {% csrf_token %}
+        <table class="table table-bordered table-hover table-striped" id="tab_order">
+            <thead>
+                <tr>
+                    <th class="text-center col-md-1">#</th>
+                    <th class="text-center col-md-2">报销人</th>
+                    <th class="text-center">所属部门</th>
+                    <th class="text-center col-md-3">经费所属部门</th>
+                    <th class="text-center">类别</th>
+                    <th class="text-center col-md-1">详细</th>
+                    <th class="text-center col-md-1">操作</th>
+                </tr>
+            </thead>
+            <tbody>
+            </tbody>
+        </table>
+    </form>
+    </ul>
+    </div>
+</body>
+</html>

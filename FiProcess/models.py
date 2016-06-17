@@ -51,12 +51,14 @@ class FiStream(models.Model):
     supportDept = models.ForeignKey(Department, on_delete=models.CASCADE)
     projectLeader = models.ForeignKey(Staff, on_delete=models.CASCADE, related_name="projectLeader")
     # stage: 'create' 'project' 'department1' 'department2' 'projectDepartment' 'school1' 'school2' 'school3'
-    #        'financial' 'finish' 'refused'
+    #        'financial' 'finish' 'refused' 'cwcSubmit' 'cwcChecking' 'cwcpaid'
     currentStage = models.CharField(max_length=64)
     projectName = models.CharField(max_length=256)
     streamDiscript = models.CharField(max_length=4096)
     # type: 'common' 'travel' 'labor'
     streamType = models.CharField(max_length=16)
+    cwcSumbitDate = models.DateTimeField(null=True)
+    cwcDealer = models.ForeignKey(Staff, on_delete=models.CASCADE, related_name="cwcDealer", null=True)
 
 
 class SignRecord(models.Model):

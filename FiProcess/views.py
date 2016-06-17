@@ -4,6 +4,7 @@ from django.core.urlresolvers import reverse
 
 from Form.LoginForm import LoginForm
 from Form.IndexForm import IndexForm
+from Form.CwcForm import CwcForm
 from registerForm import RegisterForm
 
 
@@ -47,4 +48,12 @@ def index(request, target=''):
         return form.get(request)
     if request.method == 'POST':
         form = IndexForm(request.POST)
+        return form.post(request)
+
+
+def cwc(request):
+    form = CwcForm()
+    if request.method == 'GET':
+        return form.get(request)
+    if request.method == 'POST':
         return form.post(request)

@@ -6,6 +6,7 @@ from django.http import HttpResponseRedirect
 from django.template.context import RequestContext
 from django.contrib import messages, auth
 from django.contrib.auth.hashers import check_password, make_password
+from datetime import datetime
 
 
 from ..models import Staff, StaffCheck, FiStream, SignRecord
@@ -166,6 +167,8 @@ class IndexForm(forms.Form):
             return self.approveStaffCheck(request)
         elif "newFiStream" in request.POST:
             return HttpResponseRedirect(reverse('index', args={'newstream'}))
+        elif "cwc" in request.POST:
+            return HttpResponseRedirect(reverse('cwc'))
         username = request.session['username']
         querySet = FiStream.objects.filter(applicante__username=username)
         userInfoForm = self.getUserInfoForm(request)
@@ -180,6 +183,25 @@ class IndexForm(forms.Form):
                 messages.add_message(request, messages.SUCCESS, item.projectName + u'报销单删除成功')
                 userInfoForm.currentTab = 'order'
                 return self.render(request, userInfoForm)
+            if ("fiProc" + str(item.id)) in request.POST:
+                userInfoForm.currentTab = 'order'
+                try:
+                    if ('submitDate' not in request.POST) or ('submitHalfDay' not in request.POST):
+                        raise Exception('未填写预约报销日期')
+                    try:
+                        time = datetime.strptime(request.POST['submitDate'], '%Y-%m-%d')
+                    except:
+                        raise Exception('日期格式错误，请在报销日期中填写"年-月-日"格式的日期')
+                    if request.POST['submitHalfDay'] == 'morning':
+                        item.cwcSumbitDate = datetime(time.year, time.month, time.day, 9, 0, 0)
+                    else:
+                        item.cwcSumbitDate = datetime(time.year, time.month, time.day, 14, 0, 0)
+                    item.save()
+                    messages.add_message(request, messages.SUCCESS, u'报销预约成功')
+                    return self.render(request, userInfoForm)
+                except Exception, e:
+                    messages.add_message(request, messages.ERROR, str(e))
+                    return self.render(request, userInfoForm)
         querySet = SignRecord.objects.filter(signer__username__exact=username)
         for item in querySet:
             if ("sign" + str(item.id)) in request.POST:
