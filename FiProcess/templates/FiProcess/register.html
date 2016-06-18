@@ -11,12 +11,18 @@
     <script type="text/javascript" src="{% static 'FiProcess/bootstrap.min.js' %}"></script>
     <script type="text/javascript" src="{% static 'FiProcess/validator.min.js' %}"></script>
     <script type="text/javascript">
-    $('.js-captcha-refresh').click(function(){
-        $form = $(this).parents('form');
-        $.getJSON($(this).data('url'), {}, function(json) {
-            // This should update your captcha image src and captcha hidden input
+    $(document).ready(function(){
+        $('button.js-captcha-refresh').click(function(){
+            var $form = $(this).parents('form');
+            var url = location.protocol + "//" + window.location.hostname + ":"
+                      + location.port + "/captcha/refresh/";
+            $.getJSON(url, {}, function(json) {
+                // This should update your captcha image src and captcha hidden input
+                $form.find('input[name="captcha_0"]').val(json.key);
+                $form.find('img.captcha').attr('src', json.image_url);
+            });
+            return false;
         });
-        return false;
     });
     </script>
 </head>  
@@ -88,6 +94,12 @@
             <label for="confirmPsw" class="contorl-label">确认密码</label>
             <input type="password" class="form-control" id="confirmPsw" required data-match="#inputPsw" data-match-error="两次输入不一致">
             <div class="help-block with-errors"></div>
+        </div>
+        <div>
+            {{ form.captcha }}
+            <button name='captchaRefresh' class='js-captcha-refresh'>
+                <span class="glyphicon glyphicon-repeat" aria-hidden="true"></span>
+            </button>
         </div>
         <div class="form-group">  
             <button type="submit" class="btn btn-primary">申请注册</button>

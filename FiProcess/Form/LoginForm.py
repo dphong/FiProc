@@ -40,9 +40,6 @@ class LoginForm(forms.Form):
         return render_to_response('FiProcess/login.html', RequestContext(request, {'form': form}))
 
     def post(self, request):
-        if 'captchaRefresh' in request.POST:
-            form = LoginForm(request.POST)
-            return render_to_response('FiProcess/login.html', RequestContext(request, {'form': form}))
         if self.is_valid():
             username = request.POST.get('username', '')
             password = request.POST.get('password', '')

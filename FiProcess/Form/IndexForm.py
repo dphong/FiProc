@@ -52,6 +52,7 @@ class UserInfoForm(forms.Form):
     ccbCard = forms.CharField(required=False)
     password = forms.CharField()
     currentTab = ""
+    isCwcStaff = False
 
 
 class IndexForm(forms.Form):
@@ -80,7 +81,6 @@ class IndexForm(forms.Form):
                 raise Exception("字段内容错误")
             staff = self.queryStaff(userInfoForm.cleaned_data['username'], userInfoForm.cleaned_data['password'])
         except Exception, e:
-            print userInfoForm.errors
             messages.add_message(request, messages.ERROR, '保存失败:' + str(e))
             return self.render(request, userInfoForm)
         staff.phoneNumber = userInfoForm.cleaned_data['phoneNumber']
@@ -89,6 +89,8 @@ class IndexForm(forms.Form):
         staff.save()
         userInfoForm.password = ''
         messages.add_message(request, messages.SUCCESS, '保存成功')
+        if staff.department.name == u'财务处':
+            userInfoForm.isCwcStaff = True
         return self.render(request, userInfoForm)
 
     def saveNewPassword(self, request):
@@ -300,6 +302,8 @@ class IndexForm(forms.Form):
                      'icbcCard': staff.icbcCard, 'ccbCard': staff.ccbCard, }
         )
         userInfoForm.currentTab = 'order'
+        if staff.department.name == u'财务处':
+            userInfoForm.isCwcStaff = True
         return userInfoForm
 
     # new process stream

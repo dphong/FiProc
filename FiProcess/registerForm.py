@@ -8,10 +8,14 @@ from django.contrib import messages
 from django.core.urlresolvers import reverse
 from django.contrib.auth.hashers import make_password
 
+from captcha.fields import CaptchaField
+
 from .models import Staff
 
 
 class RegisterForm(ModelForm):
+    captcha = CaptchaField()
+
     class Meta:
         model = Staff
         fields = ['username', 'name', 'workId', 'phoneNumber', 'department', 'icbcCard', 'ccbCard', 'password']
@@ -28,7 +32,6 @@ class RegisterForm(ModelForm):
         return render_to_response('FiProcess/register.html', RequestContext(request, {'form': form, 'register_success': True}))
 
     def post(self, request):
-        print request.POST
         inst = Staff()
         form = RegisterForm(request.POST, instance=inst)
         if 'captchaRefresh' in request.POST:
