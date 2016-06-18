@@ -5,7 +5,6 @@ from django.core.urlresolvers import reverse
 from django.http import HttpResponseRedirect
 from django.template.context import RequestContext
 from django.contrib import messages
-from django.contrib.auth.hashers import check_password, make_password
 
 
 class CwcForm(forms.Form):
@@ -14,12 +13,18 @@ class CwcForm(forms.Form):
 
     def get(self, request):
         if 'username' not in request.session:
+            messages.add_message(request, messages.ERROR, '登录状态异常!')
+            return HttpResponseRedirect(reverse('login'))
+        print request.GET.get('target')
+        print request.GET.get('page')
+        if 'username' not in request.session:
             return HttpResponseRedirect(reverse('login'))
         form = CwcForm(request.GET)
         return self.renderForm(request, form)
 
     def post(self, request):
         if 'username' not in request.session:
+            messages.add_message(request, messages.ERROR, '登录状态异常!')
             return HttpResponseRedirect(reverse('login'))
         if 'return' in request.POST:
             return HttpResponseRedirect(reverse('index', args={''}))

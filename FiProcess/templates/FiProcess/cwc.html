@@ -12,6 +12,27 @@
     <style type="text/css">
     </style>
     <script type="text/javascript">
+    $(document).ready(function(){
+        $('#myStream').click(function(){
+            $(this).tab('show')
+            var $form = $(this).parents('form');
+            var url = location.protocol + "//" + window.location.hostname + ":"
+                      + location.port + "/cwc/?target=myStream";
+            $.getJSON(url, {}, function(json) {
+                // This should update your captcha image src and captcha hidden input
+            });
+            return false;
+        });
+        $('#allStream').click(function(){
+            $(this).tab('show')
+            var $form = $(this).parents('form');
+            var url = location.protocol + "//" + window.location.hostname + ":"
+                      + location.port + "/cwc/?target=allStream&page=2";
+            $.getJSON(url, {}, function(json) {
+                // This should update your captcha image src and captcha hidden input
+            });
+        });
+    });
     </script>
 </head>
 
@@ -23,8 +44,8 @@
         <button type="submit" name="return" class="btn btn-primary navbar-btn pull-right">返回</button>
     </form>
     <ul class="nav nav-tabs">
-    <li class="active"><a data-toggle="tab" href="myStream">我的报销单</a></li>
-    <li><a data-toggle="tab" href="allStream">全部报销单</a></li>
+    <li id="myStream" class="active"><a data-toggle="tab" href="myStream">我的报销单</a></li>
+    <li id = "allStream"><a data-toggle="tab" href="allStream">全部报销单</a></li>
     <form role="form" class="myStream" action="" method="post" style="margin:20px 0px 20px 0px">
         {% csrf_token %}
         <table class="table table-bordered table-hover table-striped" id="tab_order">

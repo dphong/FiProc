@@ -24,5 +24,5 @@ urlpatterns = [
     url(r'^error/', FiProcess.views.error, name='error'),
     url(r'^index/(?P<target>[a-zA-Z]*)$', FiProcess.views.index, name='index'),
     url(r'^captcha/', include('captcha.urls')),
-    url(r'^cwc/', FiProcess.views.cwc, name='cwc'),
+    url(r'^cwc/$', FiProcess.views.cwc, name='cwc'),
 ]
