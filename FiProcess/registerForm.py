@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+from django import forms
 from django.shortcuts import render_to_response
 from django.forms import ModelForm
 from django.template.context import RequestContext
@@ -7,20 +8,18 @@ from django.contrib import messages
 from django.core.urlresolvers import reverse
 from django.contrib.auth.hashers import make_password
 
-from captcha.fields import CaptchaField
-
 from .models import Staff
 
 
 class RegisterForm(ModelForm):
-    captcha = CaptchaField()
-
     class Meta:
         model = Staff
         fields = ['username', 'name', 'workId', 'phoneNumber', 'department', 'icbcCard', 'ccbCard', 'password']
         labels = {
             'department': u'部门'
         }
+        icbcCard = forms.CharField(required=False)
+        ccbCard = forms.CharField(required=False)
 
     def get(self, request):
         form = RegisterForm(
@@ -52,4 +51,5 @@ class RegisterForm(ModelForm):
             messages.add_message(request, messages.INFO, inst.username)
             return HttpResponseRedirect(reverse('login'))
         else:
+            print form.errors
             return render_to_response('FiProcess/register.html', RequestContext(request, {'form': form, 'register_success': False}))

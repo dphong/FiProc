@@ -20,7 +20,7 @@ class Staff(models.Model):
     username = models.CharField(max_length=64)
     name = models.CharField(max_length=64)
     password = models.CharField(max_length=128)
-    workId = models.CharField(max_length=6)
+    workId = models.CharField(max_length=10)
     phoneNumber = models.CharField(max_length=13)
     department = models.ForeignKey(Department, on_delete=models.CASCADE)
     icbcCard = models.CharField(max_length=16, blank=True, default='')

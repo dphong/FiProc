@@ -48,14 +48,13 @@ class UserInfoForm(forms.Form):
         ),
     )
     phoneNumber = forms.CharField()
-    icbcCard = forms.CharField()
-    ccbCard = forms.CharField()
+    icbcCard = forms.CharField(required=False)
+    ccbCard = forms.CharField(required=False)
     password = forms.CharField()
     currentTab = ""
 
 
 class IndexForm(forms.Form):
-
     def logout(self, request, message='注销成功！'):
         if request.user.is_authenticated():
             auth.logout(request)
@@ -81,6 +80,7 @@ class IndexForm(forms.Form):
                 raise Exception("字段内容错误")
             staff = self.queryStaff(userInfoForm.cleaned_data['username'], userInfoForm.cleaned_data['password'])
         except Exception, e:
+            print userInfoForm.errors
             messages.add_message(request, messages.ERROR, '保存失败:' + str(e))
             return self.render(request, userInfoForm)
         staff.phoneNumber = userInfoForm.cleaned_data['phoneNumber']

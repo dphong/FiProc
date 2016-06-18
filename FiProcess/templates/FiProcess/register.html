@@ -39,7 +39,7 @@
         <div class="form-group has-feedback">
             <label for="inputName" class="control-label">用户名</label>
             <input type="text" pattern="^[A-z0-9]{6,}$" maxlength="24" class="form-control" id="inputName" 
-                name="username" required placeholder="请使用6-24位字母和数字组合"
+                name="username" required placeholder="请使用6-24位字母或数字组合"
                 value={{form.username.value}}>
             <span class="glyphicon form-control-feedback" aria-hidden="true"></span>
             <div class="help-block with-errors"></div>
@@ -60,7 +60,7 @@
         <div class="form-group has-feedback">
             <label for="inputPhoneNumber" class="control-label">联系电话</label>
             <input type="text" pattern="^[-0-9]{4,}$" class="form-control" id="inputPhoneNumber"
-                name="phoneNumber" required placeholder="请输入固化或手机号码"
+                name="phoneNumber" required placeholder="请输入固话或手机号码"
                 value={{form.phoneNumber.value}}>
             <span class="glyphicon form-control-feedback" aria-hidden="true"></span>
         </div>
