@@ -156,6 +156,12 @@ class CommonStreamDetail(forms.Form):
             stream.currentStage = refuseMsg
         elif stream.currentStage == 'finish':
             stream.currentStage = u'报销审批流程结束'
+        elif stream.currentStage == 'cwcSubmit':
+            stream.currentStage = u'报销单由财务处分配中'
+        elif stream.currentStage == 'cwcChecking':
+            stream.currentStage = u'报销单由财务处"' + stream.cwcDealer.name + u'"处理中'
+        elif stream.currentStage == 'cwcpaid':
+            stream.currentStage = u'报销单已由财务付款'
         elif stream.currentStage != 'create':
             try:
                 sign = SignRecord.objects.get(stream__id__exact=stream.id,
@@ -304,7 +310,7 @@ class CommonStreamDetail(forms.Form):
                 signer = request.POST['schoolSign1']
                 try:
                     schoolSign1.signer = SchoolMaster.objects.get(staff__username=signer).staff
-                except Exception, e:
+                except:
                     messages.add_message(request, messages.ERROR, '提交报销单失败, 查找分管校长信息失败')
                     return HttpResponseRedirect(reverse('index', args={''}))
                 schoolSign1.signTime = datetime.now()

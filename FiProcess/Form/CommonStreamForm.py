@@ -185,6 +185,7 @@ class CommonStreamForm(ModelForm):
         stream.applicante = staff
         stream.projectLeader = staff
         stream.currentStage = 'create'
+        stream.streamType = 'common'
         stream.save()
         for icbc in icbcList:
             self.saveIcbcRecord(stream, icbc, request, indexForm)

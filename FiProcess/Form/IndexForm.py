@@ -56,6 +56,7 @@ class UserInfoForm(forms.Form):
 
 
 class IndexForm(forms.Form):
+
     def logout(self, request, message='注销成功！'):
         if request.user.is_authenticated():
             auth.logout(request)
@@ -198,6 +199,7 @@ class IndexForm(forms.Form):
                         item.cwcSumbitDate = datetime(time.year, time.month, time.day, 9, 0, 0)
                     else:
                         item.cwcSumbitDate = datetime(time.year, time.month, time.day, 14, 0, 0)
+                    item.currentStage = 'cwcSubmit'
                     item.save()
                     messages.add_message(request, messages.SUCCESS, u'报销预约成功')
                     return self.render(request, userInfoForm)
@@ -240,30 +242,15 @@ class IndexForm(forms.Form):
         username = request.session['username']
         streamList = FiStream.objects.filter(applicante__username=username)
         orderList = []
+        stageDic = {'create': u'未提交', 'project': u'项目负责人审核', 'department1': u'部门负责人审核',
+                    'department2': u'部门书记审核', 'projectDepartment': u'项目部门负责人审核', 'school1': u'分管校领导审核',
+                    'school2': u'财务校领导审核', 'school3': u'学校书记审核', 'financial': u'财务处审核', 'finish': u'审批结束',
+                    'refused': u'拒绝审批', 'cwcSubmit': u'等待财务审核', 'cwcChecking': u'财务正在审核', 'cwcpaid': u'付款完成'}
+        typeDic = {'common': u'普通', 'travel': u'差旅', 'labor': u'劳务'}
         for item in streamList:
             item.applyDate = item.applyDate.strftime('%Y-%m-%d')
-            if item.currentStage == 'create':
-                item.currentStage = u'未提交'
-            elif item.currentStage == 'project':
-                item.currentStage = u'项目负责人审核'
-            elif item.currentStage == 'department1':
-                item.currentStage = u'部门负责人审核'
-            elif item.currentStage == 'department2':
-                item.currentStage = u'部门书记审核'
-            elif item.currentStage == 'projectDepartment':
-                item.currentStage = u'项目部门负责人审核'
-            elif item.currentStage == 'school1':
-                item.currentStage = u'分管校领导审核'
-            elif item.currentStage == 'school2':
-                item.currentStage = u'财务校领导审核'
-            elif item.currentStage == 'school3':
-                item.currentStage = u'学校书记审核'
-            elif item.currentStage == 'financial':
-                item.currentStage = u'财务处审核'
-            elif item.currentStage == 'finish':
-                item.currentStage = u'报销完成'
-            elif item.currentStage == 'refused':
-                item.currentStage = u'拒绝审批'
+            item.currentStage = stageDic[item.currentStage]
+            item.streamType = typeDic[item.streamType]
             orderList.append(item)
         return sorted(orderList, key=self.sortOrder, reverse=True)
 
