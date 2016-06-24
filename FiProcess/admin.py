@@ -14,6 +14,16 @@ class DepartmentSelectForm(forms.ModelForm):
         self.fields['chief'].queryset = Staff.objects.filter(department__id=self.instance.id)
 
 
+class SchoolMasterForm(forms.ModelForm):
+    class Meta:
+        model = SchoolMaster
+        fields = ['staff', 'duty', 'dutyDiscript']
+
+    def __init__(self, *args, **kwargs):
+        super(SchoolMasterForm, self).__init__(*args, **kwargs)
+        self.fields['staff'].queryset = Staff.objects.filter(department__id=17)
+
+
 class DepartmentAdmin(admin.ModelAdmin):
     list_display = ('name', 'secretary', 'chief')
     form = DepartmentSelectForm
@@ -21,6 +31,7 @@ class DepartmentAdmin(admin.ModelAdmin):
 
 class SchoolMasterAdmin(admin.ModelAdmin):
     list_display = ('staff', 'duty', 'dutyDiscript')
+    form = SchoolMasterForm
 
 # Register your models here.
 admin.site.register(Department, DepartmentAdmin)
