@@ -82,7 +82,7 @@ DATABASES = {
         'ENGINE': 'django.db.backends.mysql',
         'NAME': 'fiprocess',
         'USER': 'FiProcess',
-        'PASSWORD': '19861022',
+        'PASSWORD': 'hftcCsFiProcAdmin',
         'HOST': '127.0.0.1',
         'PORT': '3306',
     }

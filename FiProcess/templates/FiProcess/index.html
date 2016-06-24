@@ -182,7 +182,7 @@
                 {% csrf_token %}  
                 {% if unCheckStaff %}
                     <div class="alert alert-danger">  
-                        <h4>当前用户未通过人工审核，无法创建报销单</h4>  
+                        <h4>{{unCheckStaff}}</h4>  
                     </div>
                 {% else %}
                 <button type="submit" name="newFiStream" class="btn btn-success">
