@@ -48,7 +48,7 @@
     }
     function cardNum(prefix, i, value){
         var result = "<td><div class='form-group has-feedback'>\
-                    <input pattern='^[0-9]{8,}$' maxlength='16' required ";
+                    <input pattern='^[0-9]{8,}$' maxlength='24' required ";
         if (value.length > 0){
             result += "value='" + value + "'";
         }
@@ -206,7 +206,7 @@
             $('#tab_ccbCard').append('<tr id="addr_ccb'+i_ccb+'"></tr>');
             $('#addr_ccb'+i_ccb).html(
                 "<td>"+i_ccb+"</td>\n" + cardHolder('ccb', i_ccb, '') + amount('ccb', i_ccb, '') + cardNum('ccb', i_ccb, '') 
-                    + bankName('ccb', i_ccb, '') + spendTypes('ccb', i_ccb, '1') +"</td>");
+                    + spendTypes('ccb', i_ccb, '1') +"</td>");
             i_ccb++;
             $('#streamForm').validator()
         })
@@ -325,8 +325,7 @@
                         <th class="text-center">#</th>
                         <th class="text-center col-md-2">持卡人姓名</th>
                         <th class="text-center">报销金额</th>
-                        <th class="text-center col-md-3">卡号</th>
-                        <th class="text-center col-md-3">开户行</th>
+                        <th class="text-center col-md-4">卡号(工资卡)</th>
                         <th class="text-center col-md-2">开支类别</th>
                     </tr>
                 </thead>
