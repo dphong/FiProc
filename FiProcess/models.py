@@ -23,8 +23,8 @@ class Staff(models.Model):
     workId = models.CharField(max_length=10)
     phoneNumber = models.CharField(max_length=13)
     department = models.ForeignKey(Department, on_delete=models.CASCADE)
-    icbcCard = models.CharField(max_length=16, blank=True, default='')
-    ccbCard = models.CharField(max_length=19, blank=True, default='')
+    icbcCard = models.CharField(max_length=24, blank=True, default='')
+    ccbCard = models.CharField(max_length=24, blank=True, default='')
 
     def __str__(self):
         return self.name

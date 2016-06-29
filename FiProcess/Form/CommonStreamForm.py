@@ -139,7 +139,7 @@ class CommonStreamForm(ModelForm):
             record.name = request.POST['ccb_cardHolderName' + str(i)]
             record.amount = request.POST['ccb_amount' + str(i)]
             record.ccbCard = request.POST['ccb_account' + str(i)]
-            record.bankName = request.POST['ccb_bankName' + str(i)]
+            record.bankName = request.POST.get('ccb_bankName' + str(i), u'中国建设银行城西支行')
             record.payType = request.POST['ccb_spendType' + str(i)]
             ccbList.append(record)
             i = i + 1

@@ -260,6 +260,8 @@ class IndexForm(forms.Form):
         return signList
 
     def get(self, request):
+        if 'username' not in request.session:
+            return self.logout(request, '当前用户未登录，请登录')
         staff = self.getStaffFromRequest(request)
         if not staff:
             return self.logout(request, '用户信息异常，请保存本条错误信息，并联系管理员')
