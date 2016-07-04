@@ -61,7 +61,7 @@ class CwcForm(forms.Form):
                     item.cwcDealer = staff
                     item.currentStage = 'cwcChecking'
                     item.save()
-                if item.currentStage == 'cwcChecking':
+                elif item.currentStage == 'cwcChecking':
                     item.currentStage = 'cwcpaid'
                     item.save()
                 return HttpResponseRedirect(reverse('cwc'))
