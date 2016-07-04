@@ -81,6 +81,10 @@ class IndexForm(forms.Form):
         staff.ccbCard = userInfoForm.cleaned_data['ccbCard']
         if staff.username != userInfoForm.cleaned_data['username']:
             staff.username = userInfoForm.cleaned_data['username']
+            querySet = Staff.objects.filter(username=staff.username)
+            if len(querySet) > 0:
+                messages.add_message(request, messages.ERROR, '保存失败: 用户名已存在')
+                return self.render(request, userInfoForm, staff)
             staff.save()
             return self.logout(request, u'请用修改后的用户名重新登录')
         staff.save()
@@ -115,9 +119,9 @@ class IndexForm(forms.Form):
         return self.render(request, userInfoForm, renderStaff)
 
     def render(self, request, userInfoForm, staff):
-        if check_password(staff.workId, staff.password):
-            return render_to_response('FiProcess/index.html',
-                RequestContext(request, {'userInfoForm': userInfoForm, 'unCheckStaff': u'当前用户密码为默认密码，请立即修改'}))
+        # if check_password(staff.workId, staff.password):
+            # return render_to_response('FiProcess/index.html',
+                # RequestContext(request, {'userInfoForm': userInfoForm, 'unCheckStaff': u'当前用户密码为默认密码，请立即修改'}))
         if request.user.is_authenticated():
             return render_to_response('FiProcess/index.html',
                 RequestContext(request, {'userInfoForm': userInfoForm,

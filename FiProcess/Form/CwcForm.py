@@ -10,8 +10,8 @@ from ..models import FiStream, Staff
 
 
 class CwcForm(forms.Form):
-    def renderForm(self, request, form):
-        return render_to_response('FiProcess/cwc.html', RequestContext(request, {'form', form}))
+    def renderForm(self, request):
+        return render_to_response('FiProcess/cwc.html', RequestContext(request, {'form', self}))
 
     def getStreamList(self, dealer=''):
         streamList = []
@@ -20,6 +20,7 @@ class CwcForm(forms.Form):
         else:
             querySet = FiStream.objects.filter(currentStage='cwcChecking', cwcDealer__username=dealer)
         typeDic = {'common': u'普通', 'travel': u'差旅', 'labor': u'劳务'}
+        print dealer
         for item in querySet:
             stream = {}
             stream['projectName'] = item.projectName
@@ -34,14 +35,13 @@ class CwcForm(forms.Form):
         if 'username' not in request.session:
             messages.add_message(request, messages.ERROR, '登录状态异常!')
             return HttpResponseRedirect(reverse('login'))
-        form = CwcForm(request.GET)
         if request.GET.get('target') == 'allStream':
             streamList = self.getStreamList()
             return JsonResponse(streamList, safe=False)
         elif request.GET.get('target') == 'myStream':
             streamList = self.getStreamList(request.session['username'])
             return JsonResponse(streamList, safe=False)
-        return self.renderForm(request, form)
+        return self.renderForm(request)
 
     def post(self, request):
         if 'username' not in request.session:
@@ -68,5 +68,4 @@ class CwcForm(forms.Form):
             if ('detail' + str(item.id)) in request.POST:
                 request.session['orderId'] = item.id
                 return HttpResponseRedirect(reverse('index', args={'streamDetail'}))
-        form = CwcForm(request.POST)
-        return self.renderForm(request, form)
+        return self.renderForm(request)

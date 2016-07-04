@@ -14,7 +14,7 @@
     </style>
     <script type="text/javascript">
     function cardHolder(prefix, i, value){
-        var result = "<td><div class='form-group has-feedback'>\
+        var result = "<td><div class='form-group'>\
                     <input name='"+prefix+"_cardHolderName"+i+"' type='text' placeholder='' required ";
         if (value.length > 0){
             result += "value='" + value + "'";
@@ -22,7 +22,7 @@
         return result + " class='form-control input-md'></div></td>\n";
     }
     function icbcDate(i, value){
-        var result = "<td><div class='form-group has-feedback'>\
+        var result = "<td><div class='form-group'>\
                 <input name='icbc_date"+i+"' type='text' placeholder='年-月-日' required ";
         if (value.length > 0){
             result += "value='" + value + "'";
@@ -31,7 +31,7 @@
 
     }
     function icbcActualAmount(i, value){
-        var result = "<td><div class='form-group has-feedback'>\
+        var result = "<td><div class='form-group'>\
                         <input name='icbc_actualAmount"+i+"' type='text' placeholder='' required "
         if (value.length > 0){
             result += "value='" + value + "'";
@@ -39,7 +39,7 @@
         return result + " pattern='^[0-9.]*$' class='form-control input-md'></div></td>\n"
     }
     function amount(prefix, i, value){
-        var result = "<td><div class='form-group has-feedback'>\
+        var result = "<td><div class='form-group'>\
                     <input name='"+prefix+"_amount"+i+"' type='text' placeholder='' required ";
         if (value.length > 0){
             result += "value='" + value + "'";
@@ -47,7 +47,7 @@
         return result + " pattern='^[0-9.]*$' class='form-control input-md'></div></td>\n";
     }
     function cardNum(prefix, i, value){
-        var result = "<td><div class='form-group has-feedback'>\
+        var result = "<td><div class='form-group'>\
                     <input pattern='^[0-9]{8,}$' maxlength='19' required ";
         if (value.length > 0){
             result += "value='" + value + "'";
@@ -56,7 +56,7 @@
                 </div></td>\n";
     }
     function bankName(prefix, i, value){
-        var result = "<td><div class='form-group has-feedback'>\
+        var result = "<td><div class='form-group'>\
                     <input name='" + prefix + "_bankName" + i + "' type='text' placeholder='' required ";
         if (value.length > 0){
             result += "value='" + value + "'";
@@ -64,7 +64,7 @@
         return result + "class='form-control input-md'></div></td>\n";
     }
     function spendTypes(prefix, i, selectIdx){
-        var result = "<td class='form-group has-feedback'>\
+        var result = "<td class='form-group'>\
             <select name='"+prefix+"_spendType"+i+"' class='form-control'><option ";
         if (selectIdx == '1'){
             result += selected='selected';
