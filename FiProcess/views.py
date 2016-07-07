@@ -52,8 +52,9 @@ def index(request, target=''):
 
 
 def cwc(request):
-    form = CwcForm()
     if request.method == 'GET':
+        form = CwcForm(request.GET)
         return form.get(request)
     if request.method == 'POST':
+        form = CwcForm(request.POST)
         return form.post(request)
