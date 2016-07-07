@@ -36,8 +36,7 @@ class LoginForm(forms.Form):
     captcha = CaptchaField()
 
     def get(self, request):
-        form = LoginForm(request.GET)
-        return render_to_response('FiProcess/login.html', RequestContext(request, {'form': form}))
+        return render_to_response('FiProcess/login.html', RequestContext(request, {'form': self}))
 
     def post(self, request):
         if self.is_valid():

@@ -34,14 +34,13 @@ class CwcForm(forms.Form):
         if 'username' not in request.session:
             messages.add_message(request, messages.ERROR, '登录状态异常!')
             return HttpResponseRedirect(reverse('login'))
-        form = CwcForm(request.GET)
         if request.GET.get('target') == 'allStream':
             streamList = self.getStreamList()
             return JsonResponse(streamList, safe=False)
         elif request.GET.get('target') == 'myStream':
             streamList = self.getStreamList(request.session['username'])
             return JsonResponse(streamList, safe=False)
-        return self.renderForm(request, form)
+        return self.renderForm(request, self)
 
     def post(self, request):
         if 'username' not in request.session:
@@ -68,5 +67,4 @@ class CwcForm(forms.Form):
             if ('detail' + str(item.id)) in request.POST:
                 request.session['orderId'] = item.id
                 return HttpResponseRedirect(reverse('index', args={'streamDetail'}))
-        form = CwcForm(request.POST)
-        return self.renderForm(request, form)
+        return self.renderForm(request, self)

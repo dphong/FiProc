@@ -15,7 +15,10 @@ Including another URLconf
 """
 from django.conf.urls import url, include
 from django.contrib import admin
+# from django.views.generic.base import RedirectView
 import FiProcess.views
+
+# favicon_view = RedirectView.as_view(url='/static/FiProcess/images/favicon.ico', permanent=True)
 
 urlpatterns = [
     url(r'^hftcCsFiProcAdmin/', admin.site.urls),
@@ -25,4 +28,5 @@ urlpatterns = [
     url(r'^index/(?P<target>[a-zA-Z]*)$', FiProcess.views.index, name='index'),
     url(r'^captcha/', include('captcha.urls')),
     url(r'^cwc/$', FiProcess.views.cwc, name='cwc'),
+    # url(r'^favicon\.ico$', favicon_view),
 ]
