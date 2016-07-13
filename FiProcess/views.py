@@ -8,6 +8,7 @@ from Form.LoginForm import LoginForm
 from Form.CwcForm import CwcForm
 from Form.RegisterForm import RegisterForm
 from Form.NewStreamForm import NewStreamForm
+from Form.ApprovalForm import ApprovalForm
 
 
 def error(request):
@@ -39,7 +40,8 @@ def indexTarget(request, target):
             form = NewStreamForm(request.GET)
             return form.getDetail(request)
         if target == "newApproval":
-            return form.newApprovalGet(request)
+            form = ApprovalForm(request.GET)
+            return form.get(request)
     if request.method == 'POST':
         if target == "newstream":
             form = NewStreamForm(request.POST)
@@ -48,7 +50,8 @@ def indexTarget(request, target):
             form = NewStreamForm(request.POST)
             return form.postDetail(request)
         if target == "newApproval":
-            return form.newApprovalPost(request)
+            form = ApprovalForm(request.POST)
+            return form.post(request)
     return HttpResponseRedirect(reverse('index', args={''}))
 
 

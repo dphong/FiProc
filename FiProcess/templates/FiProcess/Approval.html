@@ -1,0 +1,68 @@
+<!DOCTYPE html>  
+{% load bootstrap3  %} 
+{% load staticfiles %} 
+<html lang="en">  
+<head>  
+    <meta charset="utf-8">  
+    <title>创建新审批单</title>  
+    <meta name="description" content="">  
+    <link rel="stylesheet" type="text/css" href="{% static 'FiProcess/bootstrap.min.css' %}" /> 
+    <script type="text/javascript" src="{% static 'FiProcess/jquery-2.2.4.min.js' %}"></script>
+    <script type="text/javascript" src="{% static 'FiProcess/bootstrap.min.js' %}"></script>
+    <script type="text/javascript" src="{% static 'FiProcess/validator.min.js' %}"></script>
+    <script type="text/javascript">
+    function onApprovalTypeChange(){
+        switch (document.getElementById("approvalType").selectedIndex){
+            case 0:
+                document.getElementById("approvalTypeHelp").value = textTravel;
+                break;
+            case 1:
+                document.getElementById("approvalTypeHelp").value = textEntertain;
+                break;
+            case 2:
+                document.getElementById("approvalTypeHelp").value = textContract;
+                break;
+        }
+    }
+    $(document).ready(function(){
+        textTravel = "公务出差审批：\
+                    \n1．各院（部）、部门党政主要负责人出差由分管校领导审批；\
+                    \n2．其他人员出差由部门主要负责人审批；\
+                    \n3．项目经费由项目主管部门负责人审批。";
+        textEntertain = "公务接待审批：\
+                        \n确需用车、住宿、其他（符合规定）等方面的支出需在备注中说明";
+        textContract = "经济合同审批：\
+                    \n1、科研处审核科技类合同，法律顾问审核重大经济合同。\
+                    \n2、此表将与正式签订的经济合同一并存档。\
+                    \n3、合同会签时附对方单位签字盖章的合同文件。\
+                    \n4、招标项目的合同会签另附中标通知书复印件。";
+        document.getElementById("approvalTypeHelp").value = textTravel
+    });
+    </script>
+</head>  
+  
+<body>  
+    <div class="container" style="max-width: 1000px">
+    <h1 align="center">创建新的审批单</h1>
+    <div class="well">
+    <form class="form" action="" method="post">
+        {% csrf_token %}
+        <p class="form-actions">  
+            <input type="submit" value="创建" class="btn btn-primary">  
+        </p>
+        <div class="form-group">
+            <label for="approvalType">请选择审批类型</label>
+            <select name="approvalType" id="approvalType" class="form-control" onchange="onApprovalTypeChange()">
+                <option value="travel">出差</option>
+                <option value="entertain">公务接待</option>
+                <option value="contract">经济合同</option>
+            </select>
+        </div>
+        <textarea id="approvalTypeHelp" class="form-control" rows="13" readonly style="resize:none"></textarea>
+        <p></p>
+    </form>
+    <a href={% url 'index' '' %} class="btn btn-large btn-default">返回</a>
+    </div>
+    </div>
+</body>
+</html>
