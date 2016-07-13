@@ -51,16 +51,25 @@ class UserInfoForm(forms.Form):
     isCwcStaff = False
 
 
+def logout(request, message='已注销'):
+    if request.user.is_authenticated():
+        auth.logout(request)
+    if request.session.get('username', ""):
+        del request.session['username']
+    messages.add_message(request, messages.SUCCESS, message)
+    return HttpResponseRedirect(reverse('login'))
+
+
+def getStaffFromRequest(request):
+    username = request.session['username']
+    try:
+        staff = Staff.objects.get(username__exact=username)
+    except:
+        return None
+    return staff
+
+
 class IndexForm(forms.Form):
-
-    def logout(self, request, message='注销成功！'):
-        if request.user.is_authenticated():
-            auth.logout(request)
-        if request.session.get('username', ""):
-            del request.session['username']
-        messages.add_message(request, messages.SUCCESS, message)
-        return HttpResponseRedirect(reverse('login'))
-
     def saveUserInfoForm(self, request, staff):
         userInfoForm = UserInfoForm(request.POST)
         userInfoForm.currentTab = "user"
@@ -82,7 +91,7 @@ class IndexForm(forms.Form):
                 messages.add_message(request, messages.ERROR, '保存失败: 用户名已存在')
                 return self.render(request, userInfoForm, staff)
             staff.save()
-            return self.logout(request, u'请用修改后的用户名重新登录')
+            return logout(request, u'请用修改后的用户名重新登录')
         staff.save()
         userInfoForm.password = ''
         messages.add_message(request, messages.SUCCESS, '保存成功')
@@ -150,9 +159,9 @@ class IndexForm(forms.Form):
         return minUnsignedStage
 
     def post(self, request):
-        staff = self.getStaffFromRequest(request)
+        staff = getStaffFromRequest(request)
         if not staff:
-            return self.logout(request, '用户信息异常，请保存本条错误信息，并联系管理员')
+            return logout(request, '用户信息异常，请保存本条错误信息，并联系管理员')
         userInfoForm = self.getUserInfoForm(request, staff)
         if "saveUserInfo" in request.POST:
             return self.saveUserInfoForm(request, staff)
@@ -174,19 +183,19 @@ class IndexForm(forms.Form):
             if name.startswith('delOrder'):
                 if 'orderId' in request.session:
                     del request.session['orderId']
-                item = FiStream.objects.filter(id=name[8:])
-                if not item:
-                    continue
-                messages.add_message(request, messages.SUCCESS, item.projectName + u'报销单删除成功')
+                try:
+                    item = FiStream.objects.get(id=name[8:])
+                except:
+                    messages.add_message(request, messages.ERROR, u'删除失败')
+                    return self.render(request, userInfoForm, staff)
+                messages.add_message(request, messages.SUCCESS, item.projectName + u' 报销单删除成功')
                 item.delete()
                 userInfoForm.currentTab = 'order'
                 return self.render(request, userInfoForm, staff)
             if name.startswith('fiProc'):
                 userInfoForm.currentTab = 'order'
-                item = FiStream.objects.filter(id=name[6:])
-                if not item:
-                    continue
                 try:
+                    item = FiStream.objects.get(id=name[6:])
                     if ('submitDate' not in request.POST) or ('submitHalfDay' not in request.POST):
                         raise Exception('未填写预约报销日期')
                     try:
@@ -210,9 +219,11 @@ class IndexForm(forms.Form):
                 request.session['signId'] = name[4:]
                 return HttpResponseRedirect(reverse('index', args={'streamDetail'}))
             if name.startswith('refuseSign'):
-                item = SignRecord.objects.filter(id=name[10:])
-                if not item:
-                    continue
+                try:
+                    item = SignRecord.objects.get(id=name[10:])
+                except:
+                    messages.add_message(request, messages.ERROR, u'操作失败')
+                    return self.render(request, userInfoForm, staff)
                 item.signed = True
                 item.refused = True
                 item.discript = request.POST['refuseSignReason']
@@ -222,9 +233,11 @@ class IndexForm(forms.Form):
                 userInfoForm.currentTab = 'signList'
                 return self.render(request, userInfoForm, staff)
             if name.startswith('signOk'):
-                item = SignRecord.objects.filter(id=name[6:])
-                if not item:
-                    continue
+                try:
+                    item = SignRecord.objects.get(id=name[6:])
+                except:
+                    messages.add_message(request, messages.ERROR, u'操作失败')
+                    return self.render(request, userInfoForm, staff)
                 item.signed = True
                 item.discript = request.POST['signOkDiscript']
                 item.save()
@@ -238,7 +251,7 @@ class IndexForm(forms.Form):
                 messages.add_message(request, messages.SUCCESS, u'报销单审核成功')
                 return self.render(request, userInfoForm, staff)
 
-        return self.logout(request)
+        return logout(request)
 
     def sortOrder(self, stream):
         return stream.applyDate
@@ -268,26 +281,13 @@ class IndexForm(forms.Form):
         return signList
 
     def get(self, request):
-        if 'username' not in request.session:
-            return self.logout(request, '当前用户未登录，请登录')
-        staff = self.getStaffFromRequest(request)
+        staff = getStaffFromRequest(request)
         if not staff:
-            return self.logout(request, '用户信息异常，请保存本条错误信息，并联系管理员')
+            return logout(request, '用户信息异常，请保存本条错误信息，并联系管理员')
         if 'orderId' in request.session:
             del request.session['orderId']
-        if 'username' not in request.session:
-            messages.add_message(request, messages.ERROR, '登录失败!')
-            return HttpResponseRedirect(reverse('login'))
         userInfoForm = self.getUserInfoForm(request, staff)
         return self.render(request, userInfoForm, staff)
-
-    def getStaffFromRequest(self, request):
-        username = request.session['username']
-        staff = Staff.objects.filter(username__exact=username)
-        if not staff or staff.count() > 1:
-            return None
-        staff = Staff.objects.get(username__exact=username)
-        return staff
 
     def getUserInfoForm(self, request, staff):
         userInfoForm = UserInfoForm(

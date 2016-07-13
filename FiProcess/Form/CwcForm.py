@@ -20,7 +20,6 @@ class CwcForm(forms.Form):
         else:
             querySet = FiStream.objects.filter(currentStage='cwcChecking', cwcDealer__username=dealer)
         typeDic = {'common': u'普通', 'travel': u'差旅', 'labor': u'劳务'}
-        print dealer
         for item in querySet:
             stream = {}
             stream['projectName'] = item.projectName
@@ -42,7 +41,7 @@ class CwcForm(forms.Form):
             streamList = self.getStreamList(request.session['username'])
             return JsonResponse(streamList, safe=False)
 
-        return self.renderForm(request, self)
+        return self.renderForm(request)
 
     def post(self, request):
         if 'username' not in request.session:

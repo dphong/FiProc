@@ -9,6 +9,7 @@ from datetime import datetime
 from decimal import Decimal
 
 from ..models import Staff, FiStream, SpendProof, CashPay, IcbcCardRecord, CompanyPayRecord
+import IndexForm
 
 
 class CommonStreamForm(ModelForm):
@@ -57,28 +58,6 @@ class CommonStreamForm(ModelForm):
         label=u'项目负责人'
     )
 
-    def newStreamGet(self, request):
-        if 'orderId' in request.session:
-            return self.modifyForm(request)
-        return render(request, 'FiProcess/newStream.html')
-
-    def newFiStreamType(self, request):
-        streamType = request.POST['newStreamType']
-        if streamType == 'common':
-            return self.showCommonStream(request, self)
-        if streamType == 'travel':
-            return render(request, 'FiProcess/travelStream.html')
-        if streamType == 'labor':
-            return render(request, 'FiProcess/laborStream.html')
-        return render(request, 'FiProcess/newStream.html')
-
-    def newStreamPost(self, request):
-        if "newStreamType" in request.POST:
-            return self.newFiStreamType(request)
-        if "commonStreamForm" in request.POST:
-            return self.commonStreamPost(request, self)
-        return render(request, 'FiProcess/newStream.html')
-
     class IcbcPay:
         def __init__(self):
             self.name = ''
@@ -96,10 +75,10 @@ class CommonStreamForm(ModelForm):
             self.bankName = ''
             self.payType = 0
 
-    def showCommonStream(self, request, indexForm):
-        staff = indexForm.getStaffFromRequest(request)
+    def get(self, request):
+        staff = IndexForm.getStaffFromRequest(request)
         if not staff:
-            return indexForm.logout(request, '用户信息异常，请保存本条错误信息，并联系管理员')
+            return IndexForm.logout(request, '用户信息异常，请保存本条错误信息，并联系管理员')
         form = CommonStreamForm(
             initial={'department': staff.department.name,
                 'name': staff.name, 'workId': staff.workId, 'applyDate': datetime.today(),
@@ -107,7 +86,7 @@ class CommonStreamForm(ModelForm):
         )
         return render(request, 'FiProcess/commonStream.html', {'form': form})
 
-    def commonStreamPost(self, request, indexForm):
+    def post(self, request):
         stream = FiStream()
         form = CommonStreamForm(request.POST, instance=stream)
         if not form.is_valid():
@@ -195,16 +174,16 @@ class CommonStreamForm(ModelForm):
             return render(request, 'FiProcess/commonStream.html',
                 {'form': form, 'errorMsg': errorMsg, 'list': icbcList, 'ccbList': ccbList, 'companyList': companyList})
 
-        staff = indexForm.getStaffFromRequest(request)
+        staff = IndexForm.getStaffFromRequest(request)
         if not staff:
-            return indexForm.logout(request, u'用户信息异常，请保存本条错误信息，并联系管理员')
+            return IndexForm.logout(request, u'用户信息异常，请保存本条错误信息，并联系管理员')
         stream.applicante = staff
         stream.projectLeader = staff
         stream.currentStage = 'create'
         stream.streamType = 'common'
         stream.save()
         for icbc in icbcList:
-            self.saveIcbcRecord(stream, icbc, request, indexForm)
+            self.saveIcbcRecord(stream, icbc, request)
         for ccb in ccbList:
             self.saveCcbRecord(stream, ccb)
         for com in companyList:
@@ -219,7 +198,7 @@ class CommonStreamForm(ModelForm):
         request.session['orderId'] = stream.id
         return HttpResponseRedirect(reverse('index', args={'streamDetail'}))
 
-    def saveIcbcRecord(self, stream, icbc, request, indexForm):
+    def saveIcbcRecord(self, stream, icbc, request):
         spendProof = SpendProof()
         spendProof.fiStream = stream
         spendProof.spendType = icbc.payType
@@ -231,7 +210,7 @@ class CommonStreamForm(ModelForm):
         try:
             icbcCardRec.staff = Staff.objects.get(name__exact=icbc.name, icbcCard__exact=icbc.icbcCard)
         except:
-            return indexForm.logout(request, '用户信息异常，请保存本条错误信息，并联系管理员')
+            return IndexForm.logout(request, '用户信息异常，请保存本条错误信息，并联系管理员')
         icbcCardRec.date = icbc.date
         icbcCardRec.spendAmount = Decimal(icbc.amount)
         icbcCardRec.cantApplyAmount = Decimal(icbc.amount) - Decimal(icbc.actualAmount)
@@ -274,7 +253,7 @@ class CommonStreamForm(ModelForm):
             ccbRec.receiverBelong = ''
         ccbRec.save()
 
-    def modifyForm(self, request):
+    def modify(self, request):
         fiStreamId = request.session['orderId']
         del request.session['orderId']
         try:
