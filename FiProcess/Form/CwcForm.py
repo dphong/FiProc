@@ -1,18 +1,15 @@
 # -*- coding: utf-8 -*-
 from django import forms
-from django.shortcuts import render_to_response
+from django.shortcuts import render
 from django.core.urlresolvers import reverse
 from django.http import HttpResponseRedirect, JsonResponse
-from django.template.context import RequestContext
 from django.contrib import messages
 
 from ..models import FiStream, Staff
+import IndexForm
 
 
 class CwcForm(forms.Form):
-    def renderForm(self, request):
-        return render_to_response('FiProcess/cwc.html', RequestContext(request, {'form', self}))
-
     def getStreamList(self, dealer=''):
         streamList = []
         if dealer == '':
@@ -40,8 +37,7 @@ class CwcForm(forms.Form):
         elif request.GET.get('target') == 'myStream':
             streamList = self.getStreamList(request.session['username'])
             return JsonResponse(streamList, safe=False)
-
-        return self.renderForm(request)
+        return render(request, 'FiProcess/cwc.html', {'form': self})
 
     def post(self, request):
         if 'username' not in request.session:
@@ -49,14 +45,17 @@ class CwcForm(forms.Form):
             return HttpResponseRedirect(reverse('login'))
         if 'return' in request.POST:
             return HttpResponseRedirect(reverse('index', args={''}))
-        querySet = FiStream.objects.filter()
-        for item in querySet:
-            if ('deal' + str(item.id)) in request.POST:
+        for name, value in request.POST.iteritems():
+            if name.startswith('dealWith'):
                 try:
                     staff = Staff.objects.get(username=request.session['username'])
                 except:
-                    messages.add_message(request, messages.ERROR, '登录状态异常!')
-                    return HttpResponseRedirect(reverse('login'))
+                    return IndexForm.logout(request, u'登录状态异常!')
+                try:
+                    item = FiStream.objects.get(id=name[8:])
+                except:
+                    messages.add_message(request, messages.ERROR, u'处理失败')
+                    return render(request, 'FiProcess/cwc.html', {'form': self})
                 if item.currentStage == 'cwcSubmit':
                     item.cwcDealer = staff
                     item.currentStage = 'cwcChecking'
@@ -65,7 +64,12 @@ class CwcForm(forms.Form):
                     item.currentStage = 'cwcpaid'
                     item.save()
                 return HttpResponseRedirect(reverse('cwc'))
-            if ('detail' + str(item.id)) in request.POST:
-                request.session['orderId'] = item.id
+            if name.startswith('checkStreamDetail'):
+                try:
+                    item = FiStream.objects.get(id=name[17:])
+                except:
+                    messages.add_message(request, messages.ERROR, u'操作失败')
+                    return render(request, 'FiProcess/cwc.html', {'form': self})
+                request.session['streamId'] = item.id
                 return HttpResponseRedirect(reverse('index', args={'streamDetail'}))
-        return self.renderForm(request, self)
+        return render(request, 'FiProcess/cwc.html', {'form': self})

@@ -7,7 +7,7 @@ from django.contrib import messages
 
 from datetime import datetime
 
-from ..models import FiStream, IcbcCardRecord, CompanyPayRecord
+from ..models import IcbcCardRecord, CompanyPayRecord
 from ..models import CashPay, SchoolMaster, SignRecord
 
 
@@ -104,24 +104,7 @@ class CommonStreamDetail(forms.Form):
             i += 1
         return result
 
-    def get(self, request):
-        if 'signId' in request.session:
-            try:
-                sign = SignRecord.objects.get(id=request.session['signId'])
-                del request.session['signId']
-                stream = sign.stream
-            except:
-                messages.add_message(request, messages.ERROR, '审核记录异常')
-                return HttpResponseRedirect(reverse('index', args={''}))
-        elif 'orderId' in request.session:
-            orderId = request.session['orderId']
-            try:
-                stream = FiStream.objects.get(id=orderId)
-            except:
-                HttpResponseRedirect(reverse('error'))
-        else:
-            messages.add_message(request, messages.ERROR, '操作异常')
-            return HttpResponseRedirect(reverse('index', args={''}))
+    def get(self, request, stream):
         icbcQuery = IcbcCardRecord.objects.filter(spendProof__fiStream__id=stream.id)
         ccbQuery = CashPay.objects.filter(spendProof__fiStream__id=stream.id)
         comQuery = CompanyPayRecord.objects.filter(spendProof__fiStream__id=stream.id)
@@ -201,7 +184,7 @@ class CommonStreamDetail(forms.Form):
                         'signList': SignRecord.objects.filter(stream__id=stream.id), 'sign11': stream.supportDept})
         if amount <= 10000:
             if stream.supportDept.secretary:
-                return render('FiProcess/commonStreamDetail.html',
+                return render(request, 'FiProcess/commonStreamDetail.html',
                     {'form': form, 'typeList': typeList, 'icbcList': icbcList, 'ccbList': ccbList, 'comList': comList,
                         'signList': SignRecord.objects.filter(stream__id=stream.id), 'sign12': stream.supportDept,
                         'schoolSign1': SchoolMaster.objects.filter(duty__exact='school1')})
@@ -238,87 +221,73 @@ class CommonStreamDetail(forms.Form):
                 'schoolSign2': SchoolMaster.objects.get(duty__exact='school2'),
                 'schoolSign3': SchoolMaster.objects.get(duty__exact='school3')})
 
-    def post(self, request):
-        if 'returnStream' in request.POST:
-            return HttpResponseRedirect(reverse('index', args={'newstream'}))
-        if 'createStream' in request.POST:
-            if 'orderId' not in request.session:
-                messages.add_message(request, messages.ERROR, '提交报销单失败')
-                return HttpResponseRedirect(reverse('index', args={''}))
-            orderId = request.session['orderId']
-            del request.session['orderId']
-            try:
-                stream = FiStream.objects.get(id=orderId)
-            except:
-                messages.add_message(request, messages.ERROR, '查找报销单失败')
-                return HttpResponseRedirect(reverse('index', args={''}))
-            sign1 = SignRecord()
-            sign1.stream = stream
-            if 'sign1' in request.POST:
-                signer = request.POST['sign1']
-            else:
-                messages.add_message(request, messages.ERROR, '提交报销单失败, 未指定部门负责人')
-                return HttpResponseRedirect(reverse('index', args={''}))
-            if stream.supportDept.chief and stream.supportDept.chief.name == signer:
-                sign1.signer = stream.supportDept.chief
-            elif stream.supportDept.secretary and stream.supportDept.secretary.name == signer:
-                sign1.signer = stream.supportDept.secretary
-            else:
-                messages.add_message(request, messages.ERROR, '提交报销单失败, 查找部门负责人失败')
-                return HttpResponseRedirect(reverse('index', args={''}))
-            sign1.signTime = datetime.now()
-            sign1.stage = 'department1'
-            sign1.save()
-            stream.currentStage = 'department1'
-            stream.save()
-            if 'sign2' in request.POST:
-                sign2 = SignRecord()
-                sign2.stream = stream
-                signer = request.POST['sign2']
-                if stream.supportDept.secretary and stream.supportDept.secretary.name == signer:
-                    sign2.signer = stream.supportDept.secretary
-                else:
-                    messages.add_message(request, messages.ERROR, '提交报销单失败, 查找部门书记失败')
-                    return HttpResponseRedirect(reverse('index', args={''}))
-                sign2.signTime = datetime.now()
-                sign2.stage = 'department2'
-                sign2.save()
-            if 'schoolSign1' in request.POST:
-                schoolSign1 = SignRecord()
-                schoolSign1.stream = stream
-                signer = request.POST['schoolSign1']
-                try:
-                    schoolSign1.signer = SchoolMaster.objects.get(staff__username=signer).staff
-                except:
-                    messages.add_message(request, messages.ERROR, '提交报销单失败, 查找分管校长信息失败')
-                    return HttpResponseRedirect(reverse('index', args={''}))
-                schoolSign1.signTime = datetime.now()
-                schoolSign1.stage = 'school1'
-                schoolSign1.save()
-            if 'schoolSign2' in request.POST:
-                schoolSign2 = SignRecord()
-                schoolSign2.stream = stream
-                signer = request.POST['schoolSign2']
-                try:
-                    schoolSign2.signer = SchoolMaster.objects.get(staff__name__exact=signer).staff
-                except:
-                    messages.add_message(request, messages.ERROR, '提交报销单失败, 查找主管财务校长信息失败')
-                    return HttpResponseRedirect(reverse('index', args={''}))
-                schoolSign2.signTime = datetime.now()
-                schoolSign2.stage = 'school2'
-                schoolSign2.save()
-            if 'schoolSign3' in request.POST:
-                schoolSign3 = SignRecord()
-                schoolSign3.stream = stream
-                signer = request.POST['schoolSign3']
-                try:
-                    schoolSign3.signer = SchoolMaster.objects.get(staff__name__exact=signer).staff
-                except:
-                    messages.add_message(request, messages.ERROR, '提交报销单失败, 查找校长信息失败')
-                    return HttpResponseRedirect(reverse('index', args={''}))
-                schoolSign3.signTime = datetime.now()
-                schoolSign3.stage = 'school3'
-                schoolSign3.save()
-            messages.add_message(request, messages.SUCCESS, '提交报销单成功')
+    def post(self, request, stream):
+        sign1 = SignRecord()
+        sign1.stream = stream
+        if 'sign1' in request.POST:
+            signer = request.POST['sign1']
+        else:
+            messages.add_message(request, messages.ERROR, '提交报销单失败, 未指定部门负责人')
             return HttpResponseRedirect(reverse('index', args={''}))
-        return HttpResponseRedirect(reverse('error'))
+        if stream.supportDept.chief and stream.supportDept.chief.name == signer:
+            sign1.signer = stream.supportDept.chief
+        elif stream.supportDept.secretary and stream.supportDept.secretary.name == signer:
+            sign1.signer = stream.supportDept.secretary
+        else:
+            messages.add_message(request, messages.ERROR, '提交报销单失败, 查找部门负责人失败')
+            return HttpResponseRedirect(reverse('index', args={''}))
+        sign1.signTime = datetime.now()
+        sign1.stage = 'department1'
+        sign1.save()
+        stream.currentStage = 'department1'
+        stream.save()
+        if 'sign2' in request.POST:
+            sign2 = SignRecord()
+            sign2.stream = stream
+            signer = request.POST['sign2']
+            if stream.supportDept.secretary and stream.supportDept.secretary.name == signer:
+                sign2.signer = stream.supportDept.secretary
+            else:
+                messages.add_message(request, messages.ERROR, '提交报销单失败, 查找部门书记失败')
+                return HttpResponseRedirect(reverse('index', args={''}))
+            sign2.signTime = datetime.now()
+            sign2.stage = 'department2'
+            sign2.save()
+        if 'schoolSign1' in request.POST:
+            schoolSign1 = SignRecord()
+            schoolSign1.stream = stream
+            signer = request.POST['schoolSign1']
+            try:
+                schoolSign1.signer = SchoolMaster.objects.get(staff__username=signer).staff
+            except:
+                messages.add_message(request, messages.ERROR, '提交报销单失败, 查找分管校长信息失败')
+                return HttpResponseRedirect(reverse('index', args={''}))
+            schoolSign1.signTime = datetime.now()
+            schoolSign1.stage = 'school1'
+            schoolSign1.save()
+        if 'schoolSign2' in request.POST:
+            schoolSign2 = SignRecord()
+            schoolSign2.stream = stream
+            signer = request.POST['schoolSign2']
+            try:
+                schoolSign2.signer = SchoolMaster.objects.get(staff__name__exact=signer).staff
+            except:
+                messages.add_message(request, messages.ERROR, '提交报销单失败, 查找主管财务校长信息失败')
+                return HttpResponseRedirect(reverse('index', args={''}))
+            schoolSign2.signTime = datetime.now()
+            schoolSign2.stage = 'school2'
+            schoolSign2.save()
+        if 'schoolSign3' in request.POST:
+            schoolSign3 = SignRecord()
+            schoolSign3.stream = stream
+            signer = request.POST['schoolSign3']
+            try:
+                schoolSign3.signer = SchoolMaster.objects.get(staff__name__exact=signer).staff
+            except:
+                messages.add_message(request, messages.ERROR, '提交报销单失败, 查找校长信息失败')
+                return HttpResponseRedirect(reverse('index', args={''}))
+            schoolSign3.signTime = datetime.now()
+            schoolSign3.stage = 'school3'
+            schoolSign3.save()
+        messages.add_message(request, messages.SUCCESS, '提交报销单成功')
+        return HttpResponseRedirect(reverse('index', args={''}))

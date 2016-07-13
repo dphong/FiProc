@@ -8,7 +8,6 @@ from Form.LoginForm import LoginForm
 from Form.CwcForm import CwcForm
 from Form.RegisterForm import RegisterForm
 from Form.NewStreamForm import NewStreamForm
-from Form.CommonStreamDetail import CommonStreamDetail
 
 
 def error(request):
@@ -37,8 +36,8 @@ def indexTarget(request, target):
             form = NewStreamForm(request.GET)
             return form.get(request)
         if target == "streamDetail":
-            detail = CommonStreamDetail(request.GET)
-            return detail.get(request)
+            form = NewStreamForm(request.GET)
+            return form.getDetail(request)
         if target == "newApproval":
             return form.newApprovalGet(request)
     if request.method == 'POST':
@@ -46,8 +45,8 @@ def indexTarget(request, target):
             form = NewStreamForm(request.POST)
             return form.post(request)
         if target == "streamDetail":
-            detail = CommonStreamDetail(request.POST)
-            return detail.post(request)
+            form = NewStreamForm(request.POST)
+            return form.postDetail(request)
         if target == "newApproval":
             return form.newApprovalPost(request)
     return HttpResponseRedirect(reverse('index', args={''}))

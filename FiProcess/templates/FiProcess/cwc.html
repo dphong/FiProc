@@ -18,11 +18,11 @@
                 + "<td class='text-center'>" + json['supportDept'] + "</td>"
                 + "<td class='text-center'>" + json['streamType'] + "</td>"
                 + "<td class='text-center'>" 
-                + '<input type="submit" class="btn btn-default" name="detail'
+                + '<input type="submit" class="btn btn-default" name="checkStreamDetail'
                 + json['id'] + '" value="查看">' 
                 + "</td>"
                 + "<td class='text-center'>" 
-                + '<input type="submit" class="btn btn-primary" name="deal'
+                + '<input type="submit" class="btn btn-primary" name="dealWith'
                 + json['id'] + '" value="处理">' 
                 + "</td>";
         return html;
@@ -66,6 +66,16 @@
 
 <body>
     <div class="container" style="max-width:1000px">
+    {% if messages %}
+        {% for message in messages %}
+            {% if message.level == DEFAULT_MESSAGE_LEVELS.ERROR %}
+                <div class="alert alert-danger">  
+                    <button type="button" class="close" data-dismiss="alert">×</button>  
+                    <h4>{{message}}</h4>
+                </div> 
+            {% endif %}
+        {% endfor %}
+    {% endif %}
     <h2>财务报账审批系统</h2>
     <form class="form" method="post">
         {% csrf_token %}  

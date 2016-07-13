@@ -45,7 +45,7 @@
             {% csrf_token %} 
             {% ifequal form.currentStage.value "create" %}
             <input name="createStream" type="submit" class="btn btn-primary" {% ifequal form.amount.value "0" %}disabled=True{% endifequal %}{% if signErrorMsg %}disabled=True{% endif %} value="生成报销单"></input>
-            <input name="returnStream" type="submit" class="btn btn-primary" value="复制"></input>
+            <input name="modifyStream" type="submit" class="btn btn-primary" value="复制"></input>
             {% else %}
             <div class="alert alert-success">  
                 <h4>{{ form.currentStage.value }}</h4>

@@ -193,9 +193,9 @@ class CommonStreamForm(ModelForm):
             for tmp in warningMsg:
                 msg += tmp + ' '
             messages.add_message(request, messages.INFO, msg)
-            request.session['orderId'] = stream.id
+            request.session['streamId'] = stream.id
             return HttpResponseRedirect(reverse('index', args={'streamDetail'}))
-        request.session['orderId'] = stream.id
+        request.session['streamId'] = stream.id
         return HttpResponseRedirect(reverse('index', args={'streamDetail'}))
 
     def saveIcbcRecord(self, stream, icbc, request):
@@ -254,8 +254,8 @@ class CommonStreamForm(ModelForm):
         ccbRec.save()
 
     def modify(self, request):
-        fiStreamId = request.session['orderId']
-        del request.session['orderId']
+        fiStreamId = request.session['streamId']
+        del request.session['streamId']
         try:
             fiStream = FiStream.objects.get(id=fiStreamId)
         except:

@@ -177,14 +177,14 @@ class IndexForm(forms.Form):
             return HttpResponseRedirect(reverse('cwc'))
 
         for name, value in request.POST.iteritems():
-            if name.startswith('order'):
-                request.session['orderId'] = name[5:]
+            if name.startswith('checkStreamDetail'):
+                request.session['streamId'] = name[17:]
                 return HttpResponseRedirect(reverse('index', args={'streamDetail'}))
-            if name.startswith('delOrder'):
-                if 'orderId' in request.session:
-                    del request.session['orderId']
+            if name.startswith('deleteOrder'):
+                if 'streamId' in request.session:
+                    del request.session['streamId']
                 try:
-                    item = FiStream.objects.get(id=name[8:])
+                    item = FiStream.objects.get(id=name[11:])
                 except:
                     messages.add_message(request, messages.ERROR, u'删除失败')
                     return self.render(request, userInfoForm, staff)
@@ -213,17 +213,13 @@ class IndexForm(forms.Form):
                 except Exception, e:
                     messages.add_message(request, messages.ERROR, str(e))
                     return self.render(request, userInfoForm, staff)
-
-        for name, value in request.POST.iteritems():
-            if name.startswith('sign'):
-                request.session['signId'] = name[4:]
-                return HttpResponseRedirect(reverse('index', args={'streamDetail'}))
-            if name.startswith('refuseSign'):
+            if name.startswith('signRefuse'):
                 try:
                     item = SignRecord.objects.get(id=name[10:])
                 except:
                     messages.add_message(request, messages.ERROR, u'操作失败')
                     return self.render(request, userInfoForm, staff)
+                # signed but refused
                 item.signed = True
                 item.refused = True
                 item.discript = request.POST['refuseSignReason']
@@ -232,9 +228,9 @@ class IndexForm(forms.Form):
                 item.stream.save()
                 userInfoForm.currentTab = 'signList'
                 return self.render(request, userInfoForm, staff)
-            if name.startswith('signOk'):
+            if name.startswith('signPermit'):
                 try:
-                    item = SignRecord.objects.get(id=name[6:])
+                    item = SignRecord.objects.get(id=name[10:])
                 except:
                     messages.add_message(request, messages.ERROR, u'操作失败')
                     return self.render(request, userInfoForm, staff)
@@ -284,8 +280,8 @@ class IndexForm(forms.Form):
         staff = getStaffFromRequest(request)
         if not staff:
             return logout(request, '用户信息异常，请保存本条错误信息，并联系管理员')
-        if 'orderId' in request.session:
-            del request.session['orderId']
+        if 'streamId' in request.session:
+            del request.session['streamId']
         userInfoForm = self.getUserInfoForm(request, staff)
         return self.render(request, userInfoForm, staff)
 
