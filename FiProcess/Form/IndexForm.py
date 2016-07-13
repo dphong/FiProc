@@ -1,17 +1,13 @@
 # -*- coding: utf-8 -*-
 from django import forms
-from django.shortcuts import render_to_response
+from django.shortcuts import render
 from django.core.urlresolvers import reverse
 from django.http import HttpResponseRedirect
-from django.template.context import RequestContext
 from django.contrib import messages, auth
 from django.contrib.auth.hashers import check_password, make_password
 from datetime import datetime
 
-
 from ..models import Staff, StaffCheck, FiStream, SignRecord
-from CommonStreamForm import CommonStreamForm
-from CommonStreamDetail import CommonStreamDetail
 
 
 class UserInfoForm(forms.Form):
@@ -123,21 +119,16 @@ class IndexForm(forms.Form):
             # return render_to_response('FiProcess/index.html',
                 # RequestContext(request, {'userInfoForm': userInfoForm, 'unCheckStaff': u'当前用户密码为默认密码，请立即修改'}))
         if request.user.is_authenticated():
-            return render_to_response('FiProcess/index.html',
-                RequestContext(request, {'userInfoForm': userInfoForm,
-                    'orderList': self.getOrderList(request),
-                    'userCheckList': StaffCheck.objects.all(), 'is_sysAdmin': True}))
+            return render(request, 'FiProcess/index.html', {'userInfoForm': userInfoForm, 'orderList': self.getOrderList(request),
+                    'userCheckList': StaffCheck.objects.all(), 'is_sysAdmin': True})
         querySet = StaffCheck.objects.filter(staff__username__exact=request.session['username'])
         if querySet.count() > 0:
-            return render_to_response('FiProcess/index.html',
-                RequestContext(request, {'userInfoForm': userInfoForm, 'unCheckStaff': u'当前用户未通过人工审核，无法创建报销单'}))
+            return render('FiProcess/index.html', {'userInfoForm': userInfoForm, 'unCheckStaff': u'当前用户未通过人工审核，无法创建报销单'})
         signList = self.getSignList(request)
         if len(signList) > 0:
-            return render_to_response('FiProcess/index.html',
-                RequestContext(request, {'userInfoForm': userInfoForm,
-                    'orderList': self.getOrderList(request), 'signList': signList}))
-        return render_to_response('FiProcess/index.html', RequestContext(request, {'userInfoForm': userInfoForm,
-                'orderList': self.getOrderList(request)}))
+            return render(request, 'FiProcess/index.html',
+                {'userInfoForm': userInfoForm, 'orderList': self.getOrderList(request), 'signList': signList})
+        return render(request, 'FiProcess/index.html', {'userInfoForm': userInfoForm, 'orderList': self.getOrderList(request)})
 
     def streamStageChange(self, stream):
         querySet = SignRecord.objects.filter(stream__id=stream.id)
@@ -145,9 +136,8 @@ class IndexForm(forms.Form):
             return 'create'
         if stream.currentStage == 'finish' or stream.currentStage == 'refuesd':
             return stream.currentStage
-        stageDict = {'create': 0, 'project': 1, 'department1': 2, 'department2': 3,
-                     'projectDepartment': 4, 'school1': 5, 'school2': 6, 'school3': 7,
-                     'financial': 8, 'finish': 9}
+        stageDict = {'create': 0, 'project': 1, 'department1': 2, 'department2': 3, 'projectDepartment': 4,
+                     'school1': 5, 'school2': 6, 'school3': 7, 'financial': 8, 'finish': 9}
         minUnsignedStage = ""
         for item in querySet:
             if item.signed and (stageDict[item.stage] > stageDict[stream.currentStage]):
@@ -172,23 +162,30 @@ class IndexForm(forms.Form):
             return self.approveStaffCheck(request, userInfoForm, staff)
         elif "newFiStream" in request.POST:
             return HttpResponseRedirect(reverse('index', args={'newstream'}))
+        elif "newApproval" in request.POST:
+            return HttpResponseRedirect(reverse('index', args={'newApproval'}))
         elif "cwc" in request.POST:
             return HttpResponseRedirect(reverse('cwc'))
-        username = request.session['username']
-        querySet = FiStream.objects.filter(applicante__username=username)
-        for item in querySet:
-            if ("order" + str(item.id)) in request.POST:
-                request.session['orderId'] = item.id
+
+        for name, value in request.POST.iteritems():
+            if name.startswith('order'):
+                request.session['orderId'] = name[5:]
                 return HttpResponseRedirect(reverse('index', args={'streamDetail'}))
-            if ("delOrder" + str(item.id)) in request.POST:
-                item.delete()
+            if name.startswith('delOrder'):
                 if 'orderId' in request.session:
                     del request.session['orderId']
+                item = FiStream.objects.filter(id=name[8:])
+                if not item:
+                    continue
                 messages.add_message(request, messages.SUCCESS, item.projectName + u'报销单删除成功')
+                item.delete()
                 userInfoForm.currentTab = 'order'
                 return self.render(request, userInfoForm, staff)
-            if ("fiProc" + str(item.id)) in request.POST:
+            if name.startswith('fiProc'):
                 userInfoForm.currentTab = 'order'
+                item = FiStream.objects.filter(id=name[6:])
+                if not item:
+                    continue
                 try:
                     if ('submitDate' not in request.POST) or ('submitHalfDay' not in request.POST):
                         raise Exception('未填写预约报销日期')
@@ -207,12 +204,15 @@ class IndexForm(forms.Form):
                 except Exception, e:
                     messages.add_message(request, messages.ERROR, str(e))
                     return self.render(request, userInfoForm, staff)
-        querySet = SignRecord.objects.filter(signer__username__exact=username)
-        for item in querySet:
-            if ("sign" + str(item.id)) in request.POST:
-                request.session['signId'] = item.id
+
+        for name, value in request.POST.iteritems():
+            if name.startswith('sign'):
+                request.session['signId'] = name[4:]
                 return HttpResponseRedirect(reverse('index', args={'streamDetail'}))
-            if ("refuseSign" + str(item.id)) in request.POST:
+            if name.startswith('refuseSign'):
+                item = SignRecord.objects.filter(id=name[10:])
+                if not item:
+                    continue
                 item.signed = True
                 item.refused = True
                 item.discript = request.POST['refuseSignReason']
@@ -221,7 +221,10 @@ class IndexForm(forms.Form):
                 item.stream.save()
                 userInfoForm.currentTab = 'signList'
                 return self.render(request, userInfoForm, staff)
-            if ("signOk" + str(item.id)) in request.POST:
+            if name.startswith('signOk'):
+                item = SignRecord.objects.filter(id=name[6:])
+                if not item:
+                    continue
                 item.signed = True
                 item.discript = request.POST['signOkDiscript']
                 item.save()
@@ -234,6 +237,7 @@ class IndexForm(forms.Form):
                     return self.render(request, userInfoForm, staff)
                 messages.add_message(request, messages.SUCCESS, u'报销单审核成功')
                 return self.render(request, userInfoForm, staff)
+
         return self.logout(request)
 
     def sortOrder(self, stream):
@@ -301,37 +305,3 @@ class IndexForm(forms.Form):
         if staff.department.name == u'财务处':
             userInfoForm.isCwcStaff = True
         return userInfoForm
-
-    # new process stream
-    def newStreamGet(self, request):
-        if 'orderId' in request.session:
-            form = CommonStreamForm(request.GET)
-            return form.modifyForm(request)
-        return render_to_response('FiProcess/newStream.html', RequestContext(request))
-
-    def newFiStreamType(self, request):
-        streamType = request.POST['newStreamType']
-        if streamType == 'common':
-            form = CommonStreamForm(request.POST)
-            return form.showCommonStream(request, self)
-        if streamType == 'travel':
-            return render_to_response('FiProcess/travelStream.html', RequestContext(request))
-        if streamType == 'labor':
-            return render_to_response('FiProcess/laborStream.html', RequestContext(request))
-        return render_to_response('FiProcess/newStream.html', RequestContext(request))
-
-    def newStreamPost(self, request):
-        if "newStreamType" in request.POST:
-            return self.newFiStreamType(request)
-        if "commonStreamForm" in request.POST:
-            form = CommonStreamForm(request.POST)
-            return form.commonStreamPost(request, self)
-        return render_to_response('FiProcess/newStream.html', RequestContext(request))
-
-    def streamDetailGet(self, request):
-        detail = CommonStreamDetail(request.GET)
-        return detail.renderPage(request)
-
-    def streamDetailPost(self, request):
-        detail = CommonStreamDetail(request.POST)
-        return detail.onGetPost(request)

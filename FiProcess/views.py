@@ -5,7 +5,9 @@ from django.core.urlresolvers import reverse
 from Form.LoginForm import LoginForm
 from Form.IndexForm import IndexForm
 from Form.CwcForm import CwcForm
-from registerForm import RegisterForm
+from Form.RegisterForm import RegisterForm
+from Form.CommonStreamDetail import CommonStreamDetail
+from Form.CommonStreamForm import CommonStreamForm
 
 
 def error(request):
@@ -28,21 +30,31 @@ def register(request):
     return form.post(request)
 
 
+def indexTarget(request, target):
+    if request.method == 'GET':
+        if target == "newstream":
+            form = CommonStreamForm(request.GET)
+            return form.newStreamGet(request)
+        if target == "streamDetail":
+            detail = CommonStreamDetail(request.GET)
+            return detail.renderPage(request)
+        if target == "newApproval":
+            return form.newApprovalGet(request)
+    if request.method == 'POST':
+        if target == "newstream":
+            form = CommonStreamForm(request.POST)
+            return form.newStreamPost(request)
+        if target == "streamDetail":
+            detail = CommonStreamDetail(request.POST)
+            return detail.onGetPost(request)
+        if target == "newApproval":
+            return form.newApprovalPost(request)
+    return HttpResponseRedirect(reverse('index', args={''}))
+
+
 def index(request, target=''):
     if len(target) > 0:
-        if request.method == 'GET':
-            form = IndexForm(request.GET)
-            if target == "newstream":
-                return form.newStreamGet(request)
-            if target == "streamDetail":
-                return form.streamDetailGet(request)
-        if request.method == 'POST':
-            form = IndexForm(request.POST)
-            if target == "newstream":
-                return form.newStreamPost(request)
-            if target == "streamDetail":
-                return form.streamDetailPost(request)
-        return HttpResponseRedirect(reverse('index', args={''}))
+        indexTarget(request, target)
     if request.method == 'GET':
         form = IndexForm(request.GET)
         return form.get(request)

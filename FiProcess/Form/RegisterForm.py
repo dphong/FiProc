@@ -10,7 +10,7 @@ from django.contrib.auth.hashers import make_password
 
 from captcha.fields import CaptchaField
 
-from .models import Staff
+from ..models import Staff
 
 
 class RegisterForm(ModelForm):

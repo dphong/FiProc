@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 from django import forms
-from django.shortcuts import render_to_response
-from django.template.context import RequestContext
+from django.shortcuts import render
 from django.http import HttpResponseRedirect
 from django.core.urlresolvers import reverse
 from django.contrib import messages
@@ -58,8 +57,29 @@ class CommonStreamForm(ModelForm):
         label=u'项目负责人'
     )
 
-    class IcbcPay:
+    def newStreamGet(self, request):
+        if 'orderId' in request.session:
+            return self.modifyForm(request)
+        return render(request, 'FiProcess/newStream.html')
 
+    def newFiStreamType(self, request):
+        streamType = request.POST['newStreamType']
+        if streamType == 'common':
+            return self.showCommonStream(request, self)
+        if streamType == 'travel':
+            return render(request, 'FiProcess/travelStream.html')
+        if streamType == 'labor':
+            return render(request, 'FiProcess/laborStream.html')
+        return render(request, 'FiProcess/newStream.html')
+
+    def newStreamPost(self, request):
+        if "newStreamType" in request.POST:
+            return self.newFiStreamType(request)
+        if "commonStreamForm" in request.POST:
+            return self.commonStreamPost(request, self)
+        return render(request, 'FiProcess/newStream.html')
+
+    class IcbcPay:
         def __init__(self):
             self.name = ''
             self.date = ''
@@ -69,7 +89,6 @@ class CommonStreamForm(ModelForm):
             self.payType = 0
 
     class CashPay:
-
         def __init__(self):
             self.name = ''
             self.amount = 0.0
@@ -86,13 +105,13 @@ class CommonStreamForm(ModelForm):
                 'name': staff.name, 'workId': staff.workId, 'applyDate': datetime.today(),
                 'projectLeaderWorkId': staff.workId, 'projectLeaderName': staff.name}
         )
-        return render_to_response('FiProcess/commonStream.html', RequestContext(request, {'form': form}))
+        return render(request, 'FiProcess/commonStream.html', {'form': form})
 
     def commonStreamPost(self, request, indexForm):
         stream = FiStream()
         form = CommonStreamForm(request.POST, instance=stream)
         if not form.is_valid():
-            return render_to_response('FiProcess/commonStream.html', RequestContext(request, {'form': form}))
+            return render(request, 'FiProcess/commonStream.html', {'form': form})
         errorMsg = []
         warningMsg = []
 
@@ -108,8 +127,8 @@ class CommonStreamForm(ModelForm):
             record.payType = request.POST['icbc_spendType' + str(i)]
             icbcList.append(record)
             i = i + 1
-        i = 1
-        for icbc in icbcList:
+
+        for i, icbc in enumerate(icbcList):
             try:
                 date = datetime.strptime(icbc.date, '%Y-%m-%d')
                 if date.year < 2007:
@@ -130,7 +149,6 @@ class CommonStreamForm(ModelForm):
                 Staff.objects.get(name__exact=icbc.name, icbcCard__exact=icbc.icbcCard)
             except:
                 errorMsg.append(u'第' + str(i) + u'条公务卡未在系统中注册')
-            i = i + 1
 
         i = 1
         ccbList = []
@@ -143,8 +161,8 @@ class CommonStreamForm(ModelForm):
             record.payType = request.POST['ccb_spendType' + str(i)]
             ccbList.append(record)
             i = i + 1
-        i = 1
-        for ccb in ccbList:
+
+        for i, ccb in enumerate(ccbList):
             try:
                 float(ccb.amount)
             except:
@@ -153,7 +171,6 @@ class CommonStreamForm(ModelForm):
                 Staff.objects.get(name__exact=ccb.name, ccbCard__exact=ccb.ccbCard)
             except:
                 warningMsg.append(u'第' + str(i) + u'条现金支付的工资卡未在系统中注册，请核对无误')
-            i = i + 1
 
         i = 1
         companyList = []
@@ -166,18 +183,17 @@ class CommonStreamForm(ModelForm):
             record.payType = request.POST['company_spendType' + str(i)]
             companyList.append(record)
             i = i + 1
-        i = 1
-        for company in companyList:
+
+        for i, company in enumerate(companyList):
             try:
                 float(company.amount)
             except:
                 errorMsg.append(u'请正确填写第' + str(i) + u'条对公转账的金额')
-            i = i + 1
+
         if len(errorMsg):
             errorMsg.insert(0, u'请更正下列信息异常')
-            return render_to_response('FiProcess/commonStream.html',
-                RequestContext(request, {'form': form, 'errorMsg': errorMsg,
-                    'list': icbcList, 'ccbList': ccbList, 'companyList': companyList}))
+            return render(request, 'FiProcess/commonStream.html',
+                {'form': form, 'errorMsg': errorMsg, 'list': icbcList, 'ccbList': ccbList, 'companyList': companyList})
 
         staff = indexForm.getStaffFromRequest(request)
         if not staff:
@@ -312,5 +328,5 @@ class CommonStreamForm(ModelForm):
             record.payType = com.spendProof.spendType
             companyList.append(record)
 
-        return render_to_response('FiProcess/commonStream.html',
-            RequestContext(request, {'form': form, 'list': icbcList, 'ccbList': ccbList, 'companyList': companyList}))
+        return render(request, 'FiProcess/commonStream.html',
+                      {'form': form, 'list': icbcList, 'ccbList': ccbList, 'companyList': companyList})
