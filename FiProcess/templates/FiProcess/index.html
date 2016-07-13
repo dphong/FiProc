@@ -130,7 +130,7 @@
                 <div class="form-group has-feedback">
                     <label for="inputPhoneNumber" class="control-label">联系电话</label>
                     <input type="text" pattern="^[-0-9]{4,}$" class="form-control" id="inputPhoneNumber"
-                        name="phoneNumber" required placeholder="请输入固化或手机号码"
+                        name="phoneNumber" required placeholder="请输入固话或手机号码"
                         value={{userInfoForm.phoneNumber.value}}>
                     <span class="glyphicon form-control-feedback" aria-hidden="true"></span>
                 </div>
@@ -187,7 +187,9 @@
                     </div>
                 {% else %}
                 <button type="submit" name="newFiStream" class="btn btn-success">
-                    <span class="glyphicon glyphicon-plus-sign" aria-hidden="true"></span> 新增报销单</button>
+                    <span class="glyphicon glyphicon-plus-sign" aria-hidden="true"></span>新增报销单</button>
+                <button type="submit" name="newApproval" class="btn btn-success">
+                    <span class="glyphicon glyphicon-plus-sign" aria-hidden="true"></span>新增审批单</button>
                 {% if orderList %}
                 <table class="table table-bordered table-hover table-striped" id="tab_order">
                     <thead>
