@@ -8,4 +8,10 @@ class ApprovalForm(forms.Form):
         return render(request, 'FiProcess/Approval.html')
 
     def post(self, request):
+        if 'travel' == request.POST['approvalType']:
+            return render(request, 'FiProcess/approvalTravel.html')
+        if 'recept' == request.POST['approvalType']:
+            return render(request, 'FiProcess/approvalRecept.html')
+        if 'contract' == request.POST['approvalType']:
+            return render(request, 'FiProcess/approvalContract.html')
         return render(request, 'FiProcess/Approval.html')

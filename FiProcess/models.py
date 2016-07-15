@@ -107,10 +107,15 @@ class CompanyPayRecord(models.Model):
 
 
 class TravelRecord(models.Model):
-    fiStream = models.ForeignKey(FiStream, on_delete=models.CASCADE)
+    fiStreamBefore = models.ForeignKey(FiStream, on_delete=models.CASCADE, related_name='fiStreamBefore')
+    fiStreamAfter = models.ForeignKey(FiStream, on_delete=models.CASCADE, related_name='fiStreamAfter')
     leaveDate = models.DateTimeField()
     returnDate = models.DateTimeField()
     destination = models.CharField(max_length=128)
     startPosition = models.CharField(max_length=128)
     travelGrant = models.DecimalField(max_digits=10, decimal_places=2)
     foodGrant = models.DecimalField(max_digits=10, decimal_places=2)
+    reason = models.CharField(max_length=1024)
+    # plane train car ship other
+    travelType = models.CharField(max_length=64)
+    travelDescript = models.CharField(max_length=128)

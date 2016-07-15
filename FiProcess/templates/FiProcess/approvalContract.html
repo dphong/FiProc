@@ -1,0 +1,32 @@
+<!DOCTYPE html>  
+{% load bootstrap3  %} 
+{% load staticfiles %} 
+<html lang="en">  
+<head>  
+    <meta charset="utf-8">  
+    <title>合肥师范学院审批申请</title>
+    <meta name="description" content="">  
+    <link rel="stylesheet" type="text/css" href="{% static 'FiProcess/bootstrap.min.css' %}" /> 
+    <script type="text/javascript" src="{% static 'FiProcess/jquery-2.2.4.min.js' %}"></script>
+    <script type="text/javascript" src="{% static 'FiProcess/bootstrap.min.js' %}"></script>
+    <script type="text/javascript" src="{% static 'FiProcess/validator.js' %}"></script>
+    <style type="text/css">
+    </style>
+    <script type="text/javascript">
+    </script>
+</head>
+<body>
+    <div class="container" style="max-width:1000px">
+    <form id="streamForm" data-toggle="validator" role="form" lass="form" action="" method="post" style="margin:20px 0px 0px 0px">
+        {% csrf_token %}
+        <div class="form-group">  
+            <input name="commonStreamForm" type="submit" class="btn btn-primary" value="创建"></input>
+        </div>
+        <div class="well">
+            <h3 align="center"><strong>合肥师范学院经济合同审核会签申请</strong></h3>
+        </div>
+    </form>
+    <a href={% url 'index' '' %} class="btn btn-large btn-default">返回</a>
+    </div>
+</body>
+</html>
