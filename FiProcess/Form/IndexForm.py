@@ -7,7 +7,7 @@ from django.contrib import messages, auth
 from django.contrib.auth.hashers import check_password, make_password
 from datetime import datetime
 
-from ..models import Staff, StaffCheck, FiStream, SignRecord
+from ..models import Staff, StaffCheck, FiStream, SignRecord, TravelRecord
 
 
 class UserInfoForm(forms.Form):
@@ -184,12 +184,21 @@ class IndexForm(forms.Form):
                 if 'streamId' in request.session:
                     del request.session['streamId']
                 try:
-                    item = FiStream.objects.get(id=name[11:])
+                    stream = FiStream.objects.get(id=name[11:])
                 except:
                     messages.add_message(request, messages.ERROR, u'删除失败')
                     return self.render(request, userInfoForm, staff)
-                messages.add_message(request, messages.SUCCESS, item.projectName + u' 报销单删除成功')
-                item.delete()
+                if stream.streamType == 'travelApproval':
+                    try:
+                        travelRecord = TravelRecord.objects.get(fiStream__id=stream.id)
+                    except:
+                        messages.add_message(request, messages.ERROR, u'查找删除审批单失败')
+                        return self.render(request, userInfoForm, staff)
+                    travelRecord.delete()
+                    messages.add_message(request, messages.SUCCESS, stream.projectName + u' 审批删除成功')
+                else:
+                    messages.add_message(request, messages.SUCCESS, stream.projectName + u' 报销单删除成功')
+                stream.delete()
                 userInfoForm.currentTab = 'order'
                 return self.render(request, userInfoForm, staff)
             if name.startswith('fiProc'):
@@ -259,8 +268,10 @@ class IndexForm(forms.Form):
         stageDic = {'create': u'未提交', 'project': u'项目负责人审核', 'department1': u'部门负责人审核',
                     'department2': u'部门书记审核', 'projectDepartment': u'项目部门负责人审核', 'school1': u'分管校领导审核',
                     'school2': u'财务校领导审核', 'school3': u'学校书记审核', 'financial': u'财务处审核', 'finish': u'审批结束',
-                    'refused': u'拒绝审批', 'cwcSubmit': u'等待财务审核', 'cwcChecking': u'财务正在审核', 'cwcpaid': u'付款完成'}
-        typeDic = {'common': u'普通', 'travel': u'差旅', 'labor': u'劳务'}
+                    'refused': u'拒绝审批', 'cwcSubmit': u'等待财务审核', 'cwcChecking': u'财务正在审核', 'cwcpaid': u'付款完成',
+                    'unapprove': u'待审批', 'approving': u'审批中', 'approved': u'已审批'}
+        typeDic = {'common': u'普通报销', 'travel': u'差旅报销', 'labor': u'劳务发放',
+                'travelApproval': u'差旅审批', 'receptApproval': u'公务接待审批', 'contractApproval': u'合同审批'}
         for item in streamList:
             item.applyDate = item.applyDate.strftime('%Y-%m-%d')
             item.currentStage = stageDic[item.currentStage]

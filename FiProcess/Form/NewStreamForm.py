@@ -41,15 +41,16 @@ class NewStreamForm(forms.Form):
         if 'streamId' not in request.session:
             messages.add_message(request, messages.ERROR, u'操作失败')
             return HttpResponseRedirect(reverse('index', args={''}))
-        streamId = request.session['streamId']
         try:
-            stream = FiStream.objects.get(id=streamId)
+            stream = FiStream.objects.get(id=request.session['streamId'])
         except:
             messages.add_message(request, messages.ERROR, u'操作失败')
             return HttpResponseRedirect(reverse('index', args={''}))
         if stream.streamType == 'common':
             detail = CommonStreamDetail(request.GET)
             return detail.get(request, stream)
+        if (stream.streamType == 'travelApproval'or stream.streamType == 'receptApproval'or stream.streamType == 'contractApproval'):
+            return HttpResponseRedirect(reverse('index', args={'approvalDetail'}))
         return HttpResponseRedirect(reverse('index', args={''}))
 
     def postDetail(self, request):

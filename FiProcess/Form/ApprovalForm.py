@@ -1,6 +1,12 @@
 # -*- coding: utf-8 -*-
 from django import forms
 from django.shortcuts import render
+from django.http import HttpResponseRedirect
+from django.core.urlresolvers import reverse
+from django.contrib import messages
+
+from ..models import FiStream
+from TravelApprovalForm import TravelApprovalForm
 
 
 class ApprovalForm(forms.Form):
@@ -8,10 +14,31 @@ class ApprovalForm(forms.Form):
         return render(request, 'FiProcess/Approval.html')
 
     def post(self, request):
-        if 'travel' == request.POST['approvalType']:
-            return render(request, 'FiProcess/approvalTravel.html')
-        if 'recept' == request.POST['approvalType']:
-            return render(request, 'FiProcess/approvalRecept.html')
-        if 'contract' == request.POST['approvalType']:
-            return render(request, 'FiProcess/approvalContract.html')
+        if 'approvalType' in request.POST:
+            if 'travel' == request.POST['approvalType']:
+                form = TravelApprovalForm(request.POST)
+                return form.getPost(request)
+            if 'recept' == request.POST['approvalType']:
+                return render(request, 'FiProcess/approvalRecept.html')
+            if 'contract' == request.POST['approvalType']:
+                return render(request, 'FiProcess/approvalContract.html')
+        if 'createApprovalTravel' in request.POST:
+            form = TravelApprovalForm(request.POST)
+            return form.post(request)
+        if 'submitApprovalTravel' in request.POST:
+            form = TravelApprovalForm(request.POST)
+            return form.submitPost(request)
         return render(request, 'FiProcess/Approval.html')
+
+    def getDetail(self, request):
+        if 'streamId' not in request.session:
+            messages.add_message(request, messages.ERROR, u'操作失败')
+            return HttpResponseRedirect(reverse('index', args={''}))
+        try:
+            stream = FiStream.objects.get(id=request.session['streamId'])
+        except:
+            messages.add_message(request, messages.ERROR, u'操作失败')
+            return HttpResponseRedirect(reverse('index', args={''}))
+        if stream.streamType == 'travelApproval':
+            form = TravelApprovalForm(request.GET)
+            return form.detail(request, stream)

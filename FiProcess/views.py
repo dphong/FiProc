@@ -42,6 +42,9 @@ def indexTarget(request, target):
         if target == "newApproval":
             form = ApprovalForm(request.GET)
             return form.get(request)
+        if target == "approvalDetail":
+            form = ApprovalForm(request.GET)
+            return form.getDetail(request)
     if request.method == 'POST':
         if target == "newstream":
             form = NewStreamForm(request.POST)

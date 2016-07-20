@@ -67,63 +67,63 @@
         var result = "<td class='form-group'>\
             <select name='"+prefix+"_spendType"+i+"' class='form-control'><option ";
         if (selectIdx == '1'){
-            result += selected='selected';
+            result += "selected='selected'";
         }
         result += " value='1'>办公用品</option><option ";
         if (selectIdx == '2'){
-            result += selected='selected';
+            result += "selected='selected'";
         }
         result += " value='2'>书报资料</option><option ";
         if (selectIdx == '3'){
-            result += selected='selected';
+            result += "selected='selected'";
         }
         result += " value='3'>印刷费</option><option ";
         if (selectIdx == '4'){
-            result += selected='selected';
+            result += "selected='selected'";
         }
         result += " value='4'>邮电费</option><option ";
         if (selectIdx == '5'){
-            result += selected='selected';
+            result += "selected='selected'";
         }
         result += " value='5'>住宿费</option><option ";
         if (selectIdx == '6'){
-            result += selected='selected';
+            result += "selected='selected'";
         }
         result += " value='6'>出国费</option><option ";
         if (selectIdx == '7'){
-            result += selected='selected';
+            result += "selected='selected'";
         }
         result += " value='7'>维修维护</option><option ";
         if (selectIdx == '8'){
-            result += selected='selected';
+            result += "selected='selected'";
         }
         result += " value='8'>医疗费</option><option ";
         if (selectIdx == '9'){
-            result += selected='selected';
+            result += "selected='selected'";
         }
         result += " value='9'>会议费</option><option ";
         if (selectIdx == '10'){
-            result += selected='selected';
+            result += "selected='selected'";
         }
         result += " value='10'>培训费</option><option ";
         if (selectIdx == '11'){
-            result += selected='selected';
+            result += "selected='selected'";
         }
         result += " value='11'>招待费</option><option ";
         if (selectIdx == '12'){
-            result += selected='selected';
+            result += "selected='selected'";
         }
         result += " value='12'>交通费</option><option ";
         if (selectIdx == '13'){
-            result += selected='selected';
+            result += "selected='selected'";
         }
         result +=" value='13'>专用材料</option><option ";
         if (selectIdx == '14'){
-            result += selected='selected';
+            result += "selected='selected'";
         }
         result += " value='14'>设备购置</option><option ";
         if (selectIdx == '15'){
-            result += selected='selected';
+            result += "selected='selected'";
         }
         result += " value='15'>其他</option></select></td>";
         return result;
@@ -252,7 +252,7 @@
             <h4>{{warningMsg}}</h4>  
         </div>  
     {% endif %}
-    <form id="streamForm" data-toggle="validator" role="form" lass="form" action="" method="post" style="margin:20px 0px 0px 0px">
+    <form id="streamForm" data-toggle="validator" role="form" class="form" action="" method="post" style="margin:20px 0px 0px 0px">
         {% csrf_token %}
         <div class="form-group">  
             <input name="commonStreamForm" type="submit" class="btn btn-primary" value="创建"></input>

@@ -52,22 +52,25 @@ class FiStream(models.Model):
     projectLeader = models.ForeignKey(Staff, on_delete=models.CASCADE, related_name="projectLeader")
     # stage: 'create' 'project' 'department1' 'department2' 'projectDepartment' 'school1' 'school2' 'school3'
     #        'financial' 'finish' 'refused' 'cwcSubmit' 'cwcChecking' 'cwcpaid'
+    # approval before create: 'unapprove' 'approving' 'approved'
     currentStage = models.CharField(max_length=64)
     projectName = models.CharField(max_length=256)
     streamDiscript = models.CharField(max_length=4096)
-    # type: 'common' 'travel' 'labor'
+    # type: 'common' 'travel' 'labor' 'travelApproval' 'receptApproval' 'contractApproval'
     streamType = models.CharField(max_length=16)
     cwcSumbitDate = models.DateTimeField(null=True)
     cwcDealer = models.ForeignKey(Staff, on_delete=models.CASCADE, related_name="cwcDealer", null=True)
 
 
 class SignRecord(models.Model):
-    stream = models.ForeignKey(FiStream, on_delete=models.CASCADE)
+    stream = models.ForeignKey(FiStream, on_delete=models.CASCADE, null=True)
     signer = models.ForeignKey(Staff, on_delete=models.CASCADE)
     signTime = models.DateTimeField()
     signed = models.BooleanField(default=False)
     refused = models.BooleanField(default=False)
     signImage = models.CharField(max_length=10000, default="")
+    # type: 'department1' 'department2' 'school1' 'school2' 'school3'
+    #       'approvalDepartment' 'approvalSchool'
     stage = models.CharField(max_length=64)
     discript = models.CharField(max_length=1024, default="")
 
@@ -107,8 +110,10 @@ class CompanyPayRecord(models.Model):
 
 
 class TravelRecord(models.Model):
-    fiStreamBefore = models.ForeignKey(FiStream, on_delete=models.CASCADE, related_name='fiStreamBefore')
-    fiStreamAfter = models.ForeignKey(FiStream, on_delete=models.CASCADE, related_name='fiStreamAfter')
+    approvalSign = models.ForeignKey(SignRecord, on_delete=models.CASCADE, null=True)
+    fiStream = models.ForeignKey(FiStream, on_delete=models.CASCADE)
+    duty = models.CharField(max_length=32)
+    companionCnt = models.IntegerField()
     leaveDate = models.DateTimeField()
     returnDate = models.DateTimeField()
     destination = models.CharField(max_length=128)
@@ -116,6 +121,6 @@ class TravelRecord(models.Model):
     travelGrant = models.DecimalField(max_digits=10, decimal_places=2)
     foodGrant = models.DecimalField(max_digits=10, decimal_places=2)
     reason = models.CharField(max_length=1024)
-    # plane train car ship other
+    # plane train car ship officialCar selfCar else
     travelType = models.CharField(max_length=64)
     travelDescript = models.CharField(max_length=128)
