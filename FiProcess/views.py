@@ -55,6 +55,9 @@ def indexTarget(request, target):
         if target == "newApproval":
             form = ApprovalForm(request.POST)
             return form.post(request)
+        if target == "approvalDetail":
+            form = ApprovalForm(request.POST)
+            return form.postDetail(request)
     return HttpResponseRedirect(reverse('index', args={''}))
 
 

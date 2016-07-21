@@ -139,21 +139,19 @@ class IndexForm(forms.Form):
                 {'userInfoForm': userInfoForm, 'orderList': self.getOrderList(request), 'signList': signList})
         return render(request, 'FiProcess/index.html', {'userInfoForm': userInfoForm, 'orderList': self.getOrderList(request)})
 
-    def streamStageChange(self, stream):
-        querySet = SignRecord.objects.filter(stream__id=stream.id)
-        if len(querySet) == 0:
-            return 'create'
-        if stream.currentStage == 'finish' or stream.currentStage == 'refuesd':
-            return stream.currentStage
+    def streamStageChange(self, signRecord):
+        if signRecord.stream.currentStage == 'finish' or signRecord.stream.currentStage == 'refuesd':
+            return signRecord.stream.currentStage
+        if signRecord.stream.currentStage == 'approvalDepartment' or signRecord.stream.currentStage == 'approvalSchool':
+            return 'approved'
         stageDict = {'create': 0, 'project': 1, 'department1': 2, 'department2': 3, 'projectDepartment': 4,
                      'school1': 5, 'school2': 6, 'school3': 7, 'financial': 8, 'finish': 9}
         minUnsignedStage = ""
-        for item in querySet:
-            if item.signed and (stageDict[item.stage] > stageDict[stream.currentStage]):
-                raise Exception(u"审批状态异常")
-            if not item.signed and (stageDict[item.stage] > stageDict[stream.currentStage]):
-                if len(minUnsignedStage) == 0 or stageDict[item.stage] < stageDict[minUnsignedStage]:
-                    minUnsignedStage = item.stage
+        if signRecord.signed and (stageDict[signRecord.stage] > stageDict[signRecord.stream.currentStage]):
+            raise Exception(u"审批状态异常")
+        if not signRecord.signed and (stageDict[signRecord.stage] > stageDict[signRecord.stream.currentStage]):
+            if len(minUnsignedStage) == 0 or stageDict[signRecord.stage] < stageDict[minUnsignedStage]:
+                minUnsignedStage = signRecord.stage
         if len(minUnsignedStage) == 0:
             minUnsignedStage = 'finish'
         return minUnsignedStage
@@ -192,6 +190,7 @@ class IndexForm(forms.Form):
                     try:
                         travelRecord = TravelRecord.objects.get(fiStream__id=stream.id)
                     except:
+                        stream.delete()
                         messages.add_message(request, messages.ERROR, u'查找删除审批单失败')
                         return self.render(request, userInfoForm, staff)
                     travelRecord.delete()
@@ -231,7 +230,8 @@ class IndexForm(forms.Form):
                 # signed but refused
                 item.signed = True
                 item.refused = True
-                item.discript = request.POST['refuseSignReason']
+                item.descript = request.POST['refuseSignReason']
+                item.signedTime = datetime.now()
                 item.save()
                 item.stream.currentStage = 'refused'
                 item.stream.save()
@@ -244,22 +244,26 @@ class IndexForm(forms.Form):
                     messages.add_message(request, messages.ERROR, u'操作失败')
                     return self.render(request, userInfoForm, staff)
                 item.signed = True
-                item.discript = request.POST['signOkDiscript']
+                item.descript = request.POST['signOkDescript']
+                item.signedTime = datetime.now()
                 item.save()
                 userInfoForm.currentTab = 'signList'
                 try:
-                    item.stream.currentStage = self.streamStageChange(item.stream)
+                    item.stream.currentStage = self.streamStageChange(item)
                     item.stream.save()
                 except Exception, e:
                     messages.add_message(request, messages.ERROR, str(e))
                     return self.render(request, userInfoForm, staff)
-                messages.add_message(request, messages.SUCCESS, u'报销单审核成功')
+                messages.add_message(request, messages.SUCCESS, u'审核成功')
                 return self.render(request, userInfoForm, staff)
 
         return logout(request)
 
     def sortOrder(self, stream):
         return stream.applyDate
+
+    typeDic = {'common': u'普通报销', 'travel': u'差旅报销', 'labor': u'劳务发放',
+            'travelApproval': u'差旅审批', 'receptApproval': u'公务接待审批', 'contractApproval': u'合同审批'}
 
     def getOrderList(self, request):
         username = request.session['username']
@@ -269,13 +273,11 @@ class IndexForm(forms.Form):
                     'department2': u'部门书记审核', 'projectDepartment': u'项目部门负责人审核', 'school1': u'分管校领导审核',
                     'school2': u'财务校领导审核', 'school3': u'学校书记审核', 'financial': u'财务处审核', 'finish': u'审批结束',
                     'refused': u'拒绝审批', 'cwcSubmit': u'等待财务审核', 'cwcChecking': u'财务正在审核', 'cwcpaid': u'付款完成',
-                    'unapprove': u'待审批', 'approving': u'审批中', 'approved': u'已审批'}
-        typeDic = {'common': u'普通报销', 'travel': u'差旅报销', 'labor': u'劳务发放',
-                'travelApproval': u'差旅审批', 'receptApproval': u'公务接待审批', 'contractApproval': u'合同审批'}
+                    'unapprove': u'待审批', 'approvalDepartment': u'部门负责人审批中', 'approvalSchool': u'学校负责人审批中', 'approved': u'已审批'}
         for item in streamList:
             item.applyDate = item.applyDate.strftime('%Y-%m-%d')
             item.currentStage = stageDic[item.currentStage]
-            item.streamType = typeDic[item.streamType]
+            item.streamType = self.typeDic[item.streamType]
             orderList.append(item)
         return sorted(orderList, key=self.sortOrder, reverse=True)
 
@@ -284,6 +286,7 @@ class IndexForm(forms.Form):
         signList = []
         for item in signQuery:
             if item.stream.currentStage == item.stage and not item.signed:
+                item.stage = self.typeDic[item.stream.streamType]
                 signList.append(item)
         return signList
 

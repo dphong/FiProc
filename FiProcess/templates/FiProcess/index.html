@@ -276,6 +276,7 @@
                             <th class="text-center col-md-1">#</th>
                             <th class="text-center">经费所属部门</th>
                             <th class="text-center col-md-3">项目名称</th>
+                            <th class="text-center col-md-1">类别</th>
                             <th class="text-center col-md-1">详细</th>
                             <th class="text-center col-md-1">通过</th>
                             <th class="text-center col-md-1">拒绝</th>
@@ -287,6 +288,7 @@
                             <td class="text-center">{{ forloop.counter }}</td>
                             <td class="text-center">{{ sign.stream.supportDept.name }}</td>
                             <td class="text-center">{{ sign.stream.projectName }}</td>
+                            <td class="text-center">{{ sign.stage}}</td>
                             <td class="text-center">
                                 <input type="submit" class="btn btn-default" name="checkStreamDetail{{ sign.stream.id }}" value="查看">
                             </td>
@@ -319,8 +321,8 @@
                         <div class="modal-content well">
                             <label for="signOkPassword">请输入密码:</label>
                             <input type="password" name="signOkPassword" maxlength="24" class="form-control" placeholder="请输入密码">
-                            <label for="signOkDiscript">请输入留言</label>
-                            <input type="text" name="signOkDiscript" type="submit" class="form-control" maxlength=1024>
+                            <label for="signOkDescript">请输入留言</label>
+                            <input type="text" name="signOkDescript" type="submit" class="form-control" maxlength=1024>
                             <div class="modal-footer">
                                 <button type="button" class="btn btn-default" data-dismiss="modal">取消</button>
                                 <button id="signOkConfirm" type="submit" class="btn btn-primary">确定</button>

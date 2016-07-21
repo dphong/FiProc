@@ -42,3 +42,9 @@ class ApprovalForm(forms.Form):
         if stream.streamType == 'travelApproval':
             form = TravelApprovalForm(request.GET)
             return form.detail(request, stream)
+
+    def postDetail(self, request):
+        if 'TravelRecord' in request.session:
+            form = TravelApprovalForm(request.POST)
+            return form.submitPost(request)
+        return HttpResponseRedirect(reverse('index', args={''}))

@@ -55,23 +55,26 @@ class TravelApprovalForm(forms.Form):
             {'form': form, 'schoolMasterList': schoolMasterList, 'departmentList': departmentList})
 
     def submitPost(self, request):
-        if 'TravelRecord' not in request.session:
-            return HttpResponseRedirect(reverse('index', args={''}))
         try:
             record = TravelRecord.objects.get(id=request.session['TravelRecord'])
+            del request.session['TravelRecord']
         except:
             messages.add_message(request, messages.ERROR, '提交审批单失败')
             return HttpResponseRedirect(reverse('index', args={''}))
         sign = SignRecord()
         try:
-            sign.signer = Staff.objects.get(id=self.cleaned_data['approvalSigner'])
+            sign.signer = Staff.objects.get(id=request.POST['approvalSigner'])
         except:
             messages.add_message(request, messages.ERROR, '审批人信息异常，无法提交申请')
             return HttpResponseRedirect(reverse('index', args={''}))
         if request.POST['departmentMasterSelect'] == 'isDepartmentMaster':
-            sign.stage = 'approvalDepartment'
-        else:
             sign.stage = 'approvalSchool'
+        else:
+            sign.stage = 'approvalDepartment'
+        stream = record.fiStream
+        stream.currentStage = 'approving'
+        stream.save()
+        sign.stream = stream
         sign.save()
         record.approvalSign = sign
         record.save()
@@ -97,7 +100,7 @@ class TravelApprovalForm(forms.Form):
         elif tp == 'else':
             record.travelDescript = request.POST['travelTypeDescript']
         else:
-            record.travelDescript = None
+            record.travelDescript = ''
         try:
             record.leaveDate = request.POST['leaveDate']
             record.returnDate = request.POST['returnDate']
@@ -166,7 +169,14 @@ class TravelApprovalForm(forms.Form):
         record.leaveDate = record.leaveDate.strftime('%Y-%m-%d')
         record.returnDate = record.returnDate.strftime('%Y-%m-%d')
         request.session['TravelRecord'] = record.id
+        signer = None
+        signDescript = None
+        if record.approvalSign:
+            signer = record.approvalSign.signer
+            if record.approvalSign.signed:
+                signDescript = record.approvalSign.descript
         return render(request, 'FiProcess/approvalTravel.html',
             {'form': form, 'schoolMasterList': schoolMasterList, 'departmentList': departmentList,
             'travelRecord': record, 'carPlate': carPlate, 'carDriver': carDriver, 'funDeptId': record.fiStream.supportDept.id,
-            'submitApproval': True, 'signerList': self.getSignerList(record.fiStream.supportDept)})
+            'submitApproval': True, 'signerList': self.getSignerList(record.fiStream.supportDept), 'signer': signer,
+            'signDescript': signDescript})

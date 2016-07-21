@@ -236,7 +236,6 @@ class CommonStreamDetail(forms.Form):
         else:
             messages.add_message(request, messages.ERROR, '提交报销单失败, 查找部门负责人失败')
             return HttpResponseRedirect(reverse('index', args={''}))
-        sign1.signTime = datetime.now()
         sign1.stage = 'department1'
         sign1.save()
         stream.currentStage = 'department1'
@@ -250,7 +249,6 @@ class CommonStreamDetail(forms.Form):
             else:
                 messages.add_message(request, messages.ERROR, '提交报销单失败, 查找部门书记失败')
                 return HttpResponseRedirect(reverse('index', args={''}))
-            sign2.signTime = datetime.now()
             sign2.stage = 'department2'
             sign2.save()
         if 'schoolSign1' in request.POST:
@@ -262,7 +260,6 @@ class CommonStreamDetail(forms.Form):
             except:
                 messages.add_message(request, messages.ERROR, '提交报销单失败, 查找分管校长信息失败')
                 return HttpResponseRedirect(reverse('index', args={''}))
-            schoolSign1.signTime = datetime.now()
             schoolSign1.stage = 'school1'
             schoolSign1.save()
         if 'schoolSign2' in request.POST:
@@ -274,7 +271,6 @@ class CommonStreamDetail(forms.Form):
             except:
                 messages.add_message(request, messages.ERROR, '提交报销单失败, 查找主管财务校长信息失败')
                 return HttpResponseRedirect(reverse('index', args={''}))
-            schoolSign2.signTime = datetime.now()
             schoolSign2.stage = 'school2'
             schoolSign2.save()
         if 'schoolSign3' in request.POST:
@@ -286,7 +282,6 @@ class CommonStreamDetail(forms.Form):
             except:
                 messages.add_message(request, messages.ERROR, '提交报销单失败, 查找校长信息失败')
                 return HttpResponseRedirect(reverse('index', args={''}))
-            schoolSign3.signTime = datetime.now()
             schoolSign3.stage = 'school3'
             schoolSign3.save()
         messages.add_message(request, messages.SUCCESS, '提交报销单成功')

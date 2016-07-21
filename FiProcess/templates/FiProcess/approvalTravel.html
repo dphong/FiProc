@@ -78,13 +78,21 @@
         <h4>{{errorMsg}}</h4>
     </div>
     {% endif %}
+    {% if signer and not signDescript %}
+    <div class="alert alert-success">
+        <button type="button" class="close" data-dismiss="success">×</button>
+        <h4>审批单由 {{signer.name}} 审批中</h4>
+    </div>
+    {% endif %}
     <form id="streamForm" data-toggle="validator" role="form" class="form" action="" method="post">
         {% csrf_token %}
         <div class="form-group">
-        {% if submitApproval %}
-            <input name="submitApprovalTravel" type="submit" class="btn btn-primary" value="提交审批单"></input>
-        {% else %}
-            <input name="createApprovalTravel" type="submit" class="btn btn-primary" value="创建"></input>
+        {% if not signer %}
+            {% if submitApproval %}
+                <input name="submitApprovalTravel" type="submit" class="btn btn-primary" value="提交审批单"></input>
+            {% else %}
+                <input name="createApprovalTravel" type="submit" class="btn btn-primary" value="创建"></input>
+            {% endif %}
         {% endif %}
         </div>
         <div class="well">
@@ -186,6 +194,12 @@
                     </select>
                 </div>
             </div>
+            {% if signer %}
+            {% if signDescript %}
+            <label class="control-label">审批意见</label>
+            <input type="text" disabled value="{{signDescript}}" class="form-control">
+            {% endif %}
+            {% else %}
             {% if submitApproval %}
             <div class="row">
                 <div class="col-md-4">
@@ -204,6 +218,7 @@
                     </select>
                 </div>
             </div>
+            {% endif %}
             {% endif %}
         </div>
     </form>
