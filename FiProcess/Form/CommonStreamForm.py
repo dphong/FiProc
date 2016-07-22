@@ -13,7 +13,6 @@ import IndexForm
 
 
 class CommonStreamForm(ModelForm):
-
     class Meta:
         model = FiStream
         fields = ['applyDate', 'supportDept', 'projectName', 'streamDiscript']
@@ -253,13 +252,7 @@ class CommonStreamForm(ModelForm):
             ccbRec.receiverBelong = ''
         ccbRec.save()
 
-    def modify(self, request):
-        fiStreamId = request.session['streamId']
-        del request.session['streamId']
-        try:
-            fiStream = FiStream.objects.get(id=fiStreamId)
-        except:
-            return HttpResponseRedirect(reverse('error'))
+    def modify(self, request, fiStream):
         form = CommonStreamForm(
             initial={
                 'department': fiStream.applicante.department.name,
@@ -274,9 +267,9 @@ class CommonStreamForm(ModelForm):
             }
         )
 
-        icbcQuery = IcbcCardRecord.objects.filter(spendProof__fiStream__id=fiStreamId)
-        ccbQuery = CashPay.objects.filter(spendProof__fiStream__id=fiStreamId)
-        comQuery = CompanyPayRecord.objects.filter(spendProof__fiStream__id=fiStreamId)
+        icbcQuery = IcbcCardRecord.objects.filter(spendProof__fiStream__id=fiStream.id)
+        ccbQuery = CashPay.objects.filter(spendProof__fiStream__id=fiStream.id)
+        comQuery = CompanyPayRecord.objects.filter(spendProof__fiStream__id=fiStream.id)
         icbcList = []
         ccbList = []
         companyList = []

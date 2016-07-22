@@ -13,9 +13,9 @@
     <style type="text/css">
     </style>
     <script type="text/javascript">
-    function cardHolder(prefix, i, value){
+    function name(prefix, i, value, type){
         var result = "<td><div class='form-group'>\
-                    <input name='"+prefix+"_cardHolderName"+i+"' type='text' placeholder='' required ";
+                    <input name='"+prefix+"_"+type+i+"' type='text' placeholder='' required ";
         if (value.length > 0){
             result += "value='" + value + "'";
         }
@@ -30,17 +30,9 @@
         return result + "pattern='^[0-9-]{8,}$' class='form-control input-md'></div></td>\n"
 
     }
-    function icbcActualAmount(i, value){
+    function amount(prefix, i, value, type){
         var result = "<td><div class='form-group'>\
-                        <input name='icbc_actualAmount"+i+"' type='text' placeholder='' required "
-        if (value.length > 0){
-            result += "value='" + value + "'";
-        }
-        return result + " pattern='^[0-9.]*$' class='form-control input-md'></div></td>\n"
-    }
-    function amount(prefix, i, value){
-        var result = "<td><div class='form-group'>\
-                    <input name='"+prefix+"_amount"+i+"' type='text' placeholder='' required ";
+                    <input name='"+prefix+"_"+type+i+"' type='text' placeholder='' required ";
         if (value.length > 0){
             result += "value='" + value + "'";
         }
@@ -54,14 +46,6 @@
         }
         return result + "name='" + prefix + "_account"+i+"' type='text' placeholder='' class='form-control input-md'>\
                 </div></td>\n";
-    }
-    function bankName(prefix, i, value){
-        var result = "<td><div class='form-group'>\
-                    <input name='" + prefix + "_bankName" + i + "' type='text' placeholder='' required ";
-        if (value.length > 0){
-            result += "value='" + value + "'";
-        }
-        return result + "class='form-control input-md'></div></td>\n";
     }
     function spendTypes(prefix, i, selectIdx){
         var result = "<td class='form-group'>\
@@ -129,71 +113,71 @@
         return result;
     }
     {% if list %}
-    function showIcbcList(){
+    function showIcbcList(i){
     {% for item in list %}
-        $('#tab_icbcCard').append("<tr id='addr{{ forloop.counter }}'></tr>");
-        $('#addr{{ forloop.counter }}').html(
-            "<td>{{forloop.counter}}</td>" + cardHolder('icbc', {{ forloop.counter }}, '{{ item.name }}')
-                + icbcDate({{ forloop.counter }}, '{{ item.date }}') 
-                + amount('icbc', {{forloop.counter}}, '{{ item.amount }}')
-                + icbcActualAmount({{forloop.counter}}, '{{ item.actualAmount }}')
-                + cardNum('icbc', {{ forloop.counter }}, '{{ item.icbcCard }}')
-                + spendTypes('icbc', {{ forloop.counter }}, '{{ item.payType }}')
-        );
+        i = addIcbc(i, '{{item.name}}', '{{item.date}}', '{{item.amount}}', '{{item.actualAmount}}', '{{item.icbcCard}}', '{{item.payType}}');
     {% endfor %}
+        return i;
     }
     {% endif %}
     {% if ccbList %}
-    function showCcbList(){
+    function showCcbList(i){
     {% for item in ccbList %}
-        $('#tab_ccbCard').append("<tr id='addr_ccb{{ forloop.counter }}'></tr>");
-        $('#addr_ccb{{ forloop.counter }}').html(
-            "<td>{{ forloop.counter }}</td>" + cardHolder('ccb', {{ forloop.counter }}, '{{ item.name }}')
-                + amount('ccb', {{ forloop.counter }}, '{{ item.amount }}')
-                + cardNum('ccb', {{ forloop.counter }}, '{{ item.ccbCard }}')
-                + bankName('ccb', {{ forloop.counter }}, '{{ item.bankName }}')
-                + spendTypes('ccb', {{ forloop.counter }}, '{{ item.payType }}')
-        );
+        i = addCcb(i, '{{item.name}}', '{{item.amount}}', '{{item.ccbCard}}', '{{item.payType}}');
     {% endfor %}
+        return i;
     }
     {% endif %}
     {% if companyList %}
-    function showCompanyList(){
+    function showCompanyList(i){
     {% for item in companyList %}
-        $('#tab_companyAccount').append("<tr id='addr_com{{ forloop.counter }}'></tr>");
-        $('#addr_com{{ forloop.counter }}').html(
-            "<td>{{ forloop.counter }}</td>" + cardHolder('company', {{ forloop.counter }}, '{{ item.name }}')
-                + amount('company', {{ forloop.counter }}, '{{ item.amount }}')
-                + cardNum('company', {{ forloop.counter }}, '{{ item.ccbCard }}')
-                + bankName('company', {{ forloop.counter }}, '{{ item.bankName }}')
-                + spendTypes('company', {{ forloop.counter }}, '{{ item.payType }}')
-        );
+        i = addCompany(i, '{{item.name}}', '{{item.amount}}', '{{item.ccbCard}}', '{{item.bankName}}', '{{item.payType}}');
     {% endfor %}
+        return i;
     }
     {% endif %}
+    function addIcbc(i, staffName, date, payAmount, actualAmount, card, type){
+        $('#tab_icbcCard').append('<tr id="addr'+i+'"></tr>');
+        $('#addr'+i).html(
+            "<td>"+ i +"</td>\n" + name('icbc', i, staffName, 'cardHolderName') + icbcDate(i, date) + amount('icbc', i, payAmount)
+            + amount('icbc', i, actualAmount, 'actualAmount') + cardNum('icbc', i, card) + spendTypes('icbc', i, type));
+        i++; 
+        $('#streamForm').validator();
+        return i;
+    }
+    function addCcb(i, staffName, payAmount, card, type){
+        $('#tab_ccbCard').append('<tr id="addr_ccb'+i+'"></tr>');
+        $('#addr_ccb'+i).html(
+            "<td>"+i+"</td>\n" + name('ccb', i, staffName, 'cardHolderName') + amount('ccb', i, payAmount, 'amount')
+            + cardNum('ccb', i, card) + spendTypes('ccb', i, type) +"</td>");
+        i++;
+        $('#streamForm').validator();
+        return i;
+    }
+    function addCompany(i, comName, payAmount, card, bankName, type){
+        $('#tab_companyAccount').append('<tr id="addr_com' + i + '"></tr>');
+        $('#addr_com'+i).html(
+            "<td>"+i+"</td>\n" + name('company', i, comName, 'cardHolderName') + amount('company', i, payAmount, 'amount') 
+            + cardNum('company', i, card) + name('company', i, bankName, 'bankName') + spendTypes('company', i, type) + "</td>");
+        i++;
+        $('#streamForm').validator();
+        return i;
+    }
     $(document).ready(function(){
         var i=1;
         var i_ccb = 1;
         var i_com = 1;
         {% if list %}
-            showIcbcList();
-            i += {{ list|length }};
+            i = showIcbcList(i);
         {% endif %}
         {% if ccbList %}
-            showCcbList();
-            i_ccb += {{ ccbList|length }};
+            i_ccb = showCcbList(i_ccb);
         {% endif %}
         {% if companyList %}
-            showCompanyList();
-            i_com += {{ companyList|length }};
+            i_com = showCompanyList(i_com);
         {% endif %}
         $("#add_row").click(function(){
-            $('#tab_icbcCard').append('<tr id="addr'+i+'"></tr>');
-            $('#addr'+i).html(
-                "<td>"+ i +"</td>\n" + cardHolder('icbc', i, '') + icbcDate(i, '') + amount('icbc', i, '')
-                + icbcActualAmount(i, '') + cardNum('icbc', i, '') + spendTypes('icbc', i, '1'));
-            i++; 
-            $('#streamForm').validator()
+            i = addIcbc(i, '', '', '', '', '', '1');
         });
         $("#delete_row").click(function(){
             if(i>1){
@@ -203,12 +187,7 @@
             }
         });
         $("#add_row_ccb").click(function(){
-            $('#tab_ccbCard').append('<tr id="addr_ccb'+i_ccb+'"></tr>');
-            $('#addr_ccb'+i_ccb).html(
-                "<td>"+i_ccb+"</td>\n" + cardHolder('ccb', i_ccb, '') + amount('ccb', i_ccb, '') + cardNum('ccb', i_ccb, '') 
-                    + spendTypes('ccb', i_ccb, '1') +"</td>");
-            i_ccb++;
-            $('#streamForm').validator()
+            i_ccb = addCcb(i_ccb, '', '', '', '1');
         })
         $("#delete_row_ccb").click(function(){
             if(i_ccb>1){
@@ -218,12 +197,7 @@
             }
         })
         $("#add_row_com").click(function(){
-            $('#tab_companyAccount').append('<tr id="addr_com' + i_com + '"></tr>');
-            $('#addr_com'+i_com).html(
-                "<td>"+i_com+"</td>\n" + cardHolder('company', i_com, '') + amount('company', i_com, '') 
-                + cardNum('company', i_com, '') + bankName('company', i_com, '') + spendTypes('company', i_com, '1') + "</td>");
-            i_com++;
-            $('#streamForm').validator()
+            i_com = addCompany(i_com, '', '', '', '', '1')
         })
         $('#delete_row_com').click(function(){
             if(i_com>1){
@@ -292,7 +266,6 @@
                     {% bootstrap_field form.projectLeaderWorkId %}
                 </div>
             </div>
-            <div class="form-group"></div>
             <label for="tab_icbcCard" class="control-label">公务卡刷卡记录</label>
             <table class="table table-bordered table-hover" id="tab_icbcCard">
                 <thead>

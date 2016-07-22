@@ -5,8 +5,6 @@ from django.http import HttpResponseRedirect
 from django.core.urlresolvers import reverse
 from django.contrib import messages
 
-from datetime import datetime
-
 from ..models import IcbcCardRecord, CompanyPayRecord
 from ..models import CashPay, SchoolMaster, SignRecord
 

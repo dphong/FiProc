@@ -256,6 +256,14 @@ class IndexForm(forms.Form):
                     return self.render(request, userInfoForm, staff)
                 messages.add_message(request, messages.SUCCESS, u'审核成功')
                 return self.render(request, userInfoForm, staff)
+            if name.startswith('createApprovalStream'):
+                try:
+                    stream = FiStream.objects.get(id=name[20:])
+                except:
+                    messages.add_message(request, messages.ERROR, u'操作失败')
+                    return self.render(request, userInfoForm, staff)
+                request.session['streamId'] = name[20:]
+                return HttpResponseRedirect(reverse('index', args={'newstream'}))
 
         return logout(request)
 

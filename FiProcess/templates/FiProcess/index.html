@@ -206,7 +206,7 @@
                     </thead>
                     <tbody>
                     {% for order in orderList %}
-                        <tr>
+                        <tr{% if order.currentStage == "拒绝审批" %} class="danger"{% endif %}>
                             <td class="text-center">{{ forloop.counter }}</td>
                             <td class="text-center">{{ order.applyDate }}</td>
                             <td class="text-center">{{ order.supportDept.name }}</td>
@@ -224,6 +224,9 @@
                             {% if order.currentStage == "审批结束" %}
                                 <a href="#submit" data-toggle="modal" class="btn btn-primary"
                                     name="fiProc{{ order.id }}" role="button">报销</a>
+                            {% endif %}
+                            {% if order.currentStage == "已审批" %}
+                                <input type="submit" class="btn btn-success" name="createApprovalStream{{ order.id }}" value="报销单">
                             {% endif %}
                             </td>
                         </tr>

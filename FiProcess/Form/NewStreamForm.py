@@ -7,6 +7,7 @@ from django.contrib import messages
 
 from CommonStreamForm import CommonStreamForm
 from CommonStreamDetail import CommonStreamDetail
+from TravelStreamForm import TravelStreamForm
 
 from ..models import FiStream
 
@@ -14,8 +15,18 @@ from ..models import FiStream
 class NewStreamForm(forms.Form):
     def get(self, request):
         if 'streamId' in request.session:
-            form = CommonStreamForm(request.GET)
-            return form.modify(request)
+            try:
+                stream = FiStream.objects.get(id=request.session['streamId'])
+            except:
+                del request.session['streamId']
+                messages.add_message(request, messages.ERROR, u'操作失败')
+                return HttpResponseRedirect(reverse('index', args={''}))
+            if stream.streamType == 'common':
+                form = CommonStreamForm(request.GET)
+                return form.modify(request, stream)
+            if stream.streamType == 'travelApproval':
+                form = TravelStreamForm(request.GET)
+                return form.get(request, stream)
         return render(request, 'FiProcess/newStream.html')
 
     def newFiStreamType(self, request):
@@ -24,7 +35,7 @@ class NewStreamForm(forms.Form):
             form = CommonStreamForm(request.POST)
             return form.get(request)
         if streamType == 'travel':
-            return render(request, 'FiProcess/travelStream.html')
+            return render(request, 'FiProcess/travelWarning.html')
         if streamType == 'labor':
             return render(request, 'FiProcess/laborStream.html')
         return render(request, 'FiProcess/newStream.html')
@@ -32,7 +43,11 @@ class NewStreamForm(forms.Form):
     def post(self, request):
         if "newStreamType" in request.POST:
             return self.newFiStreamType(request)
+        if 'createNewTravelStream' in request.POST:
+            form = TravelStreamForm(request.POST)
+            return form.postNew(request)
         if "commonStreamForm" in request.POST:
+            del request.session['streamId']
             form = CommonStreamForm(request.POST)
             return form.post(request)
         return render(request, 'FiProcess/newStream.html')

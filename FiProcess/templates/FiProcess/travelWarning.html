@@ -1,0 +1,30 @@
+<!DOCTYPE html>  
+{% load bootstrap3  %} 
+{% load staticfiles %} 
+<html lang="en">  
+<head>  
+    <meta charset="utf-8">  
+    <title>合肥师范学院差旅费报销</title>
+    <meta name="description" content="">  
+    <link rel="stylesheet" type="text/css" href="{% static 'FiProcess/bootstrap.min.css' %}" /> 
+    <script type="text/javascript" src="{% static 'FiProcess/jquery-2.2.4.min.js' %}"></script>
+    <script type="text/javascript" src="{% static 'FiProcess/bootstrap.min.js' %}"></script>
+</head>
+<body>
+    <div class="container" style="max-width:1000px">
+    <h1 align="center">创建新的差旅费报销单</h1>
+    <div class="well">
+    <form class="form" action="" method="post">
+        {% csrf_token %}
+        <textarea id="streamTypeHelp" class="form-control" rows="5" readonly style="resize:none">由审批单可以自动创建差旅费报销单</textarea>
+        <p></p>
+        <a href={% url 'index' '' %} class="btn btn-large btn-success">好的，返回并从差旅审批单直接创建报销单</a>
+        <p></p>
+        <p class="form-actions">  
+            <input name="createNewTravelStream" type="submit" value="不，我要重新创建差旅费报销单" class="btn btn-default">  
+        </p>
+    </form>
+    </div>
+    </div>
+</body>
+</html>
