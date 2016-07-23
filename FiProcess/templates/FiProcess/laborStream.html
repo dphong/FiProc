@@ -13,6 +13,60 @@
     <style type="text/css">
     </style>
     <script type="text/javascript">
+    function text(i, value, type){
+        var result = "<td><div class='form-group'>\
+                    <input name='"+type+i+"' type='text' required ";
+        if (value.length > 0){
+            result += "value='" + value + "'";
+        }
+        return result + " class='form-control input-md'></div></td>\n";
+    }
+    function number(i, value, type){
+        var result = "<td><div class='form-group'>\
+                    <input name='"+type+i+"' type='text' required ";
+        if (value.length > 0){
+            result += "value='" + value + "'";
+        }
+        return result + "pattern='^[0-9]{8,}$'  class='form-control input-md'></div></td>\n";
+    }
+    function date(i, value){
+        var result = "<td><div class='form-group'>\
+                <input name='"+'date'+i+"' type='text' placeholder='年-月-日' required ";
+        if (value.length > 0){
+            result += "value='" + value + "'";
+        }
+        return result + "pattern='^[0-9-]{8,}$' class='form-control input-md'></div></td>\n"
+    }
+    function amount(i, value, type){
+        var result = "<td><div class='form-group'>\
+                    <input name='"+type+i+"' type='text' required ";
+        if (value.length > 0){
+            result += "value='" + value + "'";
+        }
+        return result + " pattern='^[0-9.]*$' class='form-control input-md'></div></td>\n";
+    }
+    function addPay(i, workId, dept, name, duty, projectDate, project, card, bank, payAmount){
+        $('#tab_pay').append('<tr id="addr'+i+'"></tr>');
+        $('#addr'+i).html(
+            "<td>"+ i +"</td>\n" + number(i, workId, 'workId') + text(i, dept, 'dept') + text(i, name, 'name') + text(i, duty, 'duty') + date(i, projectDate) 
+            + text(i, project, 'project') + number(i, card, 'card') + text(i, bank, 'bank') + amount(i, payAmount, 'amount'));
+        i++; 
+        $('#streamForm').validator();
+        return i++;
+    }
+    $(document).ready(function(){
+        var i=1;
+        $("#add_row").click(function(){
+            i = addPay(i, '', '', '', '', '', '', '', '', '');
+        });
+        $("#delete_row").click(function(){
+            if(i>1){
+                $("#addr"+(i-1)).html('');
+                i--;
+                $('#streamForm').validator();
+            }
+        });
+    })
     </script>
 </head>
 
@@ -50,7 +104,6 @@
             </div>
             <div class="row">
                 <div class="form-group col-md-3">
-                    <label class="control-label">经费来源所属部门</label>
                     {% bootstrap_field form.supportDept %}
                 </div>
                 <div class="form-group col-md-9">
@@ -62,15 +115,15 @@
                 <thead>
                     <tr>
                         <th class="text-center">#</th>
-                        <th class="text-center col-md-2">职员代码</th>
-                        <th class="text-center col-md-2">部门</th>
+                        <th class="text-center">职员代码</th>
+                        <th class="text-center">部门</th>
                         <th class="text-center">姓名</th>
                         <th class="text-center">职务(职称)</th>
-                        <th class="text-center col-md-3">时间</th>
-                        <th class="text-center col-md-2">事项</th>
-                        <th class="text-center col-md-2">工资卡号</th>
-                        <th class="text-center col-md-2">开户行</th>
-                        <th class="text-center col-md-2">金额</th>
+                        <th class="text-center">时间</th>
+                        <th class="text-center">事项</th>
+                        <th class="text-center">工资卡号</th>
+                        <th class="text-center">开户行</th>
+                        <th class="text-center">金额</th>
                     </tr>
                 </thead>
                 <tbody>

@@ -9,6 +9,7 @@ from CommonStreamForm import CommonStreamForm
 from CommonStreamDetail import CommonStreamDetail
 from TravelStreamForm import TravelStreamForm
 from TravelStreamDetail import TravelStreamDetail
+from LaborStreamForm import LaborStreamForm
 
 from ..models import FiStream
 
@@ -38,7 +39,8 @@ class NewStreamForm(forms.Form):
         if streamType == 'travel':
             return render(request, 'FiProcess/travelWarning.html')
         if streamType == 'labor':
-            return render(request, 'FiProcess/laborStream.html')
+            form = LaborStreamForm(request.POST)
+            return form.get(request)
         return render(request, 'FiProcess/newStream.html')
 
     def post(self, request):
