@@ -61,7 +61,7 @@
                     <label class="control-label">学校负责人审批</label>\
                     <select name="approvalSigner" id="approvalSigner" class="form-control">\
                         {% for item in schoolMasterList %}\
-                        <option value="{{item.staff.id}}">{{item.staff.name}}({{item.dutyDiscript}})</option>\
+                        <option value="{{item.staff.id}}">{{item.staff.name}}({{item.dutyDescript}})</option>\
                         {% endfor %}\
                     </select>');
                 break;

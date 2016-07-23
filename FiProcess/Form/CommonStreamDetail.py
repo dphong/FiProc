@@ -47,7 +47,7 @@ class CommonStreamDetail(forms.Form):
         ),
     )
     currentStage = forms.CharField()
-    discript = forms.CharField(
+    descript = forms.CharField(
         label=u'经费使用目的',
         widget=forms.TextInput(
             attrs={'readonly': 'readonly'}
@@ -55,7 +55,6 @@ class CommonStreamDetail(forms.Form):
     )
 
     class TypeAmount:
-
         def __init__(self):
             self.type = ''
             self.amount = 0.0
@@ -107,32 +106,25 @@ class CommonStreamDetail(forms.Form):
         ccbQuery = CashPay.objects.filter(spendProof__fiStream__id=stream.id)
         comQuery = CompanyPayRecord.objects.filter(spendProof__fiStream__id=stream.id)
         amount = 0
-        typeAmount = [0 for n in range(15)]
-        icbcList = []
+        typeAmount = [0 for n in range(16)]
         for icbc in icbcQuery:
             amount = amount + icbc.spendProof.spendAmount
             typeAmount[int(icbc.spendProof.spendType)] += icbc.spendProof.spendAmount
             icbc.date = icbc.date.strftime('%Y-%m-%d')
             icbc.cantApplyAmount = icbc.spendProof.spendAmount - icbc.cantApplyAmount
-            icbcList.append(icbc)
-        ccbList = []
         for ccb in ccbQuery:
             amount = amount + ccb.spendProof.spendAmount
             typeAmount[int(ccb.spendProof.spendType)] += ccb.spendProof.spendAmount
-            ccbList.append(ccb)
-        comList = []
         for com in comQuery:
             amount = amount + com.spendProof.spendAmount
             typeAmount[int(com.spendProof.spendType)] += com.spendProof.spendAmount
-            comList.append(com)
         typeList = self.getTypeAmountList(typeAmount)
-        refuseMsg = ""
+        signList = SignRecord.objects.filter(stream__id=stream.id)
         if stream.currentStage == 'refused':
             refuseMsg = u"本报销单被拒绝审批"
-            signList = SignRecord.objects.filter(stream__id=stream.id)
             for item in signList:
                 if item.refused:
-                    refuseMsg += u"，拒绝者：" + item.signer.name + u"，拒绝原因：" + item.discript
+                    refuseMsg += u"，拒绝者：" + item.signer.name + u"，拒绝原因：" + item.descript
             stream.currentStage = refuseMsg
         elif stream.currentStage == 'finish':
             stream.currentStage = u'报销审批流程结束'
@@ -144,8 +136,7 @@ class CommonStreamDetail(forms.Form):
             stream.currentStage = u'报销单已由财务付款'
         elif stream.currentStage != 'create':
             try:
-                sign = SignRecord.objects.get(stream__id__exact=stream.id,
-                                              stage__exact=stream.currentStage)
+                sign = signList.get(stage__exact=stream.currentStage)
             except:
                 messages.add_message(request, messages.ERROR, '审核状态异常')
                 return HttpResponseRedirect(reverse('index', args={''}))
@@ -159,65 +150,54 @@ class CommonStreamDetail(forms.Form):
                 'amount': str(amount),
                 'supportDept': stream.supportDept.name,
                 'currentStage': stream.currentStage,
-                'discript': stream.streamDiscript,
+                'descript': stream.streamDescript,
             }
         )
-
         if not stream.supportDept.chief:
             return render(request, 'FiProcess/commonStreamDetail.html',
-                {'form': form, 'typeList': typeList, 'icbcList': icbcList, 'ccbList': ccbList, 'comList': comList,
-                    'signList': SignRecord.objects.filter(stream__id=stream.id), 'signErrorMsg': u'所属部门负责人不存在!'})
+                {'form': form, 'typeList': typeList, 'icbcList': icbcQuery, 'ccbList': ccbQuery, 'comList': comQuery,
+                    'signList': signList, 'signErrorMsg': u'所属部门负责人不存在!'})
+
+        sign1 = None
+        sign11 = None
+        sign12 = None
+        schoolSign1 = None
+        schoolSign2 = None
+        schoolSign3 = None
         if amount <= 3000 and stream.supportDept.secretary:
-            return render(request, 'FiProcess/commonStreamDetail.html',
-                {'form': form, 'typeList': typeList, 'icbcList': icbcList, 'ccbList': ccbList, 'comList': comList,
-                    'signList': SignRecord.objects.filter(stream__id=stream.id), 'sign1': stream.supportDept})
-        if amount <= 5000:
+            sign1 = stream.supportDept
+        else:
+            # (3000, 5000] region
             if stream.supportDept.secretary:
-                return render(request, 'FiProcess/commonStreamDetail.html',
-                    {'form': form, 'typeList': typeList, 'icbcList': icbcList, 'ccbList': ccbList, 'comList': comList,
-                        'signList': SignRecord.objects.filter(stream__id=stream.id), 'sign12': stream.supportDept})
+                sign12 = stream.supportDept
             else:
-                return render(request, 'FiProcess/commonStreamDetail.html',
-                    {'form': form, 'typeList': typeList, 'icbcList': icbcList, 'ccbList': ccbList, 'comList': comList,
-                        'signList': SignRecord.objects.filter(stream__id=stream.id), 'sign11': stream.supportDept})
-        if amount <= 10000:
-            if stream.supportDept.secretary:
-                return render(request, 'FiProcess/commonStreamDetail.html',
-                    {'form': form, 'typeList': typeList, 'icbcList': icbcList, 'ccbList': ccbList, 'comList': comList,
-                        'signList': SignRecord.objects.filter(stream__id=stream.id), 'sign12': stream.supportDept,
-                        'schoolSign1': SchoolMaster.objects.filter(duty__exact='school1')})
-            else:
-                return render(request, 'FiProcess/commonStreamDetail.html',
-                    {'form': form, 'typeList': typeList, 'icbcList': icbcList, 'ccbList': ccbList, 'comList': comList,
-                        'signList': SignRecord.objects.filter(stream__id=stream.id), 'sign11': stream.supportDept,
-                        'schoolSign1': SchoolMaster.objects.filter(duty__exact='school1')})
-        if amount <= 200000:
-            if stream.supportDept.secretary:
-                return render(request, 'FiProcess/commonStreamDetail.html',
-                    {'form': form, 'typeList': typeList, 'icbcList': icbcList, 'ccbList': ccbList, 'comList': comList,
-                        'signList': SignRecord.objects.filter(stream__id=stream.id), 'sign12': stream.supportDept,
-                        'schoolSign1': SchoolMaster.objects.filter(duty__exact='school1'),
-                        'schoolSign2': SchoolMaster.objects.get(duty__exact='school2')})
-            else:
-                return render(request, 'FiProcess/commonStreamDetail.html',
-                    {'form': form, 'typeList': typeList, 'icbcList': icbcList, 'ccbList': ccbList, 'comList': comList,
-                        'signList': SignRecord.objects.filter(stream__id=stream.id), 'sign11': stream.supportDept,
-                        'schoolSign1': SchoolMaster.objects.filter(duty__exact='school1'),
-                        'schoolSign2': SchoolMaster.objects.get(duty__exact='school2')})
-        # more than 200k
-        if stream.supportDept.secretary:
-            return render(request, 'FiProcess/commonStreamDetail.html',
-                {'form': form, 'typeList': typeList, 'icbcList': icbcList, 'ccbList': ccbList, 'comList': comList,
-                    'signList': SignRecord.objects.filter(stream__id=stream.id), 'sign12': stream.supportDept,
-                    'schoolSign1': SchoolMaster.objects.filter(duty__exact='school1'),
-                    'schoolSign2': SchoolMaster.objects.get(duty__exact='school2'),
-                    'schoolSign3': SchoolMaster.objects.get(duty__exact='school3')})
+                sign11 = stream.supportDept
+            if amount > 5000:
+                schoolSign1 = SchoolMaster.objects.filter(duty__exact='school1')
+            if amount > 10000:
+                try:
+                    schoolSign2 = SchoolMaster.objects.get(duty__exact='school2')
+                except:
+                    schoolSign2 = None
+            if amount > 200000:
+                try:
+                    schoolSign3 = SchoolMaster.objects.get(duty__exact='school3')
+                except:
+                    schoolSign3 = None
+        school1Id = None
+        signId = None
+        unsigned = True
+        for sign in signList:
+            if sign.stage == 'school1':
+                school1Id = sign.signer.id
+            if sign.stage == 'department1':
+                signId = sign.signer.id
+            if sign.signed:
+                unsigned = False
         return render(request, 'FiProcess/commonStreamDetail.html',
-            {'form': form, 'typeList': typeList, 'icbcList': icbcList, 'ccbList': ccbList, 'comList': comList,
-                'signList': SignRecord.objects.filter(stream__id=stream.id), 'sign11': stream.supportDept,
-                'schoolSign1': SchoolMaster.objects.filter(duty__exact='school1'),
-                'schoolSign2': SchoolMaster.objects.get(duty__exact='school2'),
-                'schoolSign3': SchoolMaster.objects.get(duty__exact='school3')})
+            {'form': form, 'typeList': typeList, 'icbcList': icbcQuery, 'ccbList': ccbQuery, 'comList': comQuery, 'signList': signList,
+                'unsigned': unsigned, 'sign1': sign1, 'sign12': sign12, 'sign11': sign11, 'schoolSigner': school1Id, 'signId': signId,
+                'schoolSign1': schoolSign1, 'schoolSign2': schoolSign2, 'schoolSign3': schoolSign3})
 
     def post(self, request, stream):
         sign1 = SignRecord()
@@ -227,9 +207,9 @@ class CommonStreamDetail(forms.Form):
         else:
             messages.add_message(request, messages.ERROR, '提交报销单失败, 未指定部门负责人')
             return HttpResponseRedirect(reverse('index', args={''}))
-        if stream.supportDept.chief and stream.supportDept.chief.name == signer:
+        if stream.supportDept.chief and str(stream.supportDept.chief.id) == signer:
             sign1.signer = stream.supportDept.chief
-        elif stream.supportDept.secretary and stream.supportDept.secretary.name == signer:
+        elif stream.supportDept.secretary and str(stream.supportDept.secretary.id) == signer:
             sign1.signer = stream.supportDept.secretary
         else:
             messages.add_message(request, messages.ERROR, '提交报销单失败, 查找部门负责人失败')

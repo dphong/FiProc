@@ -15,12 +15,12 @@ import IndexForm
 class CommonStreamForm(ModelForm):
     class Meta:
         model = FiStream
-        fields = ['applyDate', 'supportDept', 'projectName', 'streamDiscript']
+        fields = ['applyDate', 'supportDept', 'projectName', 'streamDescript']
         labels = {
             'applyDate': u'报销日期',
             'supportDept': u'经费来源所属部门',
             'projectName': u'经费来源项目名称',
-            'streamDiscript': u'经费使用目的',
+            'streamDescript': u'经费使用目的',
         }
         field_classes = {
             'applyDate': forms.DateField,
@@ -80,7 +80,7 @@ class CommonStreamForm(ModelForm):
             return IndexForm.logout(request, '用户信息异常，请保存本条错误信息，并联系管理员')
         form = CommonStreamForm(
             initial={'department': staff.department.name,
-                'name': staff.name, 'workId': staff.workId, 'applyDate': datetime.today(),
+                'name': staff.name, 'workId': staff.workId, 'applyDate': datetime.today().strftime('%Y-%m-%d'),
                 'projectLeaderWorkId': staff.workId, 'projectLeaderName': staff.name}
         )
         return render(request, 'FiProcess/commonStream.html', {'form': form})
@@ -202,7 +202,7 @@ class CommonStreamForm(ModelForm):
         spendProof.fiStream = stream
         spendProof.spendType = icbc.payType
         spendProof.spendAmount = Decimal(icbc.amount)
-        spendProof.proofDiscript = ''
+        spendProof.proofDescript = ''
         spendProof.save()
         icbcCardRec = IcbcCardRecord()
         icbcCardRec.spendProof = spendProof
@@ -230,7 +230,7 @@ class CommonStreamForm(ModelForm):
         spendProof.fiStream = stream
         spendProof.spendType = ccb.payType
         spendProof.spendAmount = Decimal(ccb.amount)
-        spendProof.proofDiscript = ''
+        spendProof.proofDescript = ''
         spendProof.save()
         return spendProof
 
@@ -263,7 +263,7 @@ class CommonStreamForm(ModelForm):
                 'projectLeaderName': fiStream.applicante.name,
                 'projectName': fiStream.projectName,
                 'supportDept': fiStream.supportDept,
-                'streamDiscript': fiStream.streamDiscript,
+                'streamDescript': fiStream.streamDescript,
             }
         )
 

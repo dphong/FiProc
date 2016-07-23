@@ -8,6 +8,7 @@ from django.contrib import messages
 from CommonStreamForm import CommonStreamForm
 from CommonStreamDetail import CommonStreamDetail
 from TravelStreamForm import TravelStreamForm
+from TravelStreamDetail import TravelStreamDetail
 
 from ..models import FiStream
 
@@ -46,8 +47,10 @@ class NewStreamForm(forms.Form):
         if 'createNewTravelStream' in request.POST:
             form = TravelStreamForm(request.POST)
             return form.postNew(request)
+        if 'travelStreamForm' in request.POST:
+            form = TravelStreamForm(request.POST)
+            return form.post(request)
         if "commonStreamForm" in request.POST:
-            del request.session['streamId']
             form = CommonStreamForm(request.POST)
             return form.post(request)
         return render(request, 'FiProcess/newStream.html')
@@ -64,7 +67,13 @@ class NewStreamForm(forms.Form):
         if stream.streamType == 'common':
             detail = CommonStreamDetail(request.GET)
             return detail.get(request, stream)
+        if stream.streamType == 'travel':
+            detail = TravelStreamDetail(request.GET)
+            return detail.get(request, stream)
         if (stream.streamType == 'travelApproval'or stream.streamType == 'receptApproval'or stream.streamType == 'contractApproval'):
+            if stream.currentStage == 'create':
+                detail = TravelStreamDetail(request.GET)
+                return detail.get(request, stream)
             return HttpResponseRedirect(reverse('index', args={'approvalDetail'}))
         return HttpResponseRedirect(reverse('index', args={''}))
 

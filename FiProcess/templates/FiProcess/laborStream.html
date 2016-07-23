@@ -18,13 +18,73 @@
 
 <body>
     <div class="container" style="max-width:1000px">
-    <form data-toggle="validator" role="form" lass="form" action="" method="post" style="margin:20px 0px 0px 0px">
+    {% if errorMsg %}
+        <div class="alert alert-danger">  
+            <button type="button" class="close" data-dismiss="alert">×</button>  
+                <h4>请更改下列错误信息后重新提交：</h4>
+            {% for msg in errorMsg %}
+                <h4>{{ msg }}</h4>  
+            {% endfor %}
+        </div>  
+    {% endif %}
+    <form id="streamForm" data-toggle="validator" role="form" class="form" action="" method="post" style="margin:20px 0px 0px 0px">
         {% csrf_token %}
         <div class="form-group">  
-            <button type="submit" class="btn btn-primary">创建</button>
+            <input name="laborStreamForm" type="submit" class="btn btn-primary" value="创建"></input>
         </div>
         <div class="well">
             <h3 align="center"><strong>合肥师范学院劳务费报销</strong></h3>
+            <div class="row">
+                <div class="form-group col-md-3">
+                    {% bootstrap_field form.department %}
+                </div>
+                <div class="form-group col-md-3">
+                    {% bootstrap_field form.name %}
+                </div>
+                <div class="form-group col-md-3">
+                    {% bootstrap_field form.workId %}
+                </div>
+                <div class="form-group col-md-3">
+                    {% bootstrap_field form.applyDate %}
+                </div>
+            </div>
+            <div class="row">
+                <div class="form-group col-md-3">
+                    <label class="control-label">经费来源所属部门</label>
+                    {% bootstrap_field form.supportDept %}
+                </div>
+                <div class="form-group col-md-9">
+                    {% bootstrap_field form.projectName %}
+                </div>
+            </div>
+            <label for="tab_pay" class="control-label">劳务发放表</label>
+            <table class="table table-bordered table-hover" id="tab_pay">
+                <thead>
+                    <tr>
+                        <th class="text-center">#</th>
+                        <th class="text-center col-md-2">职员代码</th>
+                        <th class="text-center col-md-2">部门</th>
+                        <th class="text-center">姓名</th>
+                        <th class="text-center">职务(职称)</th>
+                        <th class="text-center col-md-3">时间</th>
+                        <th class="text-center col-md-2">事项</th>
+                        <th class="text-center col-md-2">工资卡号</th>
+                        <th class="text-center col-md-2">开户行</th>
+                        <th class="text-center col-md-2">金额</th>
+                    </tr>
+                </thead>
+                <tbody>
+                </tbody>
+            </table>
+            <div class="row">
+                <div class="col-md-1">
+                    <a id="add_row" class="btn btn-default">增加一条记录</a>
+                </div>
+                <div class="col-md-9"></div>
+                <div class="col-md-1">
+                    <a id='delete_row' class="btn btn-default">删除一条记录</a>
+                </div>
+            </div>
         </div>
     </form>
     <a href={% url 'index' '' %} class="btn btn-large btn-default">返回</a>

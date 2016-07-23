@@ -131,6 +131,7 @@ class TravelApprovalForm(forms.Form):
         fiStream.streamType = 'travelApproval'
         fiStream.applyDate = datetime.now()
         fiStream.projectName = record.reason
+        fiStream.streamDescript = record.travelDescript
         fiStream.save()
         record.fiStream = fiStream
         record.duty = self.cleaned_data['duty']

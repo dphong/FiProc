@@ -39,7 +39,7 @@ class SchoolMaster(models.Model):
     staff = models.ForeignKey(Staff, on_delete=models.CASCADE)
     # duty: 'school1' 'school2' 'school3'
     duty = models.CharField(max_length=16)
-    dutyDiscript = models.CharField(max_length=64, default="")
+    dutyDescript = models.CharField(max_length=64, default="")
 
     def __str__(self):
         return self.staff.name
@@ -55,7 +55,7 @@ class FiStream(models.Model):
     # approval before create: 'unapprove' 'approvalDepartment' 'approvalSchool' 'approved'
     currentStage = models.CharField(max_length=64)
     projectName = models.CharField(max_length=256)
-    streamDiscript = models.CharField(max_length=4096)
+    streamDescript = models.CharField(max_length=4096)
     # type: 'common' 'travel' 'labor' 'travelApproval' 'receptApproval' 'contractApproval'
     streamType = models.CharField(max_length=16)
     cwcSumbitDate = models.DateTimeField(null=True)
@@ -80,7 +80,7 @@ class SpendProof(models.Model):
     # spendType: form '1' to '15'
     spendType = models.CharField(max_length=64)
     spendAmount = models.DecimalField(max_digits=15, decimal_places=2)
-    proofDiscript = models.CharField(max_length=4096)
+    proofDescript = models.CharField(max_length=4096)
 
 
 class CashPay(models.Model):
@@ -124,3 +124,17 @@ class TravelRecord(models.Model):
     # plane train car ship officialCar selfCar else
     travelType = models.CharField(max_length=64)
     travelDescript = models.CharField(max_length=128)
+
+
+class Traveler(models.Model):
+    record = models.ForeignKey(TravelRecord, on_delete=models.CASCADE)
+    name = models.CharField(max_length=64)
+    duty = models.CharField(max_length=32)
+
+
+class TravelRoute(models.Model):
+    record = models.ForeignKey(TravelRecord, on_delete=models.CASCADE)
+    date = models.DateTimeField()
+    start = models.CharField(max_length=128)
+    end = models.CharField(max_length=128)
+    amount = models.DecimalField(max_digits=10, decimal_places=2)

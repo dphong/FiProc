@@ -17,7 +17,7 @@ class DepartmentSelectForm(forms.ModelForm):
 class SchoolMasterForm(forms.ModelForm):
     class Meta:
         model = SchoolMaster
-        fields = ['staff', 'duty', 'dutyDiscript']
+        fields = ['staff', 'duty', 'dutyDescript']
 
     def __init__(self, *args, **kwargs):
         super(SchoolMasterForm, self).__init__(*args, **kwargs)
@@ -30,7 +30,7 @@ class DepartmentAdmin(admin.ModelAdmin):
 
 
 class SchoolMasterAdmin(admin.ModelAdmin):
-    list_display = ('staff', 'duty', 'dutyDiscript')
+    list_display = ('staff', 'duty', 'dutyDescript')
     form = SchoolMasterForm
 
 # Register your models here.

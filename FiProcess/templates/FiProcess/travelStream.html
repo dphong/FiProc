@@ -23,7 +23,7 @@
     }
     function date(prefix, i, value){
         var result = "<td><div class='form-group'>\
-                <input name='"+prefix+i+"' type='text' placeholder='年-月-日' required ";
+                <input name='"+prefix+'_date'+i+"' type='text' placeholder='年-月-日' required ";
         if (value.length > 0){
             result += "value='" + value + "'";
         }
@@ -84,7 +84,23 @@
     {% if ccbList %}
     function showCcbList(i){
     {% for item in ccbList %}
-        i = addCcbRecord(i, '{{item.amount}}', '{{item.payType}}');
+        i = addCcbRecord(i, '{{item.spendAmount}}', '{{item.spendType}}');
+    {% endfor %}
+        return i;
+    }
+    {% endif %}
+    {% if travelerList %}
+    function showTraveler(i){
+    {% for item in travelerList %}
+        i = addTraveler(i, '{{item.name}}', '{{item.duty}}')
+    {% endfor %}
+        return i;
+    }
+    {% endif %}
+    {% if routeList %}
+    function showRoute(i){
+    {% for item in routeList %}
+        i = addTravelRoute(i, '{{item.date}}', '{{item.start}}', '{{item.end}}', '{{item.amount}}')
     {% endfor %}
         return i;
     }
@@ -130,10 +146,16 @@
         var i_ccb = 1;
         var i_traveler = 1;
         {% if list %}
-            i = showIcbcList();
+            i = showIcbcList(i);
         {% endif %}
         {% if ccbList %}
             i_ccb = showCcbList(i_ccb);
+        {% endif %}
+        {% if travelerList %}
+            i_traveler = showTraveler(i_traveler);
+        {% endif %}
+        {% if routeList %}
+            i_travelRoute = showRoute(i_travelRoute);
         {% endif %}
         {% if record %}
             i_traveler = addTraveler(i_traveler, '{{form.name.value}}', '{{record.duty}}');
@@ -188,6 +210,15 @@
 
 <body>
     <div class="container" style="max-width:1000px">
+    {% if errorMsg %}
+        <div class="alert alert-danger">  
+            <button type="button" class="close" data-dismiss="alert">×</button>  
+                <h4>请更改下列错误信息后重新提交：</h4>
+            {% for msg in errorMsg %}
+                <h4>{{ msg }}</h4>  
+            {% endfor %}
+        </div>  
+    {% endif %}
     <form id="streamForm" data-toggle="validator" role="form" class="form" action="" method="post" style="margin:20px 0px 0px 0px">
         {% csrf_token %}
         <div class="form-group">  
@@ -229,7 +260,7 @@
                 </div>
             </div>
             <div class="form-group">
-                {% bootstrap_field form.streamDiscript %}
+                {% bootstrap_field form.streamDescript %}
             </div>
             <div class="row">
                 <div class="form-gourp col-md-3">
@@ -272,7 +303,7 @@
                     </div>
                 </div>
                 <div class="col-md-6">
-                    <label for="tab_traveler" class="control-label">出差人列表</label>
+                    <label for="tab_traveler" class="control-label">出差人员列表</label>
                     <table class="table table-bordered table-hover" id="tab_traveler">
                         <thead>
                             <tr>
