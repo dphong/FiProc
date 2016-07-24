@@ -9,7 +9,7 @@
     <link rel="stylesheet" type="text/css" href="{% static 'FiProcess/bootstrap.min.css' %}" /> 
     <script type="text/javascript" src="{% static 'FiProcess/jquery-2.2.4.min.js' %}"></script>
     <script type="text/javascript" src="{% static 'FiProcess/bootstrap.min.js' %}"></script>
-    <script type="text/javascript" src="{% static 'FiProcess/validator.min.js' %}"></script>
+    <script type="text/javascript" src="{% static 'FiProcess/validator.js' %}"></script>
     <style type="text/css">
     </style>
     <script type="text/javascript">
@@ -27,15 +27,7 @@
         if (value.length > 0){
             result += "value='" + value + "'";
         }
-        return result + "pattern='^[0-9]{8,}$'  class='form-control input-md'></div></td>\n";
-    }
-    function date(i, value){
-        var result = "<td><div class='form-group'>\
-                <input name='"+'date'+i+"' type='text' placeholder='年-月-日' required ";
-        if (value.length > 0){
-            result += "value='" + value + "'";
-        }
-        return result + "pattern='^[0-9-]{8,}$' class='form-control input-md'></div></td>\n"
+        return result + "pattern='^[0-9]*$'  class='form-control input-md'></div></td>\n";
     }
     function amount(i, value, type){
         var result = "<td><div class='form-group'>\
@@ -45,11 +37,25 @@
         }
         return result + " pattern='^[0-9.]*$' class='form-control input-md'></div></td>\n";
     }
-    function addPay(i, workId, dept, name, duty, projectDate, project, card, bank, payAmount){
+    function departmentList(i, value){
+        var result = "<td><div class='form-group'>\
+                    <select class='form-control' name='dept"+i+"' required>\
+                        <option value selected='selected'>------</option>";
+        {% for item in departmentList %}
+            result += "<option value='{{item.id}}'";
+            if('{{item.id}}' == value){
+                result += " selected='selected'";
+            }
+            result += ">{{item.name}}</option>";
+        {% endfor %}
+        result += "</select>";
+        return result + "</div></td>\n";
+    }
+    function addPay(i, workId, dept, name, duty, card, bank, payAmount){
         $('#tab_pay').append('<tr id="addr'+i+'"></tr>');
         $('#addr'+i).html(
-            "<td>"+ i +"</td>\n" + number(i, workId, 'workId') + text(i, dept, 'dept') + text(i, name, 'name') + text(i, duty, 'duty') + date(i, projectDate) 
-            + text(i, project, 'project') + number(i, card, 'card') + text(i, bank, 'bank') + amount(i, payAmount, 'amount'));
+            "<td>"+ i +"</td>\n" + number(i, workId, 'workId') + departmentList(i, dept) + text(i, name, 'name') + text(i, duty, 'duty')
+            + number(i, card, 'card') + text(i, bank, 'bank') + amount(i, payAmount, 'amount'));
         i++; 
         $('#streamForm').validator();
         return i++;
@@ -57,7 +63,8 @@
     $(document).ready(function(){
         var i=1;
         $("#add_row").click(function(){
-            i = addPay(i, '', '', '', '', '', '', '', '', '');
+            i = addPay(i, '', '', '', '', '', '', '');
+            $('#streamForm').validator();
         });
         $("#delete_row").click(function(){
             if(i>1){
@@ -71,7 +78,7 @@
 </head>
 
 <body>
-    <div class="container" style="max-width:1000px">
+    <div class="container" style="max-width:1200px">
     {% if errorMsg %}
         <div class="alert alert-danger">  
             <button type="button" class="close" data-dismiss="alert">×</button>  
@@ -110,19 +117,25 @@
                     {% bootstrap_field form.projectName %}
                 </div>
             </div>
+            <div class="row">
+                <div class="form-group col-md-3">
+                    {% bootstrap_field form.projectLaborTime %}
+                </div>
+                <div class="form-group col-md-9">
+                    {% bootstrap_field form.streamDescript %}
+                </div>
+            </div>
             <label for="tab_pay" class="control-label">劳务发放表</label>
             <table class="table table-bordered table-hover" id="tab_pay">
                 <thead>
                     <tr>
                         <th class="text-center">#</th>
                         <th class="text-center">职员代码</th>
-                        <th class="text-center">部门</th>
+                        <th class="text-center col-md-2">部门</th>
                         <th class="text-center">姓名</th>
                         <th class="text-center">职务(职称)</th>
-                        <th class="text-center">时间</th>
-                        <th class="text-center">事项</th>
-                        <th class="text-center">工资卡号</th>
-                        <th class="text-center">开户行</th>
+                        <th class="text-center col-md-3">工资卡号</th>
+                        <th class="text-center col-md-2">开户行</th>
                         <th class="text-center">金额</th>
                     </tr>
                 </thead>

@@ -6,7 +6,7 @@ from django.http import HttpResponseRedirect
 from django.core.urlresolvers import reverse
 from datetime import datetime
 
-from ..models import Staff, FiStream
+from ..models import Staff, FiStream, Department
 import IndexForm
 
 
@@ -54,6 +54,9 @@ class LaborStreamForm(ModelForm):
     projectLeaderName = forms.CharField(
         label=u'项目负责人'
     )
+    projectLaborTime = forms.CharField(
+        label=u'劳务发生时间'
+    )
 
     def get(self, request):
         staff = IndexForm.getStaffFromRequest(request)
@@ -64,4 +67,4 @@ class LaborStreamForm(ModelForm):
                 'name': staff.name, 'workId': staff.workId, 'applyDate': datetime.today().strftime('%Y-%m-%d'),
                 'projectLeaderWorkId': staff.workId, 'projectLeaderName': staff.name}
         )
-        return render(request, 'FiProcess/laborStream.html', {'form': form})
+        return render(request, 'FiProcess/laborStream.html', {'form': form, 'departmentList': Department.objects.filter()})

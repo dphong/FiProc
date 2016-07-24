@@ -73,9 +73,6 @@ class TravelStreamForm(ModelForm):
                 'cashReceiverId': stream.applicante.workId, 'cashReceiver': stream.applicante.name,
                 'cardNum': stream.applicante.ccbCard}
         )
-        if stream.streamType != "travelApproval":
-            return render(request, 'FiProcess/travelStream.html',
-                {'form': form, 'departmentList': Department.objects.filter()})
         try:
             record = TravelRecord.objects.get(fiStream__id=stream.id)
         except:
@@ -110,9 +107,14 @@ class TravelStreamForm(ModelForm):
         staff = IndexForm.getStaffFromRequest(request)
         if not staff:
             return IndexForm.logout(request, '当前用户登陆异常')
-        stream = FiStream()
-        stream.applicante = staff
-        return self.newTravelForm(request, stream)
+        form = TravelStreamForm(
+            initial={'department': staff.department.name,
+                'name': staff.name, 'workId': staff.workId, 'applyDate': datetime.today().strftime('%Y-%m-%d'),
+                'projectLeaderWorkId': staff.workId, 'projectLeaderName': staff.name,
+                'cashReceiverId': staff.workId, 'cashReceiver': staff.name,
+                'cardNum': staff.ccbCard}
+        )
+        return render(request, 'FiProcess/travelStream.html', {'form': form, 'departmentList': Department.objects.filter()})
 
     class IcbcPay:
         def __init__(self):
@@ -127,6 +129,7 @@ class TravelStreamForm(ModelForm):
     def post(self, request):
         record = None
         stream = None
+        departmentList = None
         if 'streamId' in request.session:
             try:
                 stream = FiStream.objects.get(id=request.session['streamId'])
@@ -159,7 +162,7 @@ class TravelStreamForm(ModelForm):
             stream.currentStage = 'create'
             stream.streamType = 'travel'
             record = TravelRecord()
-
+            departmentList = Department.objects.filter()
         errorMsg = []
         stream.applyDate = request.POST['applyDate']
         try:
@@ -271,7 +274,7 @@ class TravelStreamForm(ModelForm):
             if (len(errorMsg) == 0):
                 errorMsg = None
             return render(request, 'FiProcess/travelStream.html',
-                {'form': form, 'fundDepartment': stream.supportDept, 'ccbList': cashList, 'travelerList': travelerList,
+                {'form': form, 'departmentList': departmentList, 'fundDepartment': stream.supportDept, 'ccbList': cashList, 'travelerList': travelerList,
                  'routeList': routeList, 'list': icbcList, 'errorMsg': errorMsg})
         stream.applyDate = self.cleaned_data['applyDate']
         stream.projectName = self.cleaned_data['projectName']
@@ -286,18 +289,18 @@ class TravelStreamForm(ModelForm):
             record.duty = ''
             record.companionCnt = len(travelerList)
             if len(routeList) > 0:
-                record.leaveDate = routeList[0].date
+                record.leaveDate = datetime.strptime(routeList[0].date, '%Y-%m-%d')
                 record.destination = routeList[0].end
                 record.startPosition = routeList[0].start
             else:
-                record.leaveDate = ''
-                record.returnDate = ''
+                record.leaveDate = datetime.now()
+                record.returnDate = datetime.now()
                 record.destination = ''
                 record.startPosition = ''
             if len(routeList) > 1:
-                record.returnDate = routeList[1].date
+                record.returnDate = datetime.strptime(routeList[1].date, '%Y-%m-%d')
             else:
-                record.returnDate = ''
+                record.returnDate = datetime.now()
             record.travelGrant = 0.0
             record.foodGrant = 0.0
             record.reason = stream.streamDescript

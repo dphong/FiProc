@@ -7,7 +7,7 @@ from django.contrib import messages, auth
 from django.contrib.auth.hashers import check_password, make_password
 from datetime import datetime
 
-from ..models import Staff, StaffCheck, FiStream, SignRecord, TravelRecord
+from ..models import Staff, StaffCheck, FiStream, SignRecord, TravelRecord, Traveler, TravelRoute, IcbcCardRecord, SpendProof
 
 
 class UserInfoForm(forms.Form):
@@ -193,11 +193,25 @@ class IndexForm(forms.Form):
                         stream.delete()
                         messages.add_message(request, messages.ERROR, u'查找删除审批单失败')
                         return self.render(request, userInfoForm, staff)
-                    travelRecord.delete()
-                    messages.add_message(request, messages.SUCCESS, stream.projectName + u' 审批删除成功')
+                    if stream.currentStage == 'create':
+                        queryList = Traveler.objects.filter(record__id=travelRecord.id)
+                        queryList.delete()
+                        queryList = TravelRoute.objects.filter(record__id=travelRecord.id)
+                        queryList.delete()
+                        queryList = SpendProof.objects.filter(fiStream__id=stream.id)
+                        queryList.delete()
+                        queryList = IcbcCardRecord.objects.filter(spendProof__fiStream__id=stream.id)
+                        queryList.delete()
+                        stream.currentStage = 'approved'
+                        stream.save()
+                        messages.add_message(request, messages.SUCCESS, stream.projectName + u' 报销单删除成功')
+                    if stream.currentStage == 'unapprove':
+                        travelRecord.delete()
+                        messages.add_message(request, messages.SUCCESS, stream.projectName + u' 审批删除成功')
+                        stream.delete()
                 else:
                     messages.add_message(request, messages.SUCCESS, stream.projectName + u' 报销单删除成功')
-                stream.delete()
+                    stream.delete()
                 userInfoForm.currentTab = 'order'
                 return self.render(request, userInfoForm, staff)
             if name.startswith('fiProc'):

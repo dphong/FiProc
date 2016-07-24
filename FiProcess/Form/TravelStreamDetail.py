@@ -142,10 +142,9 @@ class TravelStreamDetail(forms.Form):
                 'amount': str(amount),
             }
         )
-        print str(stream.applyDate)
         if not stream.supportDept.chief:
             return render(request, 'FiProcess/commonStreamDetail.html',
-                {'form': form, 'typeList': typeList, 'icbcList': icbcList, 'cashList': cashList,
+                {'form': form, 'stream': stream, 'typeList': typeList, 'icbcList': icbcList, 'cashList': cashList,
                     'signList': signList, 'signErrorMsg': u'所属部门负责人不存在!'})
 
         sign1 = None
@@ -186,6 +185,6 @@ class TravelStreamDetail(forms.Form):
                 unsigned = False
         return render(request, 'FiProcess/travelStreamDetail.html',
             {'form': form, 'typeList': typeList, 'cashList': cashList, 'travelerList': travelerList, 'travelRoute': travelRouteList,
-                'icbcList': icbcList, 'signList': signList,
+                'icbcList': icbcList, 'signList': signList, 'stream': stream,
                 'unsigned': unsigned, 'sign1': sign1, 'sign12': sign12, 'sign11': sign11, 'schoolSigner': school1Id, 'signId': signId,
                 'schoolSign1': schoolSign1, 'schoolSign2': schoolSign2, 'schoolSign3': schoolSign3})

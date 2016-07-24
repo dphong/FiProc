@@ -242,16 +242,17 @@
             <div class="row">
                 <div class="form-group col-md-3">
                     <label class="control-label">经费来源所属部门</label>
-                {% if fundDepartment %}
-                    <input class="form-control" type="text" name="" disabled value="{{fundDepartment}}">
-                {% endif %}
                 {% if departmentList %}
                     <select class="form-control" name="supportDept" required>
                         <option value selected="selected">------</option>
                     {% for item in departmentList %}
-                        <option value="{{item.id}}">{{item.name}}</option>
+                        <option value="{{item.id}}" {% if fundDepartment %}{% if fundDepartment.id == item.id %} selected="selected"{% endif %}{% endif %}>{{item.name}}</option>
                     {% endfor %}
                     </select>
+                {% else %}
+                    {% if fundDepartment %}
+                        <input class="form-control" type="text" name="" disabled value="{{fundDepartment.name}}">
+                    {% endif %}
                 {% endif %}
                 </div>
                 <div class="form-group col-md-9">
