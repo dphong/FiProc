@@ -13,72 +13,93 @@
     <style type="text/css">
     </style>
     <script type="text/javascript">
-    function text(i, value, type){
-        var result = "<td><div class='form-group'>\
-                    <input name='"+type+i+"' type='text' required ";
-        if (value.length > 0){
-            result += "value='" + value + "'";
+    function text(formId, value, label, pattern){
+        var result = "";
+        if (pattern.length > 0){
+            result += "<div class='form-group has-feedback'>";
         }
-        return result + " class='form-control input-md'></div></td>\n";
-    }
-    function number(i, value, type){
-        var result = "<td><div class='form-group'>\
-                    <input name='"+type+i+"' type='text' required ";
-        if (value.length > 0){
-            result += "value='" + value + "'";
+        result += "<label class='control-label'>" + label + "</label>";
+        result += "<input class='form-control' id='" + formId + "' name='" + formId 
+            + "' placeholder='" + label + "'";
+        if (pattern.length > 0){
+            result += " pattern='" + pattern + "'";
         }
-        return result + "pattern='^[0-9]*$'  class='form-control input-md'></div></td>\n";
-    }
-    function amount(i, value, type){
-        var result = "<td><div class='form-group'>\
-                    <input name='"+type+i+"' type='text' required ";
         if (value.length > 0){
-            result += "value='" + value + "'";
+            result += " value='" + value +"'"
         }
-        return result + " pattern='^[0-9.]*$' class='form-control input-md'></div></td>\n";
+        result += " type='text'>";
+        if (pattern.length > 0){
+            result += "</div>";
+        }
+        return result;
     }
-    function departmentList(i, value){
-        var result = "<td><div class='form-group'>\
-                    <select class='form-control' name='dept"+i+"' required>\
-                        <option value selected='selected'>------</option>";
-        {% for item in departmentList %}
-            result += "<option value='{{item.id}}'";
-            if('{{item.id}}' == value){
-                result += " selected='selected'";
-            }
-            result += ">{{item.name}}</option>";
-        {% endfor %}
-        result += "</select>";
-        return result + "</div></td>\n";
+    function staffLabor(workId, name, duty, time, project, card, bank, amount){
+        var result1 = "<div class='col-md-3'>" + text('laborWorkId', workId, '工号', '^[0-9]{6,}$') + "</div>";
+        result1 += "<div class='col-md-3'>" + text('laborName', name, '姓名', '') + "</div>";
+        result1 += "<div class='col-md-3'>" + text('duty', duty, '职称', '') + "</div>";
+        var result2 = "<div class='row'>";
+        result2 += "<div class='col-md-3'>" + text('time', time, '时间', '^[0-9-]{8,}$') + "</div>";
+        result2 += "<div class='col-md-9'>" + text('project', project, '事项', '') + "</div>";
+        result2 += "</div>";
+        result2 += "<div class='row'>";
+        result2 += "<div class='col-md-4'>" + text('card', card, '工资卡号(系统已保存过可不填)', '^[0-9]{8,}$') + "</div>";
+        result2 += "<div class='col-md-5'>" + text('bankName', bank, '开户行', '') + "</div>";
+        result2 += "<div class='col-md-3'>" + text('amount', amount, '应发酬金', '^[0-9.]{1,}$') + "</div>";
+        result2 += "</div>";
+        result2 += "</div>";
+        $('#laborTypeForm1').html(result1);
+        $('#laborTypeForm2').html(result2);
     }
-    function addPay(i, workId, dept, name, duty, card, bank, payAmount){
-        $('#tab_pay').append('<tr id="addr'+i+'"></tr>');
-        $('#addr'+i).html(
-            "<td>"+ i +"</td>\n" + number(i, workId, 'workId') + departmentList(i, dept) + text(i, name, 'name') + text(i, duty, 'duty')
-            + number(i, card, 'card') + text(i, bank, 'bank') + amount(i, payAmount, 'amount'));
-        i++; 
-        $('#streamForm').validator();
-        return i++;
+    function hireLabor(name, dept, duty, personId, time, project, accountName, card, bank, amount){
+        var result1 = "<div class='col-md-3'>" + text('laborName', name, '姓名', '') + "</div>";
+        result1 += "<div class='col-md-3'>" + text('laborDepartment', dept, '单位', '') + "</div>";
+        result1 += "<div class='col-md-3'>" + text('duty', duty, '职称', '') + "</div>";
+        var result2 = "<div class='row'>";
+        result2 += "<div class='col-md-4'>" + text('personId', personId, '身份证号码', '^[0-9xX]{18}$') + "</div>";
+        result2 += "<div class='col-md-5'>" + text('accountName', accountName, '开户名(与姓名一致可不填)', '') + "</div>";
+        result2 += "<div class='col-md-3'>" + text('time', time, '时间', '^[0-9-]{8,}$') + "</div>";
+        result2 += "</div>";
+        result2 += "<div class='row'>";
+        result2 += "<div class='col-md-6'>" + text('project', project, '事项', '') + "</div>";
+        result2 += "<div class='col-md-6'>" + text('card', card, '卡号', '^[0-9]{8,}$') + "</div>";
+        result2 += "</div>";
+        result2 += "<div class='row'>";
+        result2 += "<div class='col-md-6'>" + text('bankName', bank, '开户行', '') + "</div>";
+        result2 += "<div class='col-md-3'>" + text('amount', amount, '应发酬金', '^[0-9.]{1,}$') + "</div>";
+        result2 += "</div>";
+        result2 += "</div>";
+        $('#laborTypeForm1').html(result1);
+        $('#laborTypeForm2').html(result2);
+    }
+    function onLaborTypeChange(){
+        switch (document.getElementById("laborType").selectedIndex){
+            case 0:
+                result = staffLabor('', '', '', '', '', '', '合肥建行城西支行', '');
+                break;
+            case 1:
+                result = hireLabor('', '', '', '', '', '', '', '', '', '');
+                break;
+        }
     }
     $(document).ready(function(){
-        var i=1;
-        $("#add_row").click(function(){
-            i = addPay(i, '', '', '', '', '', '', '');
-            $('#streamForm').validator();
-        });
-        $("#delete_row").click(function(){
-            if(i>1){
-                $("#addr"+(i-1)).html('');
-                i--;
-                $('#streamForm').validator();
-            }
-        });
+        {% if type %}
+            {% if type == 'staff' %}
+            staffLabor('{{pay.staff.workId}}', '{{pay.staff.name}}', '{{pay.duty}}', '{{pay.date}}',
+                '{{pay.reason}}', '{{pay.staff.ccbCard}}', '{{pay.bankName}}', '{{pay.amount}}');
+            {% endif %}
+            {% if type == 'hire' %}
+            document.getElementById("laborType").selectedIndex = 1;
+            hireLabor('{{pay.name}}', '{{pay.belong}}', '{{pay.duty}}', '{{pay.personId}}', '{{pay.date}}',
+                '{{pay.reason}}', '{{pay.accountName}}', '{{payl.card}}', '{{pay.bankName}}', '{{pay.amount}}');
+            {% endif %}
+        {% else %}
+        staffLabor('', '', '', '', '', '', '合肥建行城西支行', '');
+        {% endif %}
     })
     </script>
 </head>
-
 <body>
-    <div class="container" style="max-width:1200px">
+    <div class="container" style="max-width:1000px">
     {% if errorMsg %}
         <div class="alert alert-danger">  
             <button type="button" class="close" data-dismiss="alert">×</button>  
@@ -119,38 +140,68 @@
             </div>
             <div class="row">
                 <div class="form-group col-md-3">
-                    {% bootstrap_field form.projectLaborTime %}
+                    {% bootstrap_field form.projectLeaderWorkId %}
                 </div>
-                <div class="form-group col-md-9">
-                    {% bootstrap_field form.streamDescript %}
+                <div class="form-group col-md-3">
+                    {% bootstrap_field form.projectLeaderName %}
                 </div>
+            </div>
+            <div class="well">
+            <div class="row">
+                <div class="col-md-3">
+                    <label for="laborType">请选择劳务费发放类型</label>
+                    <select name="laborType" id="laborType" class="form-control" onchange="onLaborTypeChange()">
+                        <option value="staff">教职工(有工号)</option>
+                        <option value="hire">其他</option>
+                    </select>
+                </div>
+                <div id="laborTypeForm1"></div>
+            </div>
+            <div id="laborTypeForm2"></div>
+            <div class="row">
+                <div class="col-md-1">
+                    <div class="form-group">  
+                        <button type="submit" id="addLaborRow" name="addLaborRow" class="btn btn-default">增加一条记录</button>
+                    </div>
+                </div>
+            </div>
             </div>
             <label for="tab_pay" class="control-label">劳务发放表</label>
             <table class="table table-bordered table-hover" id="tab_pay">
                 <thead>
                     <tr>
-                        <th class="text-center">#</th>
-                        <th class="text-center">职员代码</th>
-                        <th class="text-center col-md-2">部门</th>
-                        <th class="text-center">姓名</th>
-                        <th class="text-center">职务(职称)</th>
-                        <th class="text-center col-md-3">工资卡号</th>
-                        <th class="text-center col-md-2">开户行</th>
-                        <th class="text-center">金额</th>
+                        <th class="text-center col-md-3">部门(单位)</th>
+                        <th class="text-center col-md-2">姓名</th>
+                        <th class="text-center col-md-3">卡号</th>
+                        <th class="text-center col-md-2">金额</th>
+                        <th class="text-center">操作</th>
                     </tr>
                 </thead>
                 <tbody>
+                {% for item in staffPayList %}
+                    <tr>
+                        <td class="text-center">{{item.staff.department.name}}</td>
+                        <td class="text-center">{{item.staff.name}}</td>
+                        <td class="text-center">{{item.staff.ccbCard}}</td>
+                        <td class="text-center">{{item.amount}}</td>
+                        <td class="text-center">
+                            <input type="submit" class="btn btn-default" name='delStaffLaborPay{{item.id}}' value="删除">
+                        </td>
+                    </tr>
+                {% endfor %}
+                {% for item in hirePayList %}
+                    <tr>
+                        <td class="text-center">{{item.belong}}</td>
+                        <td class="text-center">{{item.name}}</td>
+                        <td class="text-center">{{item.card}}</td>
+                        <td class="text-center">{{item.amount}}</td>
+                        <td class="text-center">
+                            <input type="submit" class="btn btn-default" name='delHireLaborPay{{item.id}}' value="删除">
+                        </td>
+                    </tr>
+                {% endfor %}
                 </tbody>
             </table>
-            <div class="row">
-                <div class="col-md-1">
-                    <a id="add_row" class="btn btn-default">增加一条记录</a>
-                </div>
-                <div class="col-md-9"></div>
-                <div class="col-md-1">
-                    <a id='delete_row' class="btn btn-default">删除一条记录</a>
-                </div>
-            </div>
         </div>
     </form>
     <a href={% url 'index' '' %} class="btn btn-large btn-default">返回</a>

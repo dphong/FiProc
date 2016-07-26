@@ -138,3 +138,27 @@ class TravelRoute(models.Model):
     start = models.CharField(max_length=128)
     end = models.CharField(max_length=128)
     amount = models.DecimalField(max_digits=10, decimal_places=2)
+
+
+class StaffLaborPay(models.Model):
+    stream = models.ForeignKey(FiStream, on_delete=models.CASCADE)
+    staff = models.ForeignKey(Staff, on_delete=models.CASCADE)
+    duty = models.CharField(max_length=32)
+    date = models.DateTimeField()
+    reason = models.CharField(max_length=1024)
+    amount = models.DecimalField(max_digits=10, decimal_places=2)
+    bankName = models.CharField(max_length=128)
+
+
+class HireLaborPay(models.Model):
+    stream = models.ForeignKey(FiStream, on_delete=models.CASCADE)
+    name = models.CharField(max_length=64)
+    card = models.CharField(max_length=24)
+    belong = models.CharField(max_length=256)
+    bankName = models.CharField(max_length=128)
+    personId = models.CharField(max_length=24)
+    accountName = models.CharField(max_length=128)
+    duty = models.CharField(max_length=32)
+    date = models.DateTimeField()
+    reason = models.CharField(max_length=1024)
+    amount = models.DecimalField(max_digits=10, decimal_places=2)

@@ -55,6 +55,9 @@ class NewStreamForm(forms.Form):
         if "commonStreamForm" in request.POST:
             form = CommonStreamForm(request.POST)
             return form.post(request)
+        if "addLaborRow" in request.POST:
+            form = LaborStreamForm(request.POST)
+            return form.postAddRow(request)
         return render(request, 'FiProcess/newStream.html')
 
     def getDetail(self, request):
