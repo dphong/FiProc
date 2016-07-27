@@ -90,7 +90,7 @@
             {% if type == 'hire' %}
             document.getElementById("laborType").selectedIndex = 1;
             hireLabor('{{pay.name}}', '{{pay.belong}}', '{{pay.duty}}', '{{pay.personId}}', '{{pay.date}}',
-                '{{pay.reason}}', '{{pay.accountName}}', '{{payl.card}}', '{{pay.bankName}}', '{{pay.amount}}');
+                '{{pay.reason}}', '{{pay.accountName}}', '{{pay.card}}', '{{pay.bankName}}', '{{pay.amount}}');
             {% endif %}
         {% else %}
         staffLabor('', '', '', '', '', '', '合肥建行城西支行', '');
@@ -112,7 +112,7 @@
     <form id="streamForm" data-toggle="validator" role="form" class="form" action="" method="post" style="margin:20px 0px 0px 0px">
         {% csrf_token %}
         <div class="form-group">  
-            <input name="laborStreamForm" type="submit" class="btn btn-primary" value="创建"></input>
+            <input name="laborStreamForm" type="submit" class="btn btn-primary" value="生成报销单"></input>
         </div>
         <div class="well">
             <h3 align="center"><strong>合肥师范学院劳务费报销</strong></h3>
@@ -145,6 +145,10 @@
                 <div class="form-group col-md-3">
                     {% bootstrap_field form.projectLeaderName %}
                 </div>
+                <div class="form-group col-md-3">
+                    <label class="control-label">合计金额</label>
+                    <input class="form-control" type="text" readonly="readonly" value="{{total}}">
+                </div>
             </div>
             <div class="well">
             <div class="row">
@@ -152,13 +156,21 @@
                     <label for="laborType">请选择劳务费发放类型</label>
                     <select name="laborType" id="laborType" class="form-control" onchange="onLaborTypeChange()">
                         <option value="staff">教职工(有工号)</option>
-                        <option value="hire">其他</option>
+                        <option value="hire">其他无工号人员</option>
                     </select>
                 </div>
                 <div id="laborTypeForm1"></div>
             </div>
             <div id="laborTypeForm2"></div>
             <div class="row">
+                {% if modify %}
+                <div class="col-md-1">
+                    <div class="form-group">  
+                        <button type="submit" id="modifyLaborRow" name="modifyLaborRow" class="btn btn-success">保存修改</button>
+                    </div>
+                </div>
+                <div class="col-md-1"></div>
+                {% endif %}
                 <div class="col-md-1">
                     <div class="form-group">  
                         <button type="submit" id="addLaborRow" name="addLaborRow" class="btn btn-default">增加一条记录</button>
@@ -186,6 +198,7 @@
                         <td class="text-center">{{item.amount}}</td>
                         <td class="text-center">
                             <input type="submit" class="btn btn-default" name='delStaffLaborPay{{item.id}}' value="删除">
+                            <input type="submit" class="btn btn-default" name='modifyStaffLaborPay{{item.id}}' value="修改">
                         </td>
                     </tr>
                 {% endfor %}
@@ -197,6 +210,7 @@
                         <td class="text-center">{{item.amount}}</td>
                         <td class="text-center">
                             <input type="submit" class="btn btn-default" name='delHireLaborPay{{item.id}}' value="删除">
+                            <input type="submit" class="btn btn-default" name='modifyHireLaborPay{{item.id}}' value="修改">
                         </td>
                     </tr>
                 {% endfor %}

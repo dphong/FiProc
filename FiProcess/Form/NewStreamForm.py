@@ -43,6 +43,22 @@ class NewStreamForm(forms.Form):
             return form.get(request)
         return render(request, 'FiProcess/newStream.html')
 
+    def laborPost(self, request):
+        for name, value in request.POST.iteritems():
+            if name.startswith('delStaffLaborPay'):
+                form = LaborStreamForm(request.POST)
+                return form.delStaffLaborPay(request, int(name[16:]))
+            if name.startswith('modifyStaffLaborPay'):
+                form = LaborStreamForm(request.POST)
+                return form.modifyStaffLaborPay(request, int(name[19:]))
+            if name.startswith('delHireLaborPay'):
+                form = LaborStreamForm(request.POST)
+                return form.delHireLaborPay(request, int(name[15:]))
+            if name.startswith('modifyHireLaborPay'):
+                form = LaborStreamForm(request.POST)
+                return form.modifyHireLaborPay(request, int(name[18:]))
+        return None
+
     def post(self, request):
         if "newStreamType" in request.POST:
             return self.newFiStreamType(request)
@@ -58,6 +74,12 @@ class NewStreamForm(forms.Form):
         if "addLaborRow" in request.POST:
             form = LaborStreamForm(request.POST)
             return form.postAddRow(request)
+        if "modifyLaborRow" in request.POST:
+            form = LaborStreamForm(request.POST)
+            return form.postModifyRow(request)
+        response = self.laborPost(request)
+        if response:
+            return response
         return render(request, 'FiProcess/newStream.html')
 
     def getDetail(self, request):
@@ -75,6 +97,9 @@ class NewStreamForm(forms.Form):
         if stream.streamType == 'travel':
             detail = TravelStreamDetail(request.GET)
             return detail.get(request, stream)
+        if stream.streamType == 'labor':
+            detail = LaborStreamForm(request.GET)
+            return detail.getDetail(request, stream)
         if (stream.streamType == 'travelApproval'or stream.streamType == 'receptApproval'or stream.streamType == 'contractApproval'):
             if 'approv' in stream.currentStage:
                 return HttpResponseRedirect(reverse('index', args={'approvalDetail'}))
@@ -89,7 +114,6 @@ class NewStreamForm(forms.Form):
         if 'modifyStream' in request.POST:
             return HttpResponseRedirect(reverse('index', args={'newstream'}))
         streamId = request.session['streamId']
-        del request.session['streamId']
         try:
             stream = FiStream.objects.get(id=streamId)
         except:
@@ -97,6 +121,15 @@ class NewStreamForm(forms.Form):
             return HttpResponseRedirect(reverse('index', args={''}))
         if 'createStream' in request.POST:
             return self.signPost(request, stream)
+        if "addLaborRow" in request.POST:
+            form = LaborStreamForm(request.POST)
+            return form.postAddRow(request)
+        if "modifyLaborRow" in request.POST:
+            form = LaborStreamForm(request.POST)
+            return form.postModifyRow(request)
+        response = self.laborPost(request)
+        if response:
+            return response
         return HttpResponseRedirect(reverse('index', args={''}))
 
     def signPost(self, request, stream):

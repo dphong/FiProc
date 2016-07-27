@@ -66,7 +66,27 @@ class LaborStreamForm(ModelForm):
         )
         return render(request, 'FiProcess/laborStream.html', {'form': form, 'departmentList': Department.objects.filter()})
 
-    def postAddRow(self, request):
+    def getPayList(self, stream):
+        amount = 0
+        staffPayList = StaffLaborPay.objects.filter(stream__id=stream.id)
+        for pay in staffPayList:
+            amount += pay.amount
+        hirePayList = HireLaborPay.objects.filter(stream__id=stream.id)
+        for pay in hirePayList:
+            amount += pay.amount
+        return (amount, staffPayList, hirePayList)
+
+    def getDetail(self, request, stream):
+        amount, staffPayList, hirePayList = self.getPayList(stream)
+        form = LaborStreamForm(
+            initial={'department': stream.applicante.department.name, 'projectName': stream.projectName, 'supportDept': stream.supportDept,
+                'name': stream.applicante.name, 'workId': stream.applicante.workId, 'applyDate': stream.applyDate.strftime('%Y-%m-%d'),
+                'projectLeaderWorkId': stream.projectLeader.workId, 'projectLeaderName': stream.projectLeader.name}
+        )
+        return render(request, 'FiProcess/laborStream.html',
+            {'form': form, 'departmentList': Department.objects.filter(), 'staffPayList': staffPayList, 'hirePayList': hirePayList, 'total': amount})
+
+    def postAddRow(self, request, modifyLabor=None):
         stream = None
         if 'streamId' in request.session:
             try:
@@ -150,15 +170,84 @@ class LaborStreamForm(ModelForm):
             except:
                 errorMsg.append(u'\n应发酬金格式错误')
         if len(errorMsg):
-            staffPayList = StaffLaborPay.objects.filter(stream__id=stream.id)
-            hirePayList = HireLaborPay.objects.filter(stream__id=stream.id)
+            amount, staffPayList, hirePayList = self.getPayList(stream)
             return render(request, 'FiProcess/laborStream.html',
                 {'form': self, 'departmentList': Department.objects.filter(), 'type': request.POST['laborType'],
-                    'pay': pay, 'errorMsg': errorMsg, 'staffPayList': staffPayList, 'hirePayList': hirePayList})
+                    'pay': pay, 'errorMsg': errorMsg, 'staffPayList': staffPayList, 'hirePayList': hirePayList,
+                    'total': amount})
         pay.amount = float(pay.amount)
         pay.date = datetime.strptime(pay.date, '%Y-%m-%d')
         pay.save()
-        staffPayList = StaffLaborPay.objects.filter(stream__id=stream.id)
-        hirePayList = HireLaborPay.objects.filter(stream__id=stream.id)
+        if modifyLabor:
+            print modifyLabor
+            modifyLabor.delete()
+        return self.renderForm(request, stream)
+
+    def postModifyRow(self, request):
+        if 'staffLaborId' in request.session:
+            labor = StaffLaborPay.objects.filter(id=request.session['staffLaborId'])
+            del request.session['staffLaborId']
+        if 'hireLaborId' in request.session:
+            labor = HireLaborPay.objects.filter(id=request.session['hireLaborId'])
+            del request.session['hireLaborId']
+        if 'streamId' not in request.session:
+            messages.add_message(request, messages.ERROR, u'操作失败')
+            return HttpResponseRedirect(reverse('index', args={''}))
+        print labor
+        return self.postAddRow(request, labor)
+
+    def renderForm(self, request, stream):
+        amount, staffPayList, hirePayList = self.getPayList(stream)
         return render(request, 'FiProcess/laborStream.html',
-            {'form': self, 'departmentList': Department.objects.filter(), 'staffPayList': staffPayList, 'hirePayList': hirePayList})
+            {'form': self, 'departmentList': Department.objects.filter(), 'staffPayList': staffPayList,
+            'hirePayList': hirePayList, 'total': amount})
+
+    def laborPayExcept(self, request):
+        if 'streamId' in request.session:
+            try:
+                stream = FiStream.objects.get(id=request.session['streamId'])
+                return self.renderForm(request, stream)
+            except:
+                pass
+        messages.add_message(request, messages.ERROR, u'操作失败')
+        return HttpResponseRedirect(reverse('index', args={''}))
+
+    def delStaffLaborPay(self, request, staffLaborId):
+        try:
+            labor = StaffLaborPay.objects.get(id=staffLaborId)
+        except:
+            return self.laborPayExcept(request)
+        labor.delete()
+        return self.renderForm(request, labor.stream)
+
+    def modifyStaffLaborPay(self, request, staffLaborId):
+        try:
+            labor = StaffLaborPay.objects.get(id=staffLaborId)
+        except:
+            return self.laborPayExcept(request)
+        request.session['staffLaborId'] = labor.id
+        amount, staffPayList, hirePayList = self.getPayList(labor.stream)
+        labor.date = labor.date.strftime('%Y-%m-%d')
+        return render(request, 'FiProcess/laborStream.html',
+            {'form': self, 'departmentList': Department.objects.filter(), 'type': 'staff', 'modify': True,
+                'pay': labor, 'staffPayList': staffPayList, 'hirePayList': hirePayList, 'total': amount})
+
+    def delHireLaborPay(self, request, hireLaborId):
+        try:
+            labor = HireLaborPay.objects.get(id=hireLaborId)
+        except:
+            return self.laborPayExcept(request)
+        labor.delete()
+        return self.renderForm(request, labor.stream)
+
+    def modifyHireLaborPay(self, request, hireLaborId):
+        try:
+            labor = HireLaborPay.objects.get(id=hireLaborId)
+        except:
+            return self.delHireLaborPay(request)
+        request.session['hireLaborId'] = labor.id
+        amount, staffPayList, hirePayList = self.getPayList(labor.stream)
+        labor.date = labor.date.strftime('%Y-%m-%d')
+        return render(request, 'FiProcess/laborStream.html',
+            {'form': self, 'departmentList': Department.objects.filter(), 'type': 'hire', 'modify': True,
+                'pay': labor, 'staffPayList': staffPayList, 'hirePayList': hirePayList, 'total': amount})
