@@ -77,6 +77,10 @@ class NewStreamForm(forms.Form):
         if "modifyLaborRow" in request.POST:
             form = LaborStreamForm(request.POST)
             return form.postModifyRow(request)
+        if "laborStreamForm" in request.POST:
+            return self.postDetail(request)
+        if "createStream" in request.POST:
+            return self.postDetail(request)
         response = self.laborPost(request)
         if response:
             return response
@@ -127,6 +131,9 @@ class NewStreamForm(forms.Form):
         if "modifyLaborRow" in request.POST:
             form = LaborStreamForm(request.POST)
             return form.postModifyRow(request)
+        if "laborStreamForm" in request.POST:
+            form = LaborStreamForm(request.POST)
+            return form.post(request, stream)
         response = self.laborPost(request)
         if response:
             return response

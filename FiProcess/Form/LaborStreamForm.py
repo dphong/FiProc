@@ -7,7 +7,7 @@ from django.core.urlresolvers import reverse
 from django.contrib import messages
 from datetime import datetime
 
-from ..models import Staff, FiStream, Department, StaffLaborPay, HireLaborPay
+from ..models import Staff, FiStream, Department, StaffLaborPay, HireLaborPay, SignRecord, SchoolMaster
 import IndexForm
 
 
@@ -77,6 +77,8 @@ class LaborStreamForm(ModelForm):
         return (amount, staffPayList, hirePayList)
 
     def getDetail(self, request, stream):
+        if stream.currentStage != 'create':
+            return self.post(request, stream)
         amount, staffPayList, hirePayList = self.getPayList(stream)
         form = LaborStreamForm(
             initial={'department': stream.applicante.department.name, 'projectName': stream.projectName, 'supportDept': stream.supportDept,
@@ -85,6 +87,91 @@ class LaborStreamForm(ModelForm):
         )
         return render(request, 'FiProcess/laborStream.html',
             {'form': form, 'departmentList': Department.objects.filter(), 'staffPayList': staffPayList, 'hirePayList': hirePayList, 'total': amount})
+
+    def post(self, request, stream):
+        amount, staffPayList, hirePayList = self.getPayList(stream)
+        if stream.currentStage == 'create':
+            stream.currentStage = 'cantModify'
+            stream.save()
+        form = LaborStreamForm(
+            initial={'department': stream.applicante.department.name, 'projectName': stream.projectName, 'supportDept': stream.supportDept,
+                'name': stream.applicante.name, 'workId': stream.applicante.workId, 'applyDate': stream.applyDate.strftime('%Y-%m-%d'),
+                'projectLeaderWorkId': stream.projectLeader.workId, 'projectLeaderName': stream.projectLeader.name,
+                'projectName': stream.projectName}
+        )
+        form.fields['applyDate'].widget.attrs['readonly'] = True
+        form.fields['supportDept'].widget.attrs['readonly'] = True
+        form.fields['projectName'].widget.attrs['readonly'] = True
+        form.fields['projectLeaderWorkId'].widget.attrs['readonly'] = True
+        form.fields['projectLeaderName'].widget.attrs['readonly'] = True
+        signList = SignRecord.objects.filter(stream__id=stream.id)
+        if stream.currentStage == 'refused':
+            refuseMsg = u"本报销单被拒绝审批"
+            for item in signList:
+                if item.refused:
+                    refuseMsg += u"，拒绝者：" + item.signer.name + u"，拒绝原因：" + item.descript
+            stream.currentStage = refuseMsg
+        elif stream.currentStage == 'finish':
+            stream.currentStage = u'报销审批流程结束'
+        elif stream.currentStage == 'cwcSubmit':
+            stream.currentStage = u'报销单由财务处分配中'
+        elif stream.currentStage == 'cwcChecking':
+            stream.currentStage = u'报销单由财务处"' + stream.cwcDealer.name + u'"处理中'
+        elif stream.currentStage == 'cwcpaid':
+            stream.currentStage = u'报销单已由财务付款'
+        elif stream.currentStage != 'create' and stream.currentStage != 'cantModify':
+            try:
+                sign = signList.get(stage__exact=stream.currentStage)
+            except:
+                messages.add_message(request, messages.ERROR, '审核状态异常')
+                return HttpResponseRedirect(reverse('index', args={''}))
+            stream.currentStage = u"报销单由 '" + sign.signer.name + u"' 审核中"
+        if not stream.supportDept.chief:
+            return render(request, 'FiProcess/laborStream.html',
+                {'form': form, 'cantModify': True,
+                    'staffPayList': staffPayList, 'hirePayList': hirePayList, 'total': amount,
+                    'signList': signList, 'signErrorMsg': u'所属部门负责人不存在!'})
+        sign1 = None
+        sign11 = None
+        sign12 = None
+        schoolSign1 = None
+        schoolSign2 = None
+        schoolSign3 = None
+        if amount <= 3000 and stream.supportDept.secretary:
+            sign1 = stream.supportDept
+        else:
+            # (3000, 5000] region
+            if stream.supportDept.secretary:
+                sign12 = stream.supportDept
+            else:
+                sign11 = stream.supportDept
+            if amount > 5000:
+                schoolSign1 = SchoolMaster.objects.filter(duty__exact='school1')
+            if amount > 10000:
+                try:
+                    schoolSign2 = SchoolMaster.objects.get(duty__exact='school2')
+                except:
+                    schoolSign2 = None
+            if amount > 200000:
+                try:
+                    schoolSign3 = SchoolMaster.objects.get(duty__exact='school3')
+                except:
+                    schoolSign3 = None
+        school1Id = None
+        signId = None
+        unsigned = True
+        for sign in signList:
+            if sign.stage == 'school1':
+                school1Id = sign.signer.id
+            if sign.stage == 'department1':
+                signId = sign.signer.id
+            if sign.signed:
+                unsigned = False
+        return render(request, 'FiProcess/laborStream.html',
+            {'form': form, 'cantModify': True,
+                'staffPayList': staffPayList, 'hirePayList': hirePayList, 'total': amount, 'signList': signList,
+                'unsigned': unsigned, 'sign1': sign1, 'sign12': sign12, 'sign11': sign11, 'schoolSigner': school1Id, 'signId': signId,
+                'schoolSign1': schoolSign1, 'schoolSign2': schoolSign2, 'schoolSign3': schoolSign3})
 
     def postAddRow(self, request, modifyLabor=None):
         stream = None

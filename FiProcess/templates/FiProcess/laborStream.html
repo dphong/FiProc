@@ -109,10 +109,20 @@
             {% endfor %}
         </div>  
     {% endif %}
+    {% if signErrorMsg %}
+        <div class="alert alert-danger">  
+            <button type="button" class="close" data-dismiss="alert">×</button>  
+            <h4>{{signErrorMsg}}</h4>
+        </div> 
+    {% endif %}
     <form id="streamForm" data-toggle="validator" role="form" class="form" action="" method="post" style="margin:20px 0px 0px 0px">
         {% csrf_token %}
-        <div class="form-group">  
-            <input name="laborStreamForm" type="submit" class="btn btn-primary" value="生成报销单"></input>
+        <div class="form-group">
+        {% if cantModify %}
+            <input name="createStream" type="submit" class="btn btn-primary" value="生成报销单"></input>
+        {% else %}
+            <input name="laborStreamForm" type="submit" class="btn btn-primary" value="创建"></input>
+        {% endif %}
         </div>
         <div class="well">
             <h3 align="center"><strong>合肥师范学院劳务费报销</strong></h3>
@@ -150,6 +160,68 @@
                     <input class="form-control" type="text" readonly="readonly" value="{{total}}">
                 </div>
             </div>
+            {% if cantModify %}
+            {% if sign1 %}
+            <div class="form-group">
+                <label for="sign1">部门负责人审核:</label>
+                <select class="form-control" name="sign1">
+                    <option value="{{sign1.chief.id}}"{% if sign1.chief.id == signId %} selected="selected"{% endif %}>{{ sign1.chief.name }}</option>
+                    <option value="{{sign1.secretary.id}}"{% if sign1.secretary.id == signId %} selected="selected"{% endif %}>{{ sign1.secretary.name }}</option>
+                </select>
+            </div>
+            {% endif %}
+            <div class="row">
+            {% if sign12 %}
+                <div class="col-md-2">
+                    <label for="sign1">部门负责人审核:</label>
+                    <input type="text" class="form-control" name="sign1" value="{{ sign12.chief.name }}" readonly="readonly">
+                </div>
+                <div class="col-md-2">
+                    <label for="sign2">部门书记审核</label>
+                    <input type="text" class="form-control" name="sign2" value="{{ sign12.secretary.name }}" readonly="readonly">
+                </div>
+            {% endif %}
+            {% if sign11 %}
+                <div class="col-md-2">
+                    <label for="sign1">部门负责人审核:</label>
+                    <input type="text" class="form-control" name="sign1" value="{{ sign11.chief.name }}" readonly="readonly">
+                </div>
+            {% endif %}
+            {% if schoolSign1 %}
+                <div class="col-md-3">
+                    <label for="schoolSign1">分管校领导审核:</label>
+                    <select class="form-control" name="schoolSign1">
+                    {% for signer in schoolSign1 %}
+                        <option value="{{ signer.staff.id }}"{% if schoolSigner == signer.staff.id %} selected='selected'{% endif %}>{{ signer.staff.name }}({{ signer.dutyDescript }})</option>
+                    {% endfor %}
+                    </select>
+                </div>
+            {% endif %}
+            {% if schoolSign2 %}
+                <div class="col-md-3">
+                    <label for="schoolSign2">分管财务校领导审核:</label>
+                    <input type="text" class="form-control" name="schoolSign2" value="{{ schoolSign2.staff.name }}" readonly="readonly">
+                </div>
+            {% endif %}
+            {% if schoolSign3 %}
+                <div class="col-md-2">
+                    <label for="schoolSign3">学校负责人审核:</label>
+                    <input type="text" class="form-control" name="schoolSign3" value="{{ schoolSign3.staff.name }}" readonly="readonly">
+                </div>
+            {% endif %}
+            </div>
+            {% if signList %}
+            <label class="form-contorl">审核状态</label>
+                {% for item in signList %}
+                    {% if item.signed %}
+                    <input type="text" class="form-control" readonly="readonly" name="" value="审核人：{{ item.signer.name }}；审核意见：{{ item.descript }}">
+                    {% endif %}
+                {% endfor %}
+                {% if unsigned %}
+                <input type="text" class="form-control" readonly="readonly" value="无">
+                {% endif %}
+            {% endif %}
+            {% else %}
             <div class="well">
             <div class="row">
                 <div class="col-md-3">
@@ -178,6 +250,7 @@
                 </div>
             </div>
             </div>
+            {% endif %}
             <label for="tab_pay" class="control-label">劳务发放表</label>
             <table class="table table-bordered table-hover" id="tab_pay">
                 <thead>
@@ -186,7 +259,9 @@
                         <th class="text-center col-md-2">姓名</th>
                         <th class="text-center col-md-3">卡号</th>
                         <th class="text-center col-md-2">金额</th>
+                        {% if not cantModify %}
                         <th class="text-center">操作</th>
+                        {% endif %}
                     </tr>
                 </thead>
                 <tbody>
@@ -196,10 +271,12 @@
                         <td class="text-center">{{item.staff.name}}</td>
                         <td class="text-center">{{item.staff.ccbCard}}</td>
                         <td class="text-center">{{item.amount}}</td>
+                        {% if not cantModify %}
                         <td class="text-center">
                             <input type="submit" class="btn btn-default" name='delStaffLaborPay{{item.id}}' value="删除">
                             <input type="submit" class="btn btn-default" name='modifyStaffLaborPay{{item.id}}' value="修改">
                         </td>
+                        {% endif %}
                     </tr>
                 {% endfor %}
                 {% for item in hirePayList %}
@@ -208,10 +285,12 @@
                         <td class="text-center">{{item.name}}</td>
                         <td class="text-center">{{item.card}}</td>
                         <td class="text-center">{{item.amount}}</td>
+                        {% if not cantModify %}
                         <td class="text-center">
                             <input type="submit" class="btn btn-default" name='delHireLaborPay{{item.id}}' value="删除">
                             <input type="submit" class="btn btn-default" name='modifyHireLaborPay{{item.id}}' value="修改">
                         </td>
+                        {% endif %}
                     </tr>
                 {% endfor %}
                 </tbody>

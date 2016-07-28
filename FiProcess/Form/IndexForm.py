@@ -294,7 +294,7 @@ class IndexForm(forms.Form):
         stageDic = {'create': u'未提交', 'project': u'项目负责人审核', 'department1': u'部门负责人审核',
                     'department2': u'部门书记审核', 'projectDepartment': u'项目部门负责人审核', 'school1': u'分管校领导审核',
                     'school2': u'财务校领导审核', 'school3': u'学校书记审核', 'financial': u'财务处审核', 'finish': u'审批结束',
-                    'refused': u'拒绝审批', 'cwcSubmit': u'等待财务审核', 'cwcChecking': u'财务正在审核', 'cwcpaid': u'付款完成',
+                    'refused': u'拒绝审批', 'cwcSubmit': u'等待财务审核', 'cwcChecking': u'财务正在审核', 'cwcpaid': u'付款完成', 'cantModify': u'未提交',
                     'unapprove': u'待审批', 'approvalDepartment': u'部门负责人审批中', 'approvalSchool': u'学校负责人审批中', 'approved': u'已审批'}
         for item in streamList:
             item.applyDate = item.applyDate.strftime('%Y-%m-%d')
