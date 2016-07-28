@@ -114,7 +114,7 @@
             <label class="form-contorl">审核状态</label>
                 {% for item in signList %}
                     {% if item.signed %}
-                    <input type="text" class="form-control" readonly="readonly" name="" value="审核人：{{ item.signer.name }}；审核意见：{{ item.descript }}">
+                    <input type="text" class="form-control" readonly="readonly" name="" value="审核人：{{ item.signer.name }}；{{item.signedTime|date:"Y年m月d日"}}审核意见：{{ item.descript }}">
                     {% endif %}
                 {% endfor %}
                 {% if unsigned %}
