@@ -66,7 +66,7 @@ class TravelStreamForm(ModelForm):
 
     def get(self, request, stream):
         form = TravelStreamForm(
-            initial={'descript': stream.descript, 'department': stream.applicante.department.name, 'projectName': stream.projectName
+            initial={'descript': stream.descript, 'department': stream.applicante.department.name, 'projectName': stream.projectName,
                 'name': stream.applicante.name, 'workId': stream.applicante.workId, 'applyDate': datetime.today().strftime('%Y-%m-%d'),
                 'projectLeaderWorkId': stream.applicante.workId, 'projectLeaderName': stream.applicante.name,
                 'cashReceiverId': stream.applicante.workId, 'cashReceiver': stream.applicante.name,

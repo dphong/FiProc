@@ -17,55 +17,91 @@
 </head>
 <body>
     <div class="container" style="max-width:1000px">
+    {% if errorMsg %}
+        <div class="alert alert-danger">  
+            <button type="button" class="close" data-dismiss="alert">×</button>  
+                <h4>请更改下列错误信息后重新提交：</h4>
+            {% for msg in errorMsg %}
+                <h4>{{ msg }}</h4>  
+            {% endfor %}
+        </div>  
+    {% endif %}
     <form id="streamForm" data-toggle="validator" role="form" lass="form" action="" method="post" style="margin:20px 0px 0px 0px">
         {% csrf_token %}
-        <div class="form-group">  
-            <input name="receptForm" type="submit" class="btn btn-primary" value="创建"></input>
+        <div class="form-group">
+            {% if created %}
+            <input name="submitApprovalContract" type="submit" class="btn btn-primary" value="提交审批单"></input>
+            {% else %}
+            <input name="contractForm" type="submit" class="btn btn-primary" value="创建"></input>
+            {% endif %}
         </div>
         <div class="well">
             <h3 align="center"><strong>合肥师范学院经济合同审核会签申请</strong></h3>
             <div class="row">
-                <div class="col-md-3">
-                    {% bootstrap_field form.department %}
+                <div class="form-group col-md-3 has-feedback">
+                    <label class="control-label">经费来源所属部门</label>
+                    {% if departmentList %}
+                        <select class="form-control" name="department" required>
+                            <option value selected="selected">------</option>
+                        {% for item in departmentList %}
+                            <option value="{{item.id}}" {% if myDept %}{% if myDept == item.id %} selected="selected"{% endif %}{% endif %}>{{item.name}}</option>
+                        {% endfor %}
+                        </select>
+                    {% else %}
+                        {% if department %}
+                            <input class="form-control" type="text" name="" disabled value="{{department}}">
+                        {% endif %}
+                    {% endif %}
                 </div>
-                <div class="col-md-3">
+                <div class="col-md-2 form-group has-feedback">
                     {% bootstrap_field form.name %}
                 </div>
-                <div class="col-md-3">
+                <div class="col-md-2 form-group has-feedback">
+                    {% bootstrap_field form.workId %}
+                </div>
+                <div class="col-md-2 form-group has-feedback">
                     {% bootstrap_field form.applyDate %}
                 </div>
                 <div class="col-md-3">
                     <label class="control-label">合同编号</label>
-                    <input type="text" name="contractNumber" class="form-control">
+                    <input type="text" name="contractNumber" class="form-control"
+                    {% if contract %} value='{{contract.number}}'{% endif %}{% if created %} readonly='readonly'{% endif %}>
                 </div>
             </div>
             <div class="row">
                 <div class="col-md-6 form-group has-feedback">
                     <label class="control-label">合同名称</label>
-                    <input type="text" name="contractName" class="form-control" required>
+                    <input type="text" name="contractName" class="form-control" required
+                    {% if stream %} value='{{stream.projectName}}'{% endif %}{% if created %} readonly='readonly'{% endif %}>
                 </div>
                 <div class="col-md-6 form-group has-feedback">
                     <label class="control-label">乙方（对方）名称</label>
-                    <input type="text" name="contractComName" class="form-control" required>
+                    <input type="text" name="contractComName" class="form-control" required
+                    {% if contract %} value='{{contract.target}}'{% endif %}{% if created %} readonly='readonly'{% endif %}>
                 </div>
             </div>
             <div class="row">
                 <div class="col-md-3 form-group has-feedback">
                     <label class="control-label">合同金额</label>
-                    <input type="text" name="contractAmount" class="form-control" pattern="^[0-9.]{2,}$" required>
+                    <input type="text" name="contractAmount" class="form-control" pattern="^[0-9.]{2,}$" required
+                    {% if contract %} value='{{contract.amount}}'{% endif %}{% if created %} readonly='readonly'{% endif %}>
                 </div>
                 <div class="col-md-3 form-group has-feedback">
                     <label class="control-label">项目承办单位</label>
-                    <input type="text" name="contractDept" class="form-control" required>
+                    <input type="text" name="contractDept" class="form-control" required
+                    {% if contract %} value='{{contract.projectCom}}'{% endif %}{% if created %} readonly='readonly'{% endif %}>
                 </div>
                 <div class="col-md-3">
                     <label class="control-label">法律顾问</label>
-                    <input type="text" name="contractLawyer" class="form-control" placeholder="法律顾问审核重大经济合同">
+                    <input type="text" name="contractLawyer" class="form-control" placeholder="法律顾问审核重大经济合同"
+                    {% if contract %} value='{{contract.lawyer}}'{% endif %}{% if created %} readonly='readonly'{% endif %}>
                 </div>
             </div>
             <div class="form-group has-feedback">
                 <label class="control-label">合同主要内容</label>
-                <textarea class="form-control" rows="30" style="resize:none" required></textarea>
+                <textarea class="form-control" name="contractContent" rows="30" style="resize:none" required
+                    {% if created %} readonly='readonly'{% endif %}>{% if contract %}{{contract.content}}{% endif %}
+                </textarea>
             </div>
         </div>
     </form>

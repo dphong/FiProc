@@ -62,9 +62,11 @@ class FiStream(models.Model):
     streamType = models.CharField(max_length=16)
     cwcSumbitDate = models.DateTimeField(null=True)
     cwcDealer = models.ForeignKey(Staff, on_delete=models.CASCADE, related_name="cwcDealer", null=True)
-    def __init__(self):
+
+    def __init__(self, *args, **kwargs):
+        super(FiStream, self).__init__(*args, **kwargs)
         number = datetime.now().strftime('%Y%m%d')
-        number += str(len(FiStream.objects.filter(number__startswith=number))+1)
+        number += str(len(FiStream.objects.filter(number__startswith=number)) + 1)
 
 
 class SignRecord(models.Model):
@@ -167,3 +169,37 @@ class HireLaborPay(models.Model):
     date = models.DateTimeField()
     reason = models.CharField(max_length=1024)
     amount = models.DecimalField(max_digits=10, decimal_places=2)
+
+
+class Recept(models.Model):
+    stream = models.ForeignKey(FiStream, on_delete=models.CASCADE)
+    person = models.CharField(max_length=64)
+    company = models.CharField(max_length=256)
+    date = models.DateTimeField()
+    target = models.CharField(max_length=1024)
+    position = models.CharField(max_length=1024)
+    standard = models.CharField(max_length=128)
+
+
+class ReceptPerson(models.Model):
+    recept = models.ForeignKey(Recept, on_delete=models.CASCADE)
+    name = models.CharField(max_length=64)
+    position = models.CharField(max_length=256)
+    duty = models.CharField(max_length=32)
+    company = models.CharField(max_length=256)
+
+
+class ReceptStaff(models.Model):
+    recept = models.ForeignKey(Recept, on_delete=models.CASCADE)
+    staff = models.ForeignKey(Staff, on_delete=models.CASCADE)
+    duty = models.CharField(max_length=32)
+
+
+class Contract(models.Model):
+    stream = models.ForeignKey(FiStream, on_delete=models.CASCADE)
+    number = models.CharField(max_length=128)
+    target = models.CharField(max_length=256)
+    amount = models.DecimalField(max_digits=15, decimal_places=2)
+    projectCom = models.CharField(max_length=1024)
+    lawyer = models.CharField(max_length=256)
+    content = models.CharField(max_length=20000)
