@@ -72,7 +72,7 @@ class TravelApprovalForm(forms.Form):
         else:
             sign.stage = 'approvalDepartment'
         stream = record.fiStream
-        stream.currentStage = 'approving'
+        stream.stage = 'approving'
         stream.save()
         sign.stream = stream
         sign.save()
@@ -117,7 +117,7 @@ class TravelApprovalForm(forms.Form):
             if not self.is_valid():
                 raise Exception(u'信息错误')
             try:
-                fiStream.supportDept = Department.objects.get(id=request.POST['fundDepartment'])
+                fiStream.department = Department.objects.get(id=request.POST['fundDepartment'])
             except:
                 raise Exception(u'经费来源部门错误')
         except Exception, e:
@@ -127,11 +127,11 @@ class TravelApprovalForm(forms.Form):
                     'fundDeptId': int(request.POST['fundDepartment'])})
         fiStream.applicante = user
         fiStream.projectLeader = user
-        fiStream.currentStage = 'unapprove'
+        fiStream.stage = 'unapprove'
         fiStream.streamType = 'travelApproval'
         fiStream.applyDate = datetime.now()
         fiStream.projectName = record.reason
-        fiStream.streamDescript = record.travelDescript
+        fiStream.descript = record.travelDescript
         fiStream.save()
         record.fiStream = fiStream
         record.duty = self.cleaned_data['duty']
@@ -141,7 +141,7 @@ class TravelApprovalForm(forms.Form):
         return render(request, 'FiProcess/approvalTravel.html',
             {'form': form, 'schoolMasterList': schoolMasterList, 'departmentList': departmentList,
             'travelRecord': record, 'carPlate': carPlate, 'carDriver': carDriver, 'fundDeptId': int(request.POST['fundDepartment']),
-            'submitApproval': True, 'signerList': self.getSignerList(fiStream.supportDept)})
+            'submitApproval': True, 'signerList': self.getSignerList(fiStream.department)})
 
     def getSignerList(self, department):
         signList = []
@@ -178,6 +178,6 @@ class TravelApprovalForm(forms.Form):
                 signDescript = record.approvalSign.descript
         return render(request, 'FiProcess/approvalTravel.html',
             {'form': form, 'schoolMasterList': schoolMasterList, 'departmentList': departmentList,
-            'travelRecord': record, 'carPlate': carPlate, 'carDriver': carDriver, 'funDeptId': record.fiStream.supportDept.id,
-            'submitApproval': True, 'signerList': self.getSignerList(record.fiStream.supportDept), 'signer': signer,
+            'travelRecord': record, 'carPlate': carPlate, 'carDriver': carDriver, 'funDeptId': record.fiStream.department.id,
+            'submitApproval': True, 'signerList': self.getSignerList(record.fiStream.department), 'signer': signer,
             'signDescript': signDescript})

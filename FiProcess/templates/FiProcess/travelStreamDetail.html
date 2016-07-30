@@ -33,7 +33,7 @@
         {% endif %}
         <form class="form" action="" method="post">  
             {% csrf_token %} 
-            {% if form.currentStage.value == "create" %}
+            {% if form.stage.value == "create" %}
             <input name="createStream" type="submit" class="btn btn-primary" {% if form.amount.value == "0" %}disabled=True{% endif %}{% if signErrorMsg %}disabled=True{% endif %} value="生成报销单"></input>
             <input name="modifyStream" type="submit" class="btn btn-primary" value="修改"></input>
             {% if stream.streamType == "travelApproval" %}
@@ -41,12 +41,12 @@
             {% endif %}
             {% else %}
             <div class="alert alert-success">  
-                <h4>{{ form.currentStage.value }}</h4>
+                <h4>{{ form.stage.value }}</h4>
             </div>  
             {% endif %}
             <div class="row">
                 <div class="col-md-3">
-                    {% bootstrap_field form.department %}
+                    {% bootstrap_field form.myDepartment %}
                 </div>
                 <div class="col-md-2">
                     {% bootstrap_field form.name %}
@@ -58,7 +58,7 @@
                     {% bootstrap_field form.applyDate %}
                 </div>
                 <div class="col-md-3">
-                    {% bootstrap_field form.supportDept %}
+                    {% bootstrap_field form.department %}
                 </div>
             </div>
             {% if sign1 %}

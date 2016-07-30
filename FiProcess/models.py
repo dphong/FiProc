@@ -2,6 +2,7 @@ from __future__ import unicode_literals
 
 from django.db import models
 from django.utils.encoding import python_2_unicode_compatible
+from datetime import datetime
 
 
 @python_2_unicode_compatible  # only if you need to support Python 2
@@ -46,20 +47,24 @@ class SchoolMaster(models.Model):
 
 
 class FiStream(models.Model):
+    number = models.CharField(max_length=12)
     applicante = models.ForeignKey(Staff, on_delete=models.CASCADE, related_name="applicante")
     applyDate = models.DateTimeField()
-    supportDept = models.ForeignKey(Department, on_delete=models.CASCADE)
+    department = models.ForeignKey(Department, on_delete=models.CASCADE)
     projectLeader = models.ForeignKey(Staff, on_delete=models.CASCADE, related_name="projectLeader")
     # stage: 'create' 'project' 'department1' 'department2' 'projectDepartment' 'school1' 'school2' 'school3'
     #        'financial' 'finish' 'refused' 'cwcSubmit' 'cwcChecking' 'cwcpaid' 'cantModify'
     # approval before create: 'unapprove' 'approvalDepartment' 'approvalSchool' 'approved'
-    currentStage = models.CharField(max_length=64)
+    stage = models.CharField(max_length=64)
     projectName = models.CharField(max_length=256)
-    streamDescript = models.CharField(max_length=4096)
+    descript = models.CharField(max_length=4096)
     # type: 'common' 'travel' 'labor' 'travelApproval' 'receptApproval' 'contractApproval'
     streamType = models.CharField(max_length=16)
     cwcSumbitDate = models.DateTimeField(null=True)
     cwcDealer = models.ForeignKey(Staff, on_delete=models.CASCADE, related_name="cwcDealer", null=True)
+    def __init__(self):
+        number = datetime.now().strftime('%Y%m%d')
+        number += str(len(FiStream.objects.filter(number__startswith=number))+1)
 
 
 class SignRecord(models.Model):

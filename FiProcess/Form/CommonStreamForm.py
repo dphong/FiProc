@@ -15,18 +15,18 @@ import IndexForm
 class CommonStreamForm(ModelForm):
     class Meta:
         model = FiStream
-        fields = ['applyDate', 'supportDept', 'projectName', 'streamDescript']
+        fields = ['applyDate', 'department', 'projectName', 'descript']
         labels = {
             'applyDate': u'报销日期',
-            'supportDept': u'经费来源所属部门',
+            'department': u'经费来源所属部门',
             'projectName': u'经费来源项目名称',
-            'streamDescript': u'经费使用目的',
+            'descript': u'经费使用目的',
         }
         field_classes = {
             'applyDate': forms.DateField,
         }
 
-    department = forms.CharField(
+    myDepartment = forms.CharField(
         label=u'部门',
         widget=forms.TextInput(
             attrs={
@@ -79,7 +79,7 @@ class CommonStreamForm(ModelForm):
         if not staff:
             return IndexForm.logout(request, '用户信息异常，请保存本条错误信息，并联系管理员')
         form = CommonStreamForm(
-            initial={'department': staff.department.name,
+            initial={'myDepartment': staff.department.name,
                 'name': staff.name, 'workId': staff.workId, 'applyDate': datetime.today().strftime('%Y-%m-%d'),
                 'projectLeaderWorkId': staff.workId, 'projectLeaderName': staff.name}
         )
@@ -178,7 +178,7 @@ class CommonStreamForm(ModelForm):
             return IndexForm.logout(request, u'用户信息异常，请保存本条错误信息，并联系管理员')
         stream.applicante = staff
         stream.projectLeader = staff
-        stream.currentStage = 'create'
+        stream.stage = 'create'
         stream.streamType = 'common'
         stream.save()
         for icbc in icbcList:
@@ -255,15 +255,15 @@ class CommonStreamForm(ModelForm):
     def modify(self, request, fiStream):
         form = CommonStreamForm(
             initial={
-                'department': fiStream.applicante.department.name,
+                'myDepartment': fiStream.applicante.department.name,
                 'name': fiStream.applicante.name,
                 'workId': fiStream.applicante.workId,
                 'applyDate': fiStream.applyDate.strftime('%Y-%m-%d'),
                 'projectLeaderWorkId': fiStream.applicante.workId,
                 'projectLeaderName': fiStream.applicante.name,
                 'projectName': fiStream.projectName,
-                'supportDept': fiStream.supportDept,
-                'streamDescript': fiStream.streamDescript,
+                'department': fiStream.department,
+                'descript': fiStream.descript,
             }
         )
 

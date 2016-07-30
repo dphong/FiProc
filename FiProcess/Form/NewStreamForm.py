@@ -105,7 +105,7 @@ class NewStreamForm(forms.Form):
             detail = LaborStreamForm(request.GET)
             return detail.getDetail(request, stream)
         if (stream.streamType == 'travelApproval'or stream.streamType == 'receptApproval'or stream.streamType == 'contractApproval'):
-            if 'approv' in stream.currentStage:
+            if 'approv' in stream.stage:
                 return HttpResponseRedirect(reverse('index', args={'approvalDetail'}))
             detail = TravelStreamDetail(request.GET)
             return detail.get(request, stream)
@@ -147,12 +147,12 @@ class NewStreamForm(forms.Form):
         else:
             messages.add_message(request, messages.ERROR, '提交报销单失败, 未指定部门负责人')
             return HttpResponseRedirect(reverse('index', args={''}))
-        if stream.supportDept.chief and str(stream.supportDept.chief.id) == signer:
-            sign1.signer = stream.supportDept.chief
-        elif stream.supportDept.secretary and str(stream.supportDept.secretary.id) == signer:
-            sign1.signer = stream.supportDept.secretary
-        elif not stream.supportDept.secretary and stream.supportDept.chief and stream.supportDept.chief.name == signer:
-            sign1.signer = stream.supportDept.chief
+        if stream.department.chief and str(stream.department.chief.id) == signer:
+            sign1.signer = stream.department.chief
+        elif stream.department.secretary and str(stream.department.secretary.id) == signer:
+            sign1.signer = stream.department.secretary
+        elif not stream.department.secretary and stream.department.chief and stream.department.chief.name == signer:
+            sign1.signer = stream.department.chief
         else:
             messages.add_message(request, messages.ERROR, '提交报销单失败, 查找部门负责人失败')
             return HttpResponseRedirect(reverse('index', args={''}))
@@ -165,8 +165,8 @@ class NewStreamForm(forms.Form):
             sign2 = SignRecord()
             sign2.stream = stream
             signer = request.POST['sign2']
-            if stream.supportDept.secretary and stream.supportDept.secretary.name == signer:
-                sign2.signer = stream.supportDept.secretary
+            if stream.department.secretary and stream.department.secretary.name == signer:
+                sign2.signer = stream.department.secretary
             else:
                 messages.add_message(request, messages.ERROR, '提交报销单失败, 查找部门书记失败')
                 return HttpResponseRedirect(reverse('index', args={''}))
@@ -203,7 +203,7 @@ class NewStreamForm(forms.Form):
             schoolSign3.stage = 'school3'
         messages.add_message(request, messages.SUCCESS, '提交报销单成功')
         sign1.save()
-        stream.currentStage = 'department1'
+        stream.stage = 'department1'
         stream.save()
         if sign2:
             sign2.save()

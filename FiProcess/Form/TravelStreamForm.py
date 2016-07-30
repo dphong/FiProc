@@ -14,11 +14,11 @@ import IndexForm
 class TravelStreamForm(ModelForm):
     class Meta:
         model = FiStream
-        fields = ['applyDate', 'projectName', 'streamDescript']
+        fields = ['applyDate', 'projectName', 'descript']
         labels = {
             'applyDate': u'报销日期',
             'projectName': u'经费来源项目名称',
-            'streamDescript': u'经费使用目的',
+            'descript': u'经费使用目的',
         }
         field_classes = {
             'applyDate': forms.DateField,
@@ -66,8 +66,7 @@ class TravelStreamForm(ModelForm):
 
     def get(self, request, stream):
         form = TravelStreamForm(
-            initial={'streamDescript': stream.streamDescript, 'department': stream.applicante.department.name,
-                'projectName': stream.projectName, 'streamDescript': stream.streamDescript,
+            initial={'descript': stream.descript, 'department': stream.applicante.department.name, 'projectName': stream.projectName
                 'name': stream.applicante.name, 'workId': stream.applicante.workId, 'applyDate': datetime.today().strftime('%Y-%m-%d'),
                 'projectLeaderWorkId': stream.applicante.workId, 'projectLeaderName': stream.applicante.name,
                 'cashReceiverId': stream.applicante.workId, 'cashReceiver': stream.applicante.name,
@@ -78,11 +77,11 @@ class TravelStreamForm(ModelForm):
         except:
             messages.add_message(request, messages.ERROR, '查找报销单失败')
             return HttpResponseRedirect(reverse('index', args={''}))
-        if stream.currentStage == 'approved':
+        if stream.stage == 'approved':
             record.leaveDate = record.leaveDate.strftime('%Y-%m-%d')
             record.returnDate = record.returnDate.strftime('%Y-%m-%d')
             return render(request, 'FiProcess/travelStream.html',
-                {'form': form, 'record': record, 'fundDepartment': stream.supportDept})
+                {'form': form, 'record': record, 'fundDepartment': stream.department})
         travelerList = Traveler.objects.filter(record__id=record.id)
         routeList = TravelRoute.objects.filter(record__id=record.id)
         for route in routeList:
@@ -100,7 +99,7 @@ class TravelStreamForm(ModelForm):
             icbc.icbcCard = record.staff.icbcCard
             icbcPayList.append(icbc)
         return render(request, 'FiProcess/travelStream.html',
-            {'form': form, 'fundDepartment': stream.supportDept, 'ccbList': cashList, 'travelerList': travelerList,
+            {'form': form, 'fundDepartment': stream.department, 'ccbList': cashList, 'travelerList': travelerList,
              'routeList': routeList, 'list': icbcPayList})
 
     def postNew(self, request):
@@ -158,8 +157,8 @@ class TravelStreamForm(ModelForm):
             except:
                 messages.add_message(request, messages.ERROR, u'操作失败')
                 return HttpResponseRedirect(reverse('index', args={''}))
-            stream.supportDept = dept
-            stream.currentStage = 'create'
+            stream.department = dept
+            stream.stage = 'create'
             stream.streamType = 'travel'
             record = TravelRecord()
             departmentList = Department.objects.filter()
@@ -170,7 +169,7 @@ class TravelStreamForm(ModelForm):
         except:
             errorMsg.append('报销日期格式错误')
         stream.projectName = request.POST['projectName']
-        stream.streamDescript = request.POST['streamDescript']
+        stream.descript = request.POST['descript']
         plWorkId = request.POST['projectLeaderWorkId']
         plName = request.POST['projectLeaderName']
         try:
@@ -267,24 +266,24 @@ class TravelStreamForm(ModelForm):
             i = i + 1
         if not self.is_valid() or len(errorMsg) > 0:
             form = TravelStreamForm(
-                initial={'department': stream.applicante.department.name, 'projectName': stream.projectName, 'streamDescript': stream.streamDescript,
+                initial={'department': stream.applicante.department.name, 'projectName': stream.projectName, 'descript': stream.descript,
                     'name': stream.applicante.name, 'workId': stream.applicante.workId, 'applyDate': stream.applyDate, 'cashReceiverId': cashId,
                     'cashReceiver': cashName, 'cardNum': cashNum, 'projectLeaderWorkId': plWorkId, 'projectLeaderName': plName}
             )
             if (len(errorMsg) == 0):
                 errorMsg = None
             return render(request, 'FiProcess/travelStream.html',
-                {'form': form, 'departmentList': departmentList, 'fundDepartment': stream.supportDept, 'ccbList': cashList, 'travelerList': travelerList,
+                {'form': form, 'departmentList': departmentList, 'fundDepartment': stream.department, 'ccbList': cashList, 'travelerList': travelerList,
                  'routeList': routeList, 'list': icbcList, 'errorMsg': errorMsg})
         stream.applyDate = self.cleaned_data['applyDate']
         stream.projectName = self.cleaned_data['projectName']
-        stream.streamDescript = self.cleaned_data['streamDescript']
-        stream.currentStage = 'create'
+        stream.descript = self.cleaned_data['descript']
+        stream.stage = 'create'
         stream.save()
         for spendProof in cashList:
             spendProof.fiStream = stream
             spendProof.save()
-        if stream.currentStage == 'create':
+        if stream.stage == 'create':
             record.fiStream = stream
             record.duty = ''
             record.companionCnt = len(travelerList)
@@ -303,7 +302,7 @@ class TravelStreamForm(ModelForm):
                 record.returnDate = datetime.now()
             record.travelGrant = 0.0
             record.foodGrant = 0.0
-            record.reason = stream.streamDescript
+            record.reason = stream.descript
             record.travelType = ''
             record.travelDescript = ''
             record.save()

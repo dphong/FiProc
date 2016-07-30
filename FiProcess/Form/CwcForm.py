@@ -13,15 +13,15 @@ class CwcForm(forms.Form):
     def getStreamList(self, dealer=''):
         streamList = []
         if dealer == '':
-            querySet = FiStream.objects.filter(currentStage='cwcSubmit')
+            querySet = FiStream.objects.filter(stage='cwcSubmit')
         else:
-            querySet = FiStream.objects.filter(currentStage='cwcChecking', cwcDealer__username=dealer)
+            querySet = FiStream.objects.filter(stage='cwcChecking', cwcDealer__username=dealer)
         typeDic = {'common': u'普通', 'travel': u'差旅', 'labor': u'劳务'}
         for item in querySet:
             stream = {}
             stream['projectName'] = item.projectName
             stream['applicante'] = item.applicante.name
-            stream['supportDept'] = item.supportDept.name
+            stream['supportDept'] = item.department.name
             stream['streamType'] = typeDic[item.streamType]
             stream['id'] = item.id
             streamList.append(stream)
@@ -56,12 +56,12 @@ class CwcForm(forms.Form):
                 except:
                     messages.add_message(request, messages.ERROR, u'处理失败')
                     return render(request, 'FiProcess/cwc.html', {'form': self})
-                if item.currentStage == 'cwcSubmit':
+                if item.stage == 'cwcSubmit':
                     item.cwcDealer = staff
-                    item.currentStage = 'cwcChecking'
+                    item.stage = 'cwcChecking'
                     item.save()
-                elif item.currentStage == 'cwcChecking':
-                    item.currentStage = 'cwcpaid'
+                elif item.stage == 'cwcChecking':
+                    item.stage = 'cwcpaid'
                     item.save()
                 return HttpResponseRedirect(reverse('cwc'))
             if name.startswith('checkStreamDetail'):

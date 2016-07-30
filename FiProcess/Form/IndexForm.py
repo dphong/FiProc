@@ -140,16 +140,16 @@ class IndexForm(forms.Form):
         return render(request, 'FiProcess/index.html', {'userInfoForm': userInfoForm, 'orderList': self.getOrderList(request)})
 
     def streamStageChange(self, signRecord):
-        if signRecord.stream.currentStage == 'finish' or signRecord.stream.currentStage == 'refuesd':
-            return signRecord.stream.currentStage
-        if signRecord.stream.currentStage == 'approvalDepartment' or signRecord.stream.currentStage == 'approvalSchool':
+        if signRecord.stream.stage == 'finish' or signRecord.stream.stage == 'refuesd':
+            return signRecord.stream.stage
+        if signRecord.stream.stage == 'approvalDepartment' or signRecord.stream.stage == 'approvalSchool':
             return 'approved'
         stageDict = {'create': 0, 'project': 1, 'department1': 2, 'department2': 3, 'projectDepartment': 4,
                      'school1': 5, 'school2': 6, 'school3': 7, 'financial': 8, 'finish': 9}
         minUnsignedStage = ""
-        if signRecord.signed and (stageDict[signRecord.stage] > stageDict[signRecord.stream.currentStage]):
+        if signRecord.signed and (stageDict[signRecord.stage] > stageDict[signRecord.stream.stage]):
             raise Exception(u"审批状态异常")
-        if not signRecord.signed and (stageDict[signRecord.stage] > stageDict[signRecord.stream.currentStage]):
+        if not signRecord.signed and (stageDict[signRecord.stage] > stageDict[signRecord.stream.stage]):
             if len(minUnsignedStage) == 0 or stageDict[signRecord.stage] < stageDict[minUnsignedStage]:
                 minUnsignedStage = signRecord.stage
         if len(minUnsignedStage) == 0:
@@ -193,7 +193,7 @@ class IndexForm(forms.Form):
                         stream.delete()
                         messages.add_message(request, messages.ERROR, u'查找删除审批单失败')
                         return self.render(request, userInfoForm, staff)
-                    if stream.currentStage == 'create':
+                    if stream.stage == 'create':
                         queryList = Traveler.objects.filter(record__id=travelRecord.id)
                         queryList.delete()
                         queryList = TravelRoute.objects.filter(record__id=travelRecord.id)
@@ -202,10 +202,10 @@ class IndexForm(forms.Form):
                         queryList.delete()
                         queryList = IcbcCardRecord.objects.filter(spendProof__fiStream__id=stream.id)
                         queryList.delete()
-                        stream.currentStage = 'approved'
+                        stream.stage = 'approved'
                         stream.save()
                         messages.add_message(request, messages.SUCCESS, stream.projectName + u' 报销单删除成功')
-                    if stream.currentStage == 'unapprove':
+                    if stream.stage == 'unapprove':
                         travelRecord.delete()
                         messages.add_message(request, messages.SUCCESS, stream.projectName + u' 审批删除成功')
                         stream.delete()
@@ -228,7 +228,7 @@ class IndexForm(forms.Form):
                         item.cwcSumbitDate = datetime(time.year, time.month, time.day, 9, 0, 0)
                     else:
                         item.cwcSumbitDate = datetime(time.year, time.month, time.day, 14, 0, 0)
-                    item.currentStage = 'cwcSubmit'
+                    item.stage = 'cwcSubmit'
                     item.save()
                     messages.add_message(request, messages.SUCCESS, u'报销预约成功')
                     return self.render(request, userInfoForm, staff)
@@ -247,7 +247,7 @@ class IndexForm(forms.Form):
                 item.descript = request.POST['refuseSignReason']
                 item.signedTime = datetime.now()
                 item.save()
-                item.stream.currentStage = 'refused'
+                item.stream.stage = 'refused'
                 item.stream.save()
                 userInfoForm.currentTab = 'signList'
                 return self.render(request, userInfoForm, staff)
@@ -263,7 +263,7 @@ class IndexForm(forms.Form):
                 item.save()
                 userInfoForm.currentTab = 'signList'
                 try:
-                    item.stream.currentStage = self.streamStageChange(item)
+                    item.stream.stage = self.streamStageChange(item)
                     item.stream.save()
                 except Exception, e:
                     messages.add_message(request, messages.ERROR, str(e))
@@ -298,7 +298,7 @@ class IndexForm(forms.Form):
                     'unapprove': u'待审批', 'approvalDepartment': u'部门负责人审批中', 'approvalSchool': u'学校负责人审批中', 'approved': u'已审批'}
         for item in streamList:
             item.applyDate = item.applyDate.strftime('%Y-%m-%d')
-            item.currentStage = stageDic[item.currentStage]
+            item.stage = stageDic[item.stage]
             item.streamType = self.typeDic[item.streamType]
             orderList.append(item)
         return sorted(orderList, key=self.sortOrder, reverse=True)
@@ -307,7 +307,7 @@ class IndexForm(forms.Form):
         signQuery = SignRecord.objects.filter(signer__username__exact=request.session['username'])
         signList = []
         for item in signQuery:
-            if item.stream.currentStage == item.stage and not item.signed:
+            if item.stream.stage == item.stage and not item.signed:
                 item.stage = self.typeDic[item.stream.streamType]
                 signList.append(item)
         return signList

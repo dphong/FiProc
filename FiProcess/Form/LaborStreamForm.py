@@ -14,17 +14,17 @@ import IndexForm
 class LaborStreamForm(ModelForm):
     class Meta:
         model = FiStream
-        fields = ['applyDate', 'supportDept', 'projectName', 'streamDescript']
+        fields = ['applyDate', 'department', 'projectName', 'descript']
         labels = {
             'applyDate': u'报销日期',
-            'supportDept': u'经费来源所属部门',
+            'department': u'经费来源所属部门',
             'projectName': u'经费来源项目名称',
         }
         field_classes = {
             'applyDate': forms.DateField,
         }
 
-    department = forms.CharField(
+    myDepartment = forms.CharField(
         label=u'部门',
         widget=forms.TextInput(
             attrs={
@@ -60,7 +60,7 @@ class LaborStreamForm(ModelForm):
         if not staff:
             return IndexForm.logout(request, '用户信息异常，请保存本条错误信息，并联系管理员')
         form = LaborStreamForm(
-            initial={'department': staff.department.name,
+            initial={'myDepartment': staff.department.name,
                 'name': staff.name, 'workId': staff.workId, 'applyDate': datetime.today().strftime('%Y-%m-%d'),
                 'projectLeaderWorkId': staff.workId, 'projectLeaderName': staff.name}
         )
@@ -77,11 +77,11 @@ class LaborStreamForm(ModelForm):
         return (amount, staffPayList, hirePayList)
 
     def getDetail(self, request, stream):
-        if stream.currentStage != 'create':
+        if stream.stage != 'create':
             return self.post(request, stream)
         amount, staffPayList, hirePayList = self.getPayList(stream)
         form = LaborStreamForm(
-            initial={'department': stream.applicante.department.name, 'projectName': stream.projectName, 'supportDept': stream.supportDept,
+            initial={'myDepartment': stream.applicante.department.name, 'projectName': stream.projectName, 'department': stream.department,
                 'name': stream.applicante.name, 'workId': stream.applicante.workId, 'applyDate': stream.applyDate.strftime('%Y-%m-%d'),
                 'projectLeaderWorkId': stream.projectLeader.workId, 'projectLeaderName': stream.projectLeader.name}
         )
@@ -90,43 +90,43 @@ class LaborStreamForm(ModelForm):
 
     def post(self, request, stream):
         amount, staffPayList, hirePayList = self.getPayList(stream)
-        if stream.currentStage == 'create':
-            stream.currentStage = 'cantModify'
+        if stream.stage == 'create':
+            stream.stage = 'cantModify'
             stream.save()
         form = LaborStreamForm(
-            initial={'department': stream.applicante.department.name, 'projectName': stream.projectName, 'supportDept': stream.supportDept,
+            initial={'myDepartment': stream.applicante.department.name, 'projectName': stream.projectName, 'department': stream.department,
                 'name': stream.applicante.name, 'workId': stream.applicante.workId, 'applyDate': stream.applyDate.strftime('%Y-%m-%d'),
                 'projectLeaderWorkId': stream.projectLeader.workId, 'projectLeaderName': stream.projectLeader.name,
                 'projectName': stream.projectName}
         )
         form.fields['applyDate'].widget.attrs['readonly'] = True
-        form.fields['supportDept'].widget.attrs['readonly'] = True
+        form.fields['department'].widget.attrs['readonly'] = True
         form.fields['projectName'].widget.attrs['readonly'] = True
         form.fields['projectLeaderWorkId'].widget.attrs['readonly'] = True
         form.fields['projectLeaderName'].widget.attrs['readonly'] = True
         signList = SignRecord.objects.filter(stream__id=stream.id)
-        if stream.currentStage == 'refused':
+        if stream.stage == 'refused':
             refuseMsg = u"本报销单被拒绝审批"
             for item in signList:
                 if item.refused:
                     refuseMsg += u"，拒绝者：" + item.signer.name + u"，拒绝原因：" + item.descript
-            stream.currentStage = refuseMsg
-        elif stream.currentStage == 'finish':
-            stream.currentStage = u'报销审批流程结束'
-        elif stream.currentStage == 'cwcSubmit':
-            stream.currentStage = u'报销单由财务处分配中'
-        elif stream.currentStage == 'cwcChecking':
-            stream.currentStage = u'报销单由财务处"' + stream.cwcDealer.name + u'"处理中'
-        elif stream.currentStage == 'cwcpaid':
-            stream.currentStage = u'报销单已由财务付款'
-        elif stream.currentStage != 'create' and stream.currentStage != 'cantModify':
+            stream.stage = refuseMsg
+        elif stream.stage == 'finish':
+            stream.stage = u'报销审批流程结束'
+        elif stream.stage == 'cwcSubmit':
+            stream.stage = u'报销单由财务处分配中'
+        elif stream.stage == 'cwcChecking':
+            stream.stage = u'报销单由财务处"' + stream.cwcDealer.name + u'"处理中'
+        elif stream.stage == 'cwcpaid':
+            stream.stage = u'报销单已由财务付款'
+        elif stream.stage != 'create' and stream.stage != 'cantModify':
             try:
-                sign = signList.get(stage__exact=stream.currentStage)
+                sign = signList.get(stage__exact=stream.stage)
             except:
                 messages.add_message(request, messages.ERROR, '审核状态异常')
                 return HttpResponseRedirect(reverse('index', args={''}))
-            stream.currentStage = u"报销单由 '" + sign.signer.name + u"' 审核中"
-        if not stream.supportDept.chief:
+            stream.stage = u"报销单由 '" + sign.signer.name + u"' 审核中"
+        if not stream.department.chief:
             return render(request, 'FiProcess/laborStream.html',
                 {'form': form, 'cantModify': True,
                     'staffPayList': staffPayList, 'hirePayList': hirePayList, 'total': amount,
@@ -137,14 +137,14 @@ class LaborStreamForm(ModelForm):
         schoolSign1 = None
         schoolSign2 = None
         schoolSign3 = None
-        if amount <= 3000 and stream.supportDept.secretary:
-            sign1 = stream.supportDept
+        if amount <= 3000 and stream.department.secretary:
+            sign1 = stream.department
         else:
             # (3000, 5000] region
-            if stream.supportDept.secretary:
-                sign12 = stream.supportDept
+            if stream.department.secretary:
+                sign12 = stream.department
             else:
-                sign11 = stream.supportDept
+                sign11 = stream.department
             if amount > 5000:
                 schoolSign1 = SchoolMaster.objects.filter(duty__exact='school1')
             if amount > 10000:
@@ -189,15 +189,15 @@ class LaborStreamForm(ModelForm):
             stream.applicante = staff
             stream.applyDate = request.POST['applyDate']
             try:
-                sptDept = Department.objects.get(id=request.POST['supportDept'])
+                sptDept = Department.objects.get(id=request.POST['department'])
             except:
                 messages.add_message(request, messages.ERROR, '部门信息异常')
                 return HttpResponseRedirect(reverse('index', args={''}))
-            stream.supportDept = sptDept
+            stream.department = sptDept
             stream.projectLeader = staff
-            stream.currentStage = 'create'
+            stream.stage = 'create'
             stream.projectName = request.POST['projectName']
-            stream.streamDescript = ''
+            stream.descript = ''
             stream.streamType = 'labor'
             stream.save()
             request.session['streamId'] = stream.id
