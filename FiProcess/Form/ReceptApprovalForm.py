@@ -136,3 +136,7 @@ class ReceptApprovalForm(forms.Form):
         return render(request, 'FiProcess/approvalRecept.html',
             {'form': form, 'created': True, 'recept': recept, 'stream': stream, 'department': stream.department.name,
                 'personList': personList, 'staffList': staffList})
+
+    def submitPost(self, request):
+        messages.add_message(request, messages.SUCCESS, u'提交成功')
+        return HttpResponseRedirect(reverse('index', args={''}))

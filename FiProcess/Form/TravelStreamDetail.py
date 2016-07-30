@@ -143,7 +143,7 @@ class TravelStreamDetail(forms.Form):
             }
         )
         if not stream.department.chief:
-            return render(request, 'FiProcess/commonStreamDetail.html',
+            return render(request, 'FiProcess/travelStreamDetail.html',
                 {'form': form, 'stream': stream, 'typeList': typeList, 'icbcList': icbcList, 'cashList': cashList,
                     'signList': signList, 'signErrorMsg': u'所属部门负责人不存在!'})
 

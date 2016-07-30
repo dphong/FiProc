@@ -38,6 +38,10 @@ class ApprovalForm(forms.Form):
         if 'contractForm' in request.POST:
             form = ContractApprovalForm(request.POST)
             return form.post(request)
+        if 'submitApprovalContract' in request.POST:
+            return self.postDetail(request)
+        if 'submitApprovalRecept' in request.POST:
+            return self.postDetail(request)
         return render(request, 'FiProcess/Approval.html')
 
     def getDetail(self, request):
@@ -62,5 +66,11 @@ class ApprovalForm(forms.Form):
     def postDetail(self, request):
         if 'TravelRecord' in request.session:
             form = TravelApprovalForm(request.POST)
+            return form.submitPost(request)
+        if 'submitApprovalContract' in request.POST:
+            form = ContractApprovalForm(request.POST)
+            return form.submitPost(request)
+        if 'submitApprovalRecept' in request.POST:
+            form = ReceptApprovalForm(request.POST)
             return form.submitPost(request)
         return HttpResponseRedirect(reverse('index', args={''}))

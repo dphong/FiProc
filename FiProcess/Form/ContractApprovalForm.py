@@ -102,3 +102,7 @@ class ContractApprovalForm(forms.Form):
         form.fields['name'].widget.attrs['readonly'] = True
         return render(request, 'FiProcess/approvalContract.html',
             {'form': form, 'created': True, 'stream': stream, 'contract': contract, 'department': stream.department.name})
+
+    def submitPost(self, request):
+        messages.add_message(request, messages.SUCCESS, u'提交成功')
+        return HttpResponseRedirect(reverse('index', args={''}))
