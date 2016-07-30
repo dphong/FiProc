@@ -8,6 +8,7 @@ from django.contrib import messages
 from ..models import FiStream
 from TravelApprovalForm import TravelApprovalForm
 from ReceptApprovalForm import ReceptApprovalForm
+from ContractApprovalForm import ContractApprovalForm
 
 
 class ApprovalForm(forms.Form):
@@ -23,7 +24,8 @@ class ApprovalForm(forms.Form):
                 form = ReceptApprovalForm(request.POST)
                 return form.getPost(request)
             if 'contract' == request.POST['approvalType']:
-                return render(request, 'FiProcess/approvalContract.html')
+                form = ContractApprovalForm(request.POST)
+                return form.getPost(request)
         if 'createApprovalTravel' in request.POST:
             form = TravelApprovalForm(request.POST)
             return form.post(request)

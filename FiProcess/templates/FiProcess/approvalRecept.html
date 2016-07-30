@@ -30,8 +30,8 @@
                 </div></td>\n";
     }
     function addPerson(i, name, pos, duty, com){
-        $('#tab_person').append('<tr id="addr'+i+'"></tr>');
-        $('#addr'+i).html(
+        $('#tab_person').append('<tr id="addr_person'+i+'"></tr>');
+        $('#addr_person'+i).html(
             "<td>"+ i +"</td>\n" + text('recept', i, name, 'name') + text('recept', i, pos, 'pos')
             + text('recept', i, duty, 'duty') + text('recept', i, com, 'com'));
         i++; 
@@ -39,8 +39,8 @@
         return i;
     }
     function addStaff(i, name, workId, duty){
-        $('#tab_staff').append('<tr id="addr'+i+'"></tr>');
-        $('#addr'+i).html(
+        $('#tab_staff').append('<tr id="addr_staff'+i+'"></tr>');
+        $('#addr_staff'+i).html(
             "<td>"+ i +"</td>\n" + text('staff', i, name, 'name') + num('staff', i, workId, 'workId')
             + text('staff', i, duty, 'duty'));
         i++; 
@@ -55,7 +55,7 @@
         });
         $("#delete_person").click(function(){
             if(i_person>1){
-                $("#addr"+(i_person-1)).html('');
+                $("#addr_person"+(i_person-1)).html('');
                 i_person--;
                 $('#streamForm').validator();
             }
@@ -65,7 +65,7 @@
         });
         $("#delete_staff").click(function(){
             if(i_staff>1){
-                $("#addr"+(i_staff-1)).html('');
+                $("#addr_staff"+(i_staff-1)).html('');
                 i_staff--;
                 $('#streamForm').validator();
             }
