@@ -33,7 +33,7 @@
         {% endif %}
         <form class="form" action="" method="post">  
             {% csrf_token %} 
-            {% if form.stage.value == "create" %}
+            {% if form.currentStage.value == "create" %}
                 <input name="createStream" type="submit" class="btn btn-primary" {% if form.amount.value == "0" %}disabled=True{% endif %}{% if signErrorMsg %}disabled=True{% endif %} value="生成报销单"></input>
                 <input name="modifyStream" type="submit" class="btn btn-primary" value="修改"></input>
                 {% if stream.streamType == "travelApproval" %}

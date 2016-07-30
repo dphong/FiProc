@@ -54,6 +54,7 @@ class LaborStreamForm(ModelForm):
     projectLeaderName = forms.CharField(
         label=u'项目负责人'
     )
+    currentStage = forms.CharField()
 
     def get(self, request):
         staff = IndexForm.getStaffFromRequest(request)
@@ -62,7 +63,7 @@ class LaborStreamForm(ModelForm):
         form = LaborStreamForm(
             initial={'myDepartment': staff.department.name,
                 'name': staff.name, 'workId': staff.workId, 'applyDate': datetime.today().strftime('%Y-%m-%d'),
-                'projectLeaderWorkId': staff.workId, 'projectLeaderName': staff.name}
+                'projectLeaderWorkId': staff.workId, 'projectLeaderName': staff.name, 'currentStage': 'create'}
         )
         return render(request, 'FiProcess/laborStream.html', {'form': form, 'departmentList': Department.objects.filter()})
 
@@ -83,7 +84,7 @@ class LaborStreamForm(ModelForm):
         form = LaborStreamForm(
             initial={'myDepartment': stream.applicante.department.name, 'projectName': stream.projectName, 'department': stream.department,
                 'name': stream.applicante.name, 'workId': stream.applicante.workId, 'applyDate': stream.applyDate.strftime('%Y-%m-%d'),
-                'projectLeaderWorkId': stream.projectLeader.workId, 'projectLeaderName': stream.projectLeader.name}
+                'projectLeaderWorkId': stream.projectLeader.workId, 'projectLeaderName': stream.projectLeader.name, 'currentStage': 'create'}
         )
         return render(request, 'FiProcess/laborStream.html',
             {'form': form, 'departmentList': Department.objects.filter(), 'staffPayList': staffPayList, 'hirePayList': hirePayList, 'total': amount})
@@ -93,17 +94,6 @@ class LaborStreamForm(ModelForm):
         if stream.stage == 'create':
             stream.stage = 'cantModify'
             stream.save()
-        form = LaborStreamForm(
-            initial={'myDepartment': stream.applicante.department.name, 'projectName': stream.projectName, 'department': stream.department,
-                'name': stream.applicante.name, 'workId': stream.applicante.workId, 'applyDate': stream.applyDate.strftime('%Y-%m-%d'),
-                'projectLeaderWorkId': stream.projectLeader.workId, 'projectLeaderName': stream.projectLeader.name,
-                'projectName': stream.projectName}
-        )
-        form.fields['applyDate'].widget.attrs['readonly'] = True
-        form.fields['department'].widget.attrs['readonly'] = True
-        form.fields['projectName'].widget.attrs['readonly'] = True
-        form.fields['projectLeaderWorkId'].widget.attrs['readonly'] = True
-        form.fields['projectLeaderName'].widget.attrs['readonly'] = True
         signList = SignRecord.objects.filter(stream__id=stream.id)
         if stream.stage == 'refused':
             refuseMsg = u"本报销单被拒绝审批"
@@ -126,6 +116,17 @@ class LaborStreamForm(ModelForm):
                 messages.add_message(request, messages.ERROR, '审核状态异常')
                 return HttpResponseRedirect(reverse('index', args={''}))
             stream.stage = u"报销单由 '" + sign.signer.name + u"' 审核中"
+        form = LaborStreamForm(
+            initial={'myDepartment': stream.applicante.department.name, 'projectName': stream.projectName, 'department': stream.department,
+                'name': stream.applicante.name, 'workId': stream.applicante.workId, 'applyDate': stream.applyDate.strftime('%Y-%m-%d'),
+                'projectLeaderWorkId': stream.projectLeader.workId, 'projectLeaderName': stream.projectLeader.name,
+                'projectName': stream.projectName, 'currentStage': stream.stage}
+        )
+        form.fields['applyDate'].widget.attrs['readonly'] = True
+        form.fields['department'].widget.attrs['readonly'] = True
+        form.fields['projectName'].widget.attrs['readonly'] = True
+        form.fields['projectLeaderWorkId'].widget.attrs['readonly'] = True
+        form.fields['projectLeaderName'].widget.attrs['readonly'] = True
         if not stream.department.chief:
             return render(request, 'FiProcess/laborStream.html',
                 {'form': form, 'cantModify': True,

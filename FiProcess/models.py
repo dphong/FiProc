@@ -47,7 +47,6 @@ class SchoolMaster(models.Model):
 
 
 class FiStream(models.Model):
-    number = models.CharField(max_length=12)
     applicante = models.ForeignKey(Staff, on_delete=models.CASCADE, related_name="applicante")
     applyDate = models.DateTimeField()
     department = models.ForeignKey(Department, on_delete=models.CASCADE)
@@ -60,13 +59,9 @@ class FiStream(models.Model):
     descript = models.CharField(max_length=4096)
     # type: 'common' 'travel' 'labor' 'travelApproval' 'receptApproval' 'contractApproval'
     streamType = models.CharField(max_length=16)
+    number = models.CharField(max_length=12, null=True)
     cwcSumbitDate = models.DateTimeField(null=True)
     cwcDealer = models.ForeignKey(Staff, on_delete=models.CASCADE, related_name="cwcDealer", null=True)
-
-    def __init__(self, *args, **kwargs):
-        super(FiStream, self).__init__(*args, **kwargs)
-        number = datetime.now().strftime('%Y%m%d')
-        number += str(len(FiStream.objects.filter(number__startswith=number)) + 1)
 
 
 class SignRecord(models.Model):
