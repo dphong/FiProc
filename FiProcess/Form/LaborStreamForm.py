@@ -107,7 +107,7 @@ class LaborStreamForm(ModelForm):
                 'projectName': stream.projectName, 'currentStage': stageInfo}
         )
         form.fields['applyDate'].widget.attrs['readonly'] = True
-        form.fields['department'].widget.attrs['readonly'] = True
+        form.fields['department'].widget.attrs['disabled'] = True
         form.fields['projectName'].widget.attrs['readonly'] = True
         form.fields['projectLeaderWorkId'].widget.attrs['readonly'] = True
         form.fields['projectLeaderName'].widget.attrs['readonly'] = True

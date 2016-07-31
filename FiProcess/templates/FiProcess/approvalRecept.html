@@ -116,8 +116,8 @@
                         {% endfor %}
                         </select>
                     {% else %}
-                        {% if department %}
-                            <input class="form-control" type="text" name="" disabled value="{{department}}">
+                        {% if created %}
+                            <input class="form-control" type="text" name="" disabled value="{{stream.department.name}}">
                         {% endif %}
                     {% endif %}
                 </div>
@@ -175,6 +175,19 @@
                 </div>
                 <div class="col-md-3">
                     <label class="control-label">纪监部门审核</label>
+                    <select class="form-control" name="superViser">
+                        {% for item in superViser %}
+                        <option value="{{item.staff.id}}">{{item.staff.name}}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label class="control-label">校领导审批</label>
+                    <select class="form-control" name="schoolMaster">
+                        {% for item in schoolMaster %}
+                        <option value="{{item.staff.id}}">{{item.staff.name}}({{item.dutyDescript}})</option>
+                        {% endfor %}
+                    </select>
                 </div>
             </div>
             {% endif %}

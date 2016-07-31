@@ -67,10 +67,18 @@ class ApprovalForm(forms.Form):
         if 'TravelRecord' in request.session:
             form = TravelApprovalForm(request.POST)
             return form.submitPost(request)
+        if 'streamId' not in request.session:
+            messages.add_message(request, messages.ERROR, u'操作失败')
+            return HttpResponseRedirect(reverse('index', args={''}))
+        try:
+            stream = FiStream.objects.get(id=request.session['streamId'])
+        except:
+            messages.add_message(request, messages.ERROR, u'操作失败')
+            return HttpResponseRedirect(reverse('index', args={''}))
         if 'submitApprovalContract' in request.POST:
             form = ContractApprovalForm(request.POST)
-            return form.submitPost(request)
+            return form.submitPost(request, stream)
         if 'submitApprovalRecept' in request.POST:
             form = ReceptApprovalForm(request.POST)
-            return form.submitPost(request)
+            return form.submitPost(request, stream)
         return HttpResponseRedirect(reverse('index', args={''}))

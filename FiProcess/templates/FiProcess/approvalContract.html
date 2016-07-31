@@ -39,7 +39,7 @@
             <h3 align="center"><strong>合肥师范学院经济合同审核会签申请</strong></h3>
             <div class="row">
                 <div class="form-group col-md-3 has-feedback">
-                    <label class="control-label">经费来源所属部门</label>
+                    <label class="control-label">部门</label>
                     {% if departmentList %}
                         <select class="form-control" name="department" required>
                             <option value selected="selected">------</option>
@@ -48,8 +48,8 @@
                         {% endfor %}
                         </select>
                     {% else %}
-                        {% if department %}
-                            <input class="form-control" type="text" name="" disabled value="{{department}}">
+                        {% if created %}
+                            <input class="form-control" type="text" name="" disabled value="{{stream.department.name}}">
                         {% endif %}
                     {% endif %}
                 </div>
@@ -96,7 +96,52 @@
                     <input type="text" name="contractLawyer" class="form-control" placeholder="法律顾问审核重大经济合同"
                     {% if contract %} value='{{contract.lawyer}}'{% endif %}{% if created %} readonly='readonly'{% endif %}>
                 </div>
+                {% if created %}
+                <div class="col-md-3">
+                    <label class="form-label">财务处审批</label>
+                    <input type="text" readonly="readonly" value="{{financial.chief.name}}" class="form-control">
+                </div>
+                {% endif %}
             </div>
+            {% if created %}
+            <div class="row">
+                <div class="col-md-3">
+                    <label class="control-label">项目承办单位审批</label>
+                    {% if stream.department.secretary %}
+                    <select class="form-control" name="departmentMaster">
+                        <option value="{{stream.department.secretary.id}}">{{stream.department.secretary.name}}</option>
+                        <option value="{{stream.department.chief.id}}">{{stream.department.chief.name}}</option>
+                    </select>
+                    {% else %}
+                    <input type="text" name="departmentMaster" readonly="readonly" value="{{stream.department.chief.name}}" class="form-control">
+                    {% endif %}
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label">科研处审批</label>
+                    <input type="text" readonly="readonly" value="{{research.chief.name}}" class="form-control">
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label">资产管理处审批</label>
+                    <input type="text" readonly="readonly" value="{{asset.chief.name}}" class="form-control">
+                </div>
+                <div class="col-md-2">
+                    <label class="control-label">纪监部门审核</label>
+                    <select class="form-control" name="superViser">
+                        {% for item in superViser %}
+                        <option value="{{item.staff.id}}">{{item.staff.name}}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label class="control-label">校领导审批</label>
+                    <select class="form-control" name="schoolMaster">
+                        {% for item in schoolMaster %}
+                        <option value="{{item.staff.id}}">{{item.staff.name}}({{item.dutyDescript}})</option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+            {% endif %}
             <div class="form-group has-feedback">
                 <label class="control-label">合同主要内容</label>
                 <textarea class="form-control" name="contractContent" rows="30" style="resize:none" required

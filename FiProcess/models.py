@@ -52,7 +52,7 @@ class FiStream(models.Model):
     projectLeader = models.ForeignKey(Staff, on_delete=models.CASCADE, related_name="projectLeader")
     # stage: 'create' 'project' 'department1' 'department2' 'projectDepartment' 'school1' 'school2' 'school3'
     #        'financial' 'finish' 'refused' 'cwcSubmit' 'cwcChecking' 'cwcpaid' 'cantModify'
-    # approval before create: 'unapprove' 'approvalDepartment' 'approvalSchool' 'approved'
+    # approval before create: 'unapprove' 'approvalDepartment' 'approvalOffice' 'approvalSchool' 'approved'
     stage = models.CharField(max_length=64)
     projectName = models.CharField(max_length=256)
     descript = models.CharField(max_length=4096)
@@ -71,7 +71,7 @@ class SignRecord(models.Model):
     refused = models.BooleanField(default=False)
     signImage = models.CharField(max_length=10000, default="")
     # type: 'department1' 'department2' 'school1' 'school2' 'school3'
-    #       'approvalDepartment' 'approvalSchool'
+    #       'approvalDepartment' 'approvalOffice' 'approvalSchool'
     stage = models.CharField(max_length=64)
     descript = models.CharField(max_length=1024, default="")
 

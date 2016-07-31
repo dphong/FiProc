@@ -6,7 +6,7 @@ from django.core.urlresolvers import reverse
 from django.contrib import messages
 from datetime import datetime
 
-from ..models import Staff, FiStream, Department, Contract
+from ..models import Staff, FiStream, Department, Contract, SchoolMaster
 import IndexForm
 
 
@@ -18,7 +18,7 @@ class ContractApprovalForm(forms.Form):
         label=u'经办人工号',
     )
     name = forms.CharField(
-        label=u'经办人姓名姓名',
+        label=u'经办人姓名',
     )
 
     def getPost(self, request):
@@ -81,11 +81,25 @@ class ContractApprovalForm(forms.Form):
         contract.stream = stream
         contract.amount = float(contract.amount)
         contract.save()
-        self.fields['applyDate'].widget.attrs['readonly'] = True
-        self.fields['workId'].widget.attrs['readonly'] = True
-        self.fields['name'].widget.attrs['readonly'] = True
+        return self.renderCreatedForm(request, self, contract)
+
+    def renderCreatedForm(self, request, form, contract):
+        form.fields['applyDate'].widget.attrs['readonly'] = True
+        form.fields['workId'].widget.attrs['readonly'] = True
+        form.fields['name'].widget.attrs['readonly'] = True
+        superViser = SchoolMaster.objects.filter(duty='superviser')
+        schoolMasters = SchoolMaster.objects.filter(duty__startswith='school')
+        try:
+            research = Department.objects.get(name=u'科研处')
+            asset = Department.objects.get(name=u'资产管理处')
+            financial = Department.objects.get(name=u'财务处')
+        except:
+            messages.add_message(request, messages.ERROR, u'部门负责人尚未指定，请联系系统管理员')
+            return HttpResponseRedirect(reverse('index', args={''}))
         return render(request, 'FiProcess/approvalContract.html',
-            {'form': self, 'created': True, 'stream': stream, 'contract': contract, 'department': user.department.name})
+            {'form': form, 'created': True, 'stream': contract.stream, 'contract': contract,
+                'superViser': superViser, 'schoolMaster': schoolMasters, 'research': research,
+                'asset': asset, 'financial': financial})
 
     def detail(self, request, stream):
         try:
@@ -97,12 +111,8 @@ class ContractApprovalForm(forms.Form):
             initial={'applyDate': stream.applyDate.strftime('%Y-%m-%d'), 'workId': stream.applicante.workId,
                 'name': stream.applicante.name}
         )
-        form.fields['applyDate'].widget.attrs['readonly'] = True
-        form.fields['workId'].widget.attrs['readonly'] = True
-        form.fields['name'].widget.attrs['readonly'] = True
-        return render(request, 'FiProcess/approvalContract.html',
-            {'form': form, 'created': True, 'stream': stream, 'contract': contract, 'department': stream.department.name})
+        return self.renderCreatedForm(request, form, contract)
 
-    def submitPost(self, request):
+    def submitPost(self, request, stream):
         messages.add_message(request, messages.SUCCESS, u'提交成功')
         return HttpResponseRedirect(reverse('index', args={''}))

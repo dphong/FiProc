@@ -6,7 +6,7 @@ from django.core.urlresolvers import reverse
 from django.contrib import messages
 from datetime import datetime
 
-from ..models import Staff, Recept, FiStream, Department, ReceptPerson, ReceptStaff
+from ..models import Staff, Recept, FiStream, Department, ReceptPerson, ReceptStaff, SchoolMaster, SignRecord
 import IndexForm
 
 
@@ -110,12 +110,17 @@ class ReceptApprovalForm(forms.Form):
         for staff in staffList:
             staff.recept = recept
             staff.save()
-        self.fields['applyDate'].widget.attrs['readonly'] = True
-        self.fields['workId'].widget.attrs['readonly'] = True
-        self.fields['name'].widget.attrs['readonly'] = True
+        return self.renderCreatedForm(request, self, recept, personList, staffList)
+
+    def renderCreatedForm(self, request, form, recept, personList, staffList):
+        form.fields['applyDate'].widget.attrs['readonly'] = True
+        form.fields['workId'].widget.attrs['readonly'] = True
+        form.fields['name'].widget.attrs['readonly'] = True
+        superViser = SchoolMaster.objects.filter(duty='superviser')
+        schoolMasters = SchoolMaster.objects.filter(duty__startswith='school')
         return render(request, 'FiProcess/approvalRecept.html',
-            {'form': self, 'created': True, 'recept': recept, 'stream': stream, 'department': stream.department.name,
-                'personList': personList, 'staffList': staffList})
+            {'form': form, 'created': True, 'recept': recept, 'stream': recept.stream, 'personList': personList, 'staffList': staffList,
+                'superViser': superViser, 'schoolMaster': schoolMasters})
 
     def detail(self, request, stream):
         try:
@@ -130,13 +135,35 @@ class ReceptApprovalForm(forms.Form):
                 'name': recept.person}
         )
         recept.date = recept.date.strftime('%Y-%m-%d')
-        form.fields['applyDate'].widget.attrs['readonly'] = True
-        form.fields['workId'].widget.attrs['readonly'] = True
-        form.fields['name'].widget.attrs['readonly'] = True
-        return render(request, 'FiProcess/approvalRecept.html',
-            {'form': form, 'created': True, 'recept': recept, 'stream': stream, 'department': stream.department.name,
-                'personList': personList, 'staffList': staffList})
+        return self.renderCreatedForm(request, form, recept, personList, staffList)
 
-    def submitPost(self, request):
+    def submitPost(self, request, stream):
+        try:
+            deptMsId = request.POST['departmentMaster']
+            superViserId = request.POST['superViser']
+            schoolMsId = request.POST['schoolMaster']
+            deptMs = Staff.objects.get(id=deptMsId)
+            superViser = Staff.objects.get(id=superViserId)
+            schoolMs = Staff.objects.get(id=schoolMsId)
+        except:
+            messages.add_message(request, messages.ERROR, u'系统异常，提交失败')
+            return HttpResponseRedirect(reverse('index', args={''}))
+        deptSign = SignRecord()
+        deptSign.stream = stream
+        deptSign.signer = deptMs
+        deptSign.stage = 'approvalDepartment'
+        deptSign.save()
+        superViserSign = SignRecord()
+        superViserSign.stream = stream
+        superViserSign.signer = superViser
+        superViserSign.stage = 'approvalOffice'
+        superViserSign.save()
+        schoolSign = SignRecord()
+        schoolSign.stream = stream
+        schoolSign.signer = schoolMs
+        schoolSign.stage = 'approvalSchool'
+        schoolSign.save()
+        stream.stage = 'approvalDepartment'
+        stream.save()
         messages.add_message(request, messages.SUCCESS, u'提交成功')
         return HttpResponseRedirect(reverse('index', args={''}))

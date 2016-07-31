@@ -132,7 +132,7 @@ class IndexForm(forms.Form):
                     'userCheckList': StaffCheck.objects.all(), 'is_sysAdmin': True})
         querySet = StaffCheck.objects.filter(staff__username__exact=request.session['username'])
         if querySet.count() > 0:
-            return render('FiProcess/index.html', {'userInfoForm': userInfoForm, 'unCheckStaff': u'当前用户未通过人工审核，无法创建报销单'})
+            return render(request, 'FiProcess/index.html', {'userInfoForm': userInfoForm, 'unCheckStaff': u'当前用户未通过人工审核，无法创建报销单'})
         signList = self.getSignList(request)
         if len(signList) > 0:
             return render(request, 'FiProcess/index.html',
@@ -295,7 +295,7 @@ class IndexForm(forms.Form):
                     'department2': u'部门书记审核', 'projectDepartment': u'项目部门负责人审核', 'school1': u'分管校领导审核',
                     'school2': u'财务校领导审核', 'school3': u'学校书记审核', 'financial': u'财务处审核', 'finish': u'审批结束',
                     'refused': u'拒绝审批', 'cwcSubmit': u'等待财务审核', 'cwcChecking': u'财务正在审核', 'cwcpaid': u'付款完成', 'cantModify': u'未提交',
-                    'unapprove': u'待审批', 'approvalDepartment': u'部门负责人审批中', 'approvalSchool': u'学校负责人审批中', 'approved': u'已审批'}
+                    'unapprove': u'待审批', 'approvalDepartment': u'部门负责人审批中', 'approvalOffice': u'处室负责人审批中', 'approvalSchool': u'学校负责人审批中', 'approved': u'已审批'}
         for item in streamList:
             item.applyDate = item.applyDate.strftime('%Y-%m-%d')
             item.stage = stageDic[item.stage]
