@@ -5,8 +5,8 @@ from django.http import HttpResponseRedirect
 from django.core.urlresolvers import reverse
 from django.contrib import messages
 
-from ..models import IcbcCardRecord, CompanyPayRecord
-from ..models import CashPay, SchoolMaster, SignRecord
+from ..models import IcbcCardRecord, CompanyPayRecord, CashPay
+import NewStreamForm
 
 
 class CommonStreamDetail(forms.Form):
@@ -119,28 +119,11 @@ class CommonStreamDetail(forms.Form):
             amount = amount + com.spendProof.spendAmount
             typeAmount[int(com.spendProof.spendType)] += com.spendProof.spendAmount
         typeList = self.getTypeAmountList(typeAmount)
-        signList = SignRecord.objects.filter(stream__id=stream.id)
-        if stream.stage == 'refused':
-            refuseMsg = u"本报销单被拒绝审批"
-            for item in signList:
-                if item.refused:
-                    refuseMsg += u"，拒绝者：" + item.signer.name + u"，拒绝原因：" + item.descript
-            stream.stage = refuseMsg
-        elif stream.stage == 'finish':
-            stream.stage = u'报销审批流程结束'
-        elif stream.stage == 'cwcSubmit':
-            stream.stage = u'报销单由财务处分配中'
-        elif stream.stage == 'cwcChecking':
-            stream.stage = u'报销单由财务处"' + stream.cwcDealer.name + u'"处理中'
-        elif stream.stage == 'cwcpaid':
-            stream.stage = u'报销单已由财务付款'
-        elif stream.stage != 'create':
-            try:
-                sign = signList.get(stage__exact=stream.stage)
-            except:
-                messages.add_message(request, messages.ERROR, '审核状态异常')
-                return HttpResponseRedirect(reverse('index', args={''}))
-            stream.stage = u"报销单由 '" + sign.signer.name + u"' 审核中"
+        try:
+            signList, stageInfo = NewStreamForm.getStreamStageInfo(stream)
+        except:
+            messages.add_message(request, messages.ERROR, '审核状态异常')
+            return HttpResponseRedirect(reverse('index', args={''}))
         form = CommonStreamDetail(
             initial={
                 'department': stream.applicante.department.name,
@@ -149,7 +132,7 @@ class CommonStreamDetail(forms.Form):
                 'applyDate': stream.applyDate.strftime('%Y-%m-%d'),
                 'amount': str(amount),
                 'supportDept': stream.department.name,
-                'currentStage': stream.stage,
+                'currentStage': stageInfo,
                 'descript': stream.descript,
             }
         )
@@ -158,42 +141,7 @@ class CommonStreamDetail(forms.Form):
                 {'form': form, 'typeList': typeList, 'icbcList': icbcQuery, 'ccbList': ccbQuery, 'comList': comQuery,
                     'signList': signList, 'signErrorMsg': u'所属部门负责人不存在!'})
 
-        sign1 = None
-        sign11 = None
-        sign12 = None
-        schoolSign1 = None
-        schoolSign2 = None
-        schoolSign3 = None
-        if amount <= 3000 and stream.department.secretary:
-            sign1 = stream.department
-        else:
-            # (3000, 5000] region
-            if stream.department.secretary:
-                sign12 = stream.department
-            else:
-                sign11 = stream.department
-            if amount > 5000:
-                schoolSign1 = SchoolMaster.objects.filter(duty__exact='school1')
-            if amount > 10000:
-                try:
-                    schoolSign2 = SchoolMaster.objects.get(duty__exact='school2')
-                except:
-                    schoolSign2 = None
-            if amount > 200000:
-                try:
-                    schoolSign3 = SchoolMaster.objects.get(duty__exact='school3')
-                except:
-                    schoolSign3 = None
-        school1Id = None
-        signId = None
-        unsigned = True
-        for sign in signList:
-            if sign.stage == 'school1':
-                school1Id = sign.signer.id
-            if sign.stage == 'department1':
-                signId = sign.signer.id
-            if sign.signed:
-                unsigned = False
+        sign1, sign11, sign12, schoolSign1, schoolSign2, schoolSign3, school1Id, signId, unsigned = NewStreamForm.getSigner(stream, amount, signList)
         return render(request, 'FiProcess/commonStreamDetail.html',
             {'form': form, 'typeList': typeList, 'icbcList': icbcQuery, 'ccbList': ccbQuery, 'comList': comQuery, 'signList': signList,
                 'unsigned': unsigned, 'sign1': sign1, 'sign12': sign12, 'sign11': sign11, 'schoolSigner': school1Id, 'signId': signId,

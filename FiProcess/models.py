@@ -2,7 +2,6 @@ from __future__ import unicode_literals
 
 from django.db import models
 from django.utils.encoding import python_2_unicode_compatible
-from datetime import datetime
 
 
 @python_2_unicode_compatible  # only if you need to support Python 2
@@ -38,7 +37,7 @@ class StaffCheck(models.Model):
 @python_2_unicode_compatible  # only if you need to support Python 2
 class SchoolMaster(models.Model):
     staff = models.ForeignKey(Staff, on_delete=models.CASCADE)
-    # duty: 'school1' 'school2' 'school3'
+    # duty: 'school1' 'school2' 'school3' 'superviser'
     duty = models.CharField(max_length=16)
     dutyDescript = models.CharField(max_length=64, default="")
 

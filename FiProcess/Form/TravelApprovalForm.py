@@ -45,7 +45,7 @@ class TravelApprovalForm(forms.Form):
         form = TravelApprovalForm(
             initial={'department': user.department.name, 'name': user.name, 'duty': duty, 'companionCnt': cnt}
         )
-        schoolMasterList = SchoolMaster.objects.filter()
+        schoolMasterList = SchoolMaster.objects.filter(duty__startswith='school')
         departmentList = Department.objects.filter()
         return (form, schoolMasterList, departmentList, user)
 
