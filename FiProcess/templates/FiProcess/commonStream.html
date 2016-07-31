@@ -9,7 +9,7 @@
     <link rel="stylesheet" type="text/css" href="{% static 'FiProcess/bootstrap.min.css' %}" /> 
     <script type="text/javascript" src="{% static 'FiProcess/jquery-2.2.4.min.js' %}"></script>
     <script type="text/javascript" src="{% static 'FiProcess/bootstrap.min.js' %}"></script>
-    <script type="text/javascript" src="{% static 'FiProcess/validator.js' %}"></script>
+    <script type="text/javascript" src="{% static 'FiProcess/validator.min.js' %}"></script>
     <style type="text/css">
     </style>
     <script type="text/javascript">
@@ -142,7 +142,7 @@
             "<td>"+ i +"</td>\n" + name('icbc', i, staffName, 'cardHolderName') + icbcDate(i, date) + amount('icbc', i, payAmount)
             + amount('icbc', i, actualAmount, 'actualAmount') + cardNum('icbc', i, card) + spendTypes('icbc', i, type));
         i++; 
-        $('#streamForm').validator();
+        $('#streamForm').validator('update');
         return i;
     }
     function addCcb(i, staffName, payAmount, card, type){
@@ -151,7 +151,7 @@
             "<td>"+i+"</td>\n" + name('ccb', i, staffName, 'cardHolderName') + amount('ccb', i, payAmount, 'amount')
             + cardNum('ccb', i, card) + spendTypes('ccb', i, type) +"</td>");
         i++;
-        $('#streamForm').validator();
+        $('#streamForm').validator('update');
         return i;
     }
     function addCompany(i, comName, payAmount, card, bankName, type){
@@ -160,7 +160,7 @@
             "<td>"+i+"</td>\n" + name('company', i, comName, 'cardHolderName') + amount('company', i, payAmount, 'amount') 
             + cardNum('company', i, card) + name('company', i, bankName, 'bankName') + spendTypes('company', i, type) + "</td>");
         i++;
-        $('#streamForm').validator();
+        $('#streamForm').validator('update');
         return i;
     }
     $(document).ready(function(){
@@ -183,7 +183,7 @@
             if(i>1){
                 $("#addr"+(i-1)).html('');
                 i--;
-                $('#streamForm').validator();
+                $('#streamForm').validator('update');
             }
         });
         $("#add_row_ccb").click(function(){
@@ -193,7 +193,7 @@
             if(i_ccb>1){
                 $("#addr_ccb"+(i_ccb-1)).html('');
                 i_ccb--;
-                $('#streamForm').validator();
+                $('#streamForm').validator('update');
             }
         })
         $("#add_row_com").click(function(){
@@ -203,7 +203,7 @@
             if(i_com>1){
                 $("#addr_com"+(i_com-1)).html('');
                 i_com--;
-                $('#streamForm').validator();
+                $('#streamForm').validator('update');
             }
         })
     })

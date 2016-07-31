@@ -9,7 +9,7 @@
     <link rel="stylesheet" type="text/css" href="{% static 'FiProcess/bootstrap.min.css' %}" /> 
     <script type="text/javascript" src="{% static 'FiProcess/jquery-2.2.4.min.js' %}"></script>
     <script type="text/javascript" src="{% static 'FiProcess/bootstrap.min.js' %}"></script>
-    <script type="text/javascript" src="{% static 'FiProcess/validator.js' %}"></script>
+    <script type="text/javascript" src="{% static 'FiProcess/validator.min.js' %}"></script>
     <style type="text/css">
     </style>
     <script type="text/javascript">
@@ -111,7 +111,7 @@
             + amount('icbc', i, payAmount, 'amount') + amount('icbc', i, actualAmount, 'actualAmount')
             + cardNum('icbc', i, card) + spendTypes('icbc', i, type));
         i++; 
-        $('#streamForm').validator();
+        $('#streamForm').validator('update');
         return i++;
     }
     function addCcbRecord(i, payAmount, type){
@@ -119,7 +119,7 @@
         $('#addr_ccb'+i).html(
             "<td>"+i+"</td>\n" + amount('ccb', i, payAmount, 'amount') + spendTypes('ccb', i, type));
         i++;
-        $('#streamForm').validator()
+        $('#streamForm').validator('update')
         return i;
     }
     function addTraveler(i, name, duty){
@@ -127,7 +127,7 @@
         $('#addr_traveler'+i).html(
             "<td>"+i+"</td>\n" + text('name', i, name, 'traveler') + text('duty', i, duty, 'traveler'));
         i++;
-        $('#streamForm').validator();
+        $('#streamForm').validator('update');
         return i;
     }
     function addTravelRoute(i, routeDate, start, end, payAmount){
@@ -136,7 +136,7 @@
             "<td>"+i+"</td>\n" + date('travelRoute', i, routeDate) + text('start', i, start, 'position')
             + text('end', i, end, 'position') + amount('travelRoute', i, payAmount, 'amount'));
         i++;
-        $('#streamForm').validator();
+        $('#streamForm').validator('update');
         return i;
     }
     $(document).ready(function(){
@@ -170,7 +170,7 @@
             if(i>1){
                 $("#addr"+(i-1)).html('');
                 i--;
-                $('#streamForm').validator()
+                $('#streamForm').validator('update')
             }
         });
         $("#add_travelRoute").click(function(){
@@ -180,7 +180,7 @@
             if(i_travelRoute>1){
                 $("#addr_travelRoute"+(i_travelRoute-1)).html('');
                 i_travelRoute--;
-                $('#streamForm').validator()
+                $('#streamForm').validator('update')
             }
         });
         $("#add_row_ccb").click(function(){
@@ -190,7 +190,7 @@
             if(i_ccb>1){
                 $("#addr_ccb"+(i_ccb-1)).html('');
                 i_ccb--;
-                $('#streamForm').validator()
+                $('#streamForm').validator('update')
             }
         })
         $("#add_row_traveler").click(function(){
@@ -200,7 +200,7 @@
             if(i_traveler>1){
                 $("#addr_traveler"+(i_traveler-1)).html('');
                 i_traveler--;
-                $('#streamForm').validator()
+                $('#streamForm').validator('update')
             }
         });
     })

@@ -9,7 +9,7 @@
     <link rel="stylesheet" type="text/css" href="{% static 'FiProcess/bootstrap.min.css' %}" /> 
     <script type="text/javascript" src="{% static 'FiProcess/jquery-2.2.4.min.js' %}"></script>
     <script type="text/javascript" src="{% static 'FiProcess/bootstrap.min.js' %}"></script>
-    <script type="text/javascript" src="{% static 'FiProcess/validator.js' %}"></script>
+    <script type="text/javascript" src="{% static 'FiProcess/validator.min.js' %}"></script>
     <style type="text/css">
     </style>
     <script type="text/javascript">
@@ -118,9 +118,9 @@
     <form id="streamForm" data-toggle="validator" role="form" class="form" action="" method="post" style="margin:20px 0px 0px 0px">
         {% csrf_token %}
         <div class="form-group">
-        {% if form.currentStage.value == "create" %}
+        {% if form.currentStage.value == "create" or form.currentStage.value == "cantModify" %}
             {% if cantModify %}
-                <input name="createStream" type="submit" class="btn btn-primary" value="生成报销单"></input>
+                <input name="createStream" type="submit" class="btn btn-primary" value="生成报销单"{% if signErrorMsg %}disabled=True{% endif %} ></input>
             {% else %}
                 <input name="laborStreamForm" type="submit" class="btn btn-primary" value="创建"></input>
             {% endif %}
