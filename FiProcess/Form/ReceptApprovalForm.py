@@ -116,11 +116,31 @@ class ReceptApprovalForm(forms.Form):
         form.fields['applyDate'].widget.attrs['readonly'] = True
         form.fields['workId'].widget.attrs['readonly'] = True
         form.fields['name'].widget.attrs['readonly'] = True
-        superViser = SchoolMaster.objects.filter(duty='superviser')
-        schoolMasters = SchoolMaster.objects.filter(duty__startswith='school')
+        signList = SignRecord.objects.filter(stream__id=recept.stream.id)
+        superViser = None
+        schoolMasters = None
+        deptSign = None
+        currentSigner = None
+        unsigned = True
+        if not signList:
+            superViser = SchoolMaster.objects.filter(duty='superviser')
+            schoolMasters = SchoolMaster.objects.filter(duty__startswith='school')
+        else:
+            for sign in signList:
+                if sign.stage == 'approvalDepartment':
+                    deptSign = sign
+                if sign.stage == 'approvalOffice':
+                    superViser = sign
+                if sign.stage == 'approvalSchool':
+                    schoolMasters = sign
+                if recept.stream.stage == sign.stage:
+                    currentSigner = sign
+                if sign.signed:
+                    unsigned = False
         return render(request, 'FiProcess/approvalRecept.html',
             {'form': form, 'created': True, 'recept': recept, 'stream': recept.stream, 'personList': personList, 'staffList': staffList,
-                'superViser': superViser, 'schoolMaster': schoolMasters})
+                'superViser': superViser, 'schoolMaster': schoolMasters, 'currentSign': currentSigner, 'deptSign': deptSign,
+                'signList': signList, 'unsigned': unsigned})
 
     def detail(self, request, stream):
         try:

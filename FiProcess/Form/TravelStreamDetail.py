@@ -130,9 +130,9 @@ class TravelStreamDetail(forms.Form):
                 {'form': form, 'stream': stream, 'typeList': typeList, 'icbcList': icbcList, 'cashList': cashList,
                     'signList': signList, 'signErrorMsg': u'所属部门负责人不存在!'})
 
-        sign1, sign11, sign12, schoolSign1, schoolSign2, schoolSign3, school1Id, signId, unsigned = NewStreamForm.getSigner(stream, amount, signList)
+        sign1, sign11, sign12, schoolSign1, schoolSign2, schoolSign3, schoolSigner, deptSigner, unsigned = NewStreamForm.getSigner(stream, amount, signList)
         return render(request, 'FiProcess/travelStreamDetail.html',
             {'form': form, 'typeList': typeList, 'cashList': cashList, 'travelerList': travelerList, 'travelRoute': travelRouteList,
                 'icbcList': icbcList, 'signList': signList, 'stream': stream,
-                'unsigned': unsigned, 'sign1': sign1, 'sign12': sign12, 'sign11': sign11, 'schoolSigner': school1Id, 'signId': signId,
+                'unsigned': unsigned, 'sign1': sign1, 'sign12': sign12, 'sign11': sign11, 'schoolSigner': schoolSigner, 'deptSigner': deptSigner,
                 'schoolSign1': schoolSign1, 'schoolSign2': schoolSign2, 'schoolSign3': schoolSign3})

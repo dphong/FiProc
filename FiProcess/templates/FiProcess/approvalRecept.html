@@ -96,12 +96,19 @@
     {% endif %}
     <form id="streamForm" data-toggle="validator" role="form" lass="form" action="" method="post" style="margin:20px 0px 0px 0px">
         {% csrf_token %}
-        <div class="form-group">  
+        <div class="form-group">
+        {% if currentSign %}
+        <div class="alert alert-success">
+            <button type="button" class="close" data-dismiss="success">×</button>
+            <h4>审批单由 {{currentSign.signer.name}} 审批中</h4>
+        </div>
+        {% else %}
             {% if created %}
             <input name="submitApprovalRecept" type="submit" class="btn btn-primary" value="提交审批单"></input>
             {% else %}
             <input name="receptForm" type="submit" class="btn btn-primary" value="创建"></input>
             {% endif %}
+        {% endif %}
         </div>
         <div class="well">
             <h3 align="center"><strong>合肥师范学院公务接待审批申请</strong></h3>
@@ -164,32 +171,55 @@
             <div class="row">
                 <div class="col-md-3">
                     <label class="control-label">经办单位审批人</label>
-                    {% if stream.department.secretary %}
-                    <select class="form-control" name="departmentMaster">
-                        <option value="{{stream.department.secretary.id}}">{{stream.department.secretary.name}}</option>
-                        <option value="{{stream.department.chief.id}}">{{stream.department.chief.name}}</option>
-                    </select>
+                    {% if currentSign %}
+                    <input type="text" value="{{deptSign.signer.name}}" class="form-control" readonly="readonly">
                     {% else %}
-                    <input type="text" name="departmentMaster" readonly="readonly" value="{{stream.department.chief.name}}" class="form-control">
+                        {% if stream.department.secretary %}
+                        <select class="form-control" name="departmentMaster">
+                            <option value="{{stream.department.secretary.id}}">{{stream.department.secretary.name}}</option>
+                            <option value="{{stream.department.chief.id}}">{{stream.department.chief.name}}</option>
+                        </select>
+                        {% else %}
+                        <input type="text" name="departmentMaster" readonly="readonly" value="{{stream.department.chief.name}}" class="form-control">
+                        {% endif %}
                     {% endif %}
                 </div>
                 <div class="col-md-3">
                     <label class="control-label">纪监部门审核</label>
-                    <select class="form-control" name="superViser">
-                        {% for item in superViser %}
-                        <option value="{{item.staff.id}}">{{item.staff.name}}</option>
-                        {% endfor %}
-                    </select>
+                    {% if currentSign %}
+                    <input type="text" value="{{superViser.signer.name}}" class="form-control" readonly="readonly">
+                    {% else %}
+                        <select class="form-control" name="superViser">
+                            {% for item in superViser %}
+                            <option value="{{item.staff.id}}">{{item.staff.name}}</option>
+                            {% endfor %}
+                        </select>
+                    {% endif %}
                 </div>
                 <div class="col-md-3">
                     <label class="control-label">校领导审批</label>
-                    <select class="form-control" name="schoolMaster">
-                        {% for item in schoolMaster %}
-                        <option value="{{item.staff.id}}">{{item.staff.name}}({{item.dutyDescript}})</option>
-                        {% endfor %}
-                    </select>
+                    {% if currentSign %}
+                    <input type="text" value="{{schoolMaster.signer.name}}" class="form-control" readonly="readonly">
+                    {% else %}
+                        <select class="form-control" name="schoolMaster">
+                            {% for item in schoolMaster %}
+                            <option value="{{item.staff.id}}">{{item.staff.name}}({{item.dutyDescript}})</option>
+                            {% endfor %}
+                        </select>
+                    {% endif %}
                 </div>
             </div>
+                {% if signList %}
+                <label class="form-contorl">审核状态</label>
+                    {% for item in signList %}
+                        {% if item.signed %}
+                        <input type="text" class="form-control" readonly="readonly" name="" value="审核人：{{ item.signer.name }}；{{item.signedTime|date:"Y年m月d日"}}审核意见：{{ item.descript }}">
+                        {% endif %}
+                    {% endfor %}
+                    {% if unsigned %}
+                    <input type="text" class="form-control" readonly="readonly" value="无">
+                    {% endif %}
+                {% endif %}
             {% endif %}
             <label for="tab_person" class="control-label">接待对象</label>
             <table class="table table-bordered table-hover" id="tab_person">

@@ -272,15 +272,15 @@ def getSigner(stream, amount, signList):
                 schoolSign3 = SchoolMaster.objects.get(duty__exact='school3')
             except:
                 schoolSign3 = None
-    school1Id = None
-    signId = None
+    schoolSigner = None
+    deptSigner = None
     unsigned = True
     for sign in signList:
         if sign.stage == 'school1':
-            school1Id = sign.signer.id
+            schoolSigner = sign
         if sign.stage == 'department1':
-            signId = sign.signer.id
+            deptSigner = sign
         if sign.signed:
             unsigned = False
     return (sign1, sign11, sign12, schoolSign1, schoolSign2, schoolSign3,
-        school1Id, signId, unsigned)
+        schoolSigner, deptSigner, unsigned)

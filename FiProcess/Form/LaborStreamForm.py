@@ -117,11 +117,11 @@ class LaborStreamForm(ModelForm):
                     'staffPayList': staffPayList, 'hirePayList': hirePayList, 'total': amount,
                     'signList': signList, 'signErrorMsg': u'所属部门负责人不存在!'})
 
-        sign1, sign11, sign12, schoolSign1, schoolSign2, schoolSign3, school1Id, signId, unsigned = NewStreamForm.getSigner(stream, amount, signList)
+        sign1, sign11, sign12, schoolSign1, schoolSign2, schoolSign3, schoolSigner, deptSigner, unsigned = NewStreamForm.getSigner(stream, amount, signList)
         return render(request, 'FiProcess/laborStream.html',
             {'form': form, 'cantModify': True,
                 'staffPayList': staffPayList, 'hirePayList': hirePayList, 'total': amount, 'signList': signList,
-                'unsigned': unsigned, 'sign1': sign1, 'sign12': sign12, 'sign11': sign11, 'schoolSigner': school1Id, 'signId': signId,
+                'unsigned': unsigned, 'sign1': sign1, 'sign12': sign12, 'sign11': sign11, 'schoolSigner': schoolSigner, 'deptSigner': deptSigner,
                 'schoolSign1': schoolSign1, 'schoolSign2': schoolSign2, 'schoolSign3': schoolSign3})
 
     def postAddRow(self, request, modifyLabor=None):

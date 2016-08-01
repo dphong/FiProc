@@ -64,10 +64,14 @@
             {% if sign1 %}
             <div class="form-group">
                 <label for="sign1">部门负责人审核:</label>
-                <select class="form-control" name="sign1">
-                    <option value="{{sign1.chief.id}}"{% if sign1.chief.id == signId %} selected="selected"{% endif %}>{{ sign1.chief.name }}</option>
-                    <option value="{{sign1.secretary.id}}"{% if sign1.secretary.id == signId %} selected="selected"{% endif %}>{{ sign1.secretary.name }}</option>
-                </select>
+                {% if deptSigner %}
+                <input type="text" value="{{deptSigner.signer.name}}" class="form-control" readonly="readonly">
+                {% else %}
+                    <select class="form-control" name="sign1">
+                        <option value="{{sign1.chief.id}}">{{ sign1.chief.name }}</option>
+                        <option value="{{sign1.secretary.id}}">{{ sign1.secretary.name }}</option>
+                    </select>
+                {% endif %}
             </div>
             {% endif %}
             <div class="row">
@@ -90,11 +94,15 @@
             {% if schoolSign1 %}
                 <div class="col-md-3">
                     <label for="schoolSign1">分管校领导审核:</label>
-                    <select class="form-control" name="schoolSign1">
-                    {% for signer in schoolSign1 %}
-                        <option value="{{ signer.staff.id }}"{% if schoolSigner == signer.staff.id %} selected='selected'{% endif %}>{{ signer.staff.name }}({{ signer.dutyDescript }})</option>
-                    {% endfor %}
-                    </select>
+                    {% if schoolSigner %}
+                    <input type="text" value="{{schoolSigner.signer.name}}" class="form-control" readonly="readonly">
+                    {% else %}
+                        <select class="form-control" name="schoolSign1">
+                        {% for signer in schoolSign1 %}
+                            <option value="{{ signer.staff.id }}">{{ signer.staff.name }}({{ signer.dutyDescript }})</option>
+                        {% endfor %}
+                        </select>
+                    {% endif %}
                 </div>
             {% endif %}
             {% if schoolSign2 %}

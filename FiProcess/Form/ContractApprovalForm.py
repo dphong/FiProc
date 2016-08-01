@@ -6,7 +6,7 @@ from django.core.urlresolvers import reverse
 from django.contrib import messages
 from datetime import datetime
 
-from ..models import Staff, FiStream, Department, Contract, SchoolMaster
+from ..models import Staff, FiStream, Department, Contract, SchoolMaster, SignRecord
 import IndexForm
 
 
@@ -87,8 +87,28 @@ class ContractApprovalForm(forms.Form):
         form.fields['applyDate'].widget.attrs['readonly'] = True
         form.fields['workId'].widget.attrs['readonly'] = True
         form.fields['name'].widget.attrs['readonly'] = True
-        superViser = SchoolMaster.objects.filter(duty='superviser')
-        schoolMasters = SchoolMaster.objects.filter(duty__startswith='school')
+        signList = SignRecord.objects.filter(stream__id=contract.stream.id)
+        superViser = None
+        schoolMasters = None
+        deptSign = None
+        currentSigner = None
+        unsigned = True
+        if not signList:
+            superViser = SchoolMaster.objects.filter(duty='superviser')
+            schoolMasters = SchoolMaster.objects.filter(duty__startswith='school')
+        else:
+            for sign in signList:
+                if sign.stage == 'approvalOffice':
+                    if sign.descript == 'superviser':
+                        superViser = sign
+                if sign.stage == 'approvalSchool':
+                    schoolMasters = sign
+                if sign.stage == 'approvalDepartment':
+                    deptSign = sign
+                if contract.stream.stage == sign.stage:
+                    currentSigner = sign
+                if sign.signed:
+                    unsigned = False
         try:
             research = Department.objects.get(name=u'科研处')
             asset = Department.objects.get(name=u'资产管理处')
@@ -98,8 +118,9 @@ class ContractApprovalForm(forms.Form):
             return HttpResponseRedirect(reverse('index', args={''}))
         return render(request, 'FiProcess/approvalContract.html',
             {'form': form, 'created': True, 'stream': contract.stream, 'contract': contract,
-                'superViser': superViser, 'schoolMaster': schoolMasters, 'research': research,
-                'asset': asset, 'financial': financial})
+                'superViser': superViser, 'schoolMaster': schoolMasters, 'research': research, 'deptSign': deptSign,
+                'asset': asset, 'financial': financial, 'signList': signList, 'unsigned': unsigned,
+                'currentSign': currentSigner})
 
     def detail(self, request, stream):
         try:
@@ -114,5 +135,56 @@ class ContractApprovalForm(forms.Form):
         return self.renderCreatedForm(request, form, contract)
 
     def submitPost(self, request, stream):
+        try:
+            deptMsId = request.POST['departmentMaster']
+            superViserId = request.POST['superViser']
+            schoolMsId = request.POST['schoolMaster']
+            deptMs = Staff.objects.get(id=deptMsId)
+            superViser = Staff.objects.get(id=superViserId)
+            schoolMs = Staff.objects.get(id=schoolMsId)
+            research = Department.objects.get(name=u'科研处')
+            asset = Department.objects.get(name=u'资产管理处')
+            financial = Department.objects.get(name=u'财务处')
+            if not research.chief or not asset.chief or not financial.chief:
+                raise Exception('')
+        except:
+            messages.add_message(request, messages.ERROR, u'系统异常，提交失败')
+            return HttpResponseRedirect(reverse('index', args={''}))
+        deptSign = SignRecord()
+        deptSign.stream = stream
+        deptSign.signer = deptMs
+        deptSign.stage = 'approvalDepartment'
+        deptSign.save()
+        superViserSign = SignRecord()
+        superViserSign.stream = stream
+        superViserSign.signer = superViser
+        superViserSign.stage = 'approvalOffice'
+        superViserSign.descript = 'superviser'
+        superViserSign.save()
+        schoolSign = SignRecord()
+        schoolSign.stream = stream
+        schoolSign.signer = schoolMs
+        schoolSign.stage = 'approvalSchool'
+        schoolSign.save()
+        financialSign = SignRecord()
+        financialSign.stream = stream
+        financialSign.signer = financial.chief
+        financialSign.stage = 'approvalOffice'
+        financialSign.descript = 'financial'
+        financialSign.save()
+        researchSign = SignRecord()
+        researchSign.stream = stream
+        researchSign.signer = research.chief
+        researchSign.stage = 'approvalOffice'
+        researchSign.descript = 'research'
+        researchSign.save()
+        assetSign = SignRecord()
+        assetSign.stream = stream
+        assetSign.signer = asset.chief
+        assetSign.stage = 'approvalOffice'
+        assetSign.descript = 'asset'
+        assetSign.save()
+        stream.stage = 'approvalDepartment'
+        stream.save()
         messages.add_message(request, messages.SUCCESS, u'提交成功')
         return HttpResponseRedirect(reverse('index', args={''}))
