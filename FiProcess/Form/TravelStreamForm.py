@@ -143,7 +143,6 @@ class TravelStreamForm(ModelForm):
                 queryList = SpendProof.objects.filter(fiStream__id=stream.id)
                 queryList.delete()
             except:
-                del request.session['streamId']
                 messages.add_message(request, messages.ERROR, u'操作失败')
                 return HttpResponseRedirect(reverse('index', args={''}))
         else:

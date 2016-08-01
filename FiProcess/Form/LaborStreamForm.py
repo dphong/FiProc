@@ -231,7 +231,6 @@ class LaborStreamForm(ModelForm):
         if 'streamId' not in request.session:
             messages.add_message(request, messages.ERROR, u'操作失败')
             return HttpResponseRedirect(reverse('index', args={''}))
-        print labor
         return self.postAddRow(request, labor)
 
     def renderForm(self, request, stream):

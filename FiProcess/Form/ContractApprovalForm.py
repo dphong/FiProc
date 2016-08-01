@@ -22,9 +22,8 @@ class ContractApprovalForm(forms.Form):
     )
 
     def getPost(self, request):
-        username = request.session['username']
         try:
-            user = Staff.objects.get(username=username)
+            user = Staff.objects.get(username=request.session['username'])
         except:
             return IndexForm.logout(request, '当前用户登陆异常')
         form = ContractApprovalForm(
@@ -78,6 +77,7 @@ class ContractApprovalForm(forms.Form):
                     'stream': stream, 'contract': contract, 'errorMsg': errorMsg})
         stream.applyDate = datetime.strptime(stream.applyDate, '%Y-%m-%d')
         stream.save()
+        request.session['streamId'] = stream.id
         contract.stream = stream
         contract.amount = float(contract.amount)
         contract.save()

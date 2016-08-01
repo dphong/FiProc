@@ -57,7 +57,6 @@ class TravelApprovalForm(forms.Form):
     def submitPost(self, request):
         try:
             record = TravelRecord.objects.get(id=request.session['TravelRecord'])
-            del request.session['TravelRecord']
         except:
             messages.add_message(request, messages.ERROR, '提交审批单失败')
             return HttpResponseRedirect(reverse('index', args={''}))
@@ -138,6 +137,7 @@ class TravelApprovalForm(forms.Form):
         record.companionCnt = self.cleaned_data['companionCnt']
         record.save()
         request.session['TravelRecord'] = record.id
+        request.session['streamId'] = fiStream.id
         return render(request, 'FiProcess/approvalTravel.html',
             {'form': form, 'schoolMasterList': schoolMasterList, 'departmentList': departmentList,
             'travelRecord': record, 'carPlate': carPlate, 'carDriver': carDriver, 'fundDeptId': int(request.POST['fundDepartment']),
@@ -154,7 +154,6 @@ class TravelApprovalForm(forms.Form):
         return signList
 
     def detail(self, request, fiStream):
-        del request.session['streamId']
         try:
             record = TravelRecord.objects.get(fiStream__id=fiStream.id)
         except:

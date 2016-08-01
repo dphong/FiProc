@@ -77,10 +77,7 @@
         {% endfor %}
     {% endif %}
     <h2>财务报账审批系统</h2>
-    <form class="form" method="post">
-        {% csrf_token %}  
-        <button type="submit" name="return" class="btn btn-primary navbar-btn pull-right">返回</button>
-    </form>
+    <a href={% url 'index' '' %} class="btn btn-primary navbar-btn pull-right">返回</a>
     <ul class="nav nav-tabs">
     <li id="myStream" class="active"><a data-toggle="tab" href="myStream">我的报销单</a></li>
     <li id = "allStream"><a data-toggle="tab" href="allStream">全部报销单</a></li>

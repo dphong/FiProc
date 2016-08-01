@@ -192,8 +192,6 @@ class CommonStreamForm(ModelForm):
             for tmp in warningMsg:
                 msg += tmp + ' '
             messages.add_message(request, messages.INFO, msg)
-            request.session['streamId'] = stream.id
-            return HttpResponseRedirect(reverse('index', args={'streamDetail'}))
         request.session['streamId'] = stream.id
         return HttpResponseRedirect(reverse('index', args={'streamDetail'}))
 

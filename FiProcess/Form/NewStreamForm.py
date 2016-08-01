@@ -16,20 +16,19 @@ from ..models import FiStream, SignRecord, SchoolMaster
 
 class NewStreamForm(forms.Form):
     def get(self, request):
-        if 'streamId' in request.session:
-            try:
-                stream = FiStream.objects.get(id=request.session['streamId'])
-            except:
-                del request.session['streamId']
-                messages.add_message(request, messages.ERROR, u'操作失败')
-                return HttpResponseRedirect(reverse('index', args={''}))
-            if stream.streamType == 'common':
-                form = CommonStreamForm(request.GET)
-                return form.modify(request, stream)
-            if stream.streamType == 'travelApproval':
-                form = TravelStreamForm(request.GET)
-                return form.get(request, stream)
-        return render(request, 'FiProcess/newStream.html')
+        if 'streamId' not in request.session:
+            return render(request, 'FiProcess/newStream.html')
+        try:
+            stream = FiStream.objects.get(id=request.session['streamId'])
+        except:
+            messages.add_message(request, messages.ERROR, u'操作失败')
+            return HttpResponseRedirect(reverse('index', args={''}))
+        if stream.streamType == 'common':
+            form = CommonStreamForm(request.GET)
+            return form.modify(request, stream)
+        if stream.streamType == 'travelApproval':
+            form = TravelStreamForm(request.GET)
+            return form.get(request, stream)
 
     def newFiStreamType(self, request):
         streamType = request.POST['newStreamType']

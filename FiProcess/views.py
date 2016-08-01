@@ -61,11 +61,12 @@ def indexTarget(request, target):
     return HttpResponseRedirect(reverse('index', args={''}))
 
 
-def index(request, target=''):
+def index(request, target=None):
     if 'username' not in request.session:
         return IndexForm.logout(request, u'当前用户未登录，请登录')
-    if len(target) > 0:
+    if target:
         return indexTarget(request, target)
+    IndexForm.clearSession(request)
     if request.method == 'GET':
         form = IndexForm.IndexForm(request.GET)
         return form.get(request)

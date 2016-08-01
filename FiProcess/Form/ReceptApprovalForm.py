@@ -101,6 +101,7 @@ class ReceptApprovalForm(forms.Form):
                     'errorMsg': errorMsg})
         stream.applyDate = datetime.strptime(stream.applyDate, '%Y-%m-%d')
         stream.save()
+        request.session['streamId'] = stream.id
         recept.stream = stream
         recept.date = datetime.strptime(recept.date, '%Y-%m-%d')
         recept.save()

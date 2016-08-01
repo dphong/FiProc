@@ -28,9 +28,6 @@ class CwcForm(forms.Form):
         return streamList
 
     def get(self, request):
-        if 'username' not in request.session:
-            messages.add_message(request, messages.ERROR, '登录状态异常!')
-            return HttpResponseRedirect(reverse('login'))
         if request.GET.get('target') == 'allStream':
             streamList = self.getStreamList()
             return JsonResponse(streamList, safe=False)
@@ -40,11 +37,6 @@ class CwcForm(forms.Form):
         return render(request, 'FiProcess/cwc.html', {'form': self})
 
     def post(self, request):
-        if 'username' not in request.session:
-            messages.add_message(request, messages.ERROR, '登录状态异常!')
-            return HttpResponseRedirect(reverse('login'))
-        if 'return' in request.POST:
-            return HttpResponseRedirect(reverse('index', args={''}))
         for name, value in request.POST.iteritems():
             if name.startswith('dealWith'):
                 try:

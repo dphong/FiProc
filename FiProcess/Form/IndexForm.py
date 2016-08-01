@@ -61,12 +61,22 @@ def logout(request, message='已注销'):
 
 
 def getStaffFromRequest(request):
-    username = request.session['username']
     try:
-        staff = Staff.objects.get(username__exact=username)
+        staff = Staff.objects.get(username__exact=request.session['username'])
     except:
         return None
     return staff
+
+
+def clearSession(request):
+    if 'streamId' in request.session:
+        del request.session['streamId']
+    if 'TravelRecord' in request.session:
+        del request.session['TravelRecord']
+    if 'hireLaborId' in request.session:
+        del request.session['hireLaborId']
+    if 'staffLaborId' in request.session:
+        del request.session['staffLaborId']
 
 
 class IndexForm(forms.Form):
@@ -124,9 +134,10 @@ class IndexForm(forms.Form):
         return self.render(request, userInfoForm, renderStaff)
 
     def render(self, request, userInfoForm, staff):
-        # if check_password(staff.workId, staff.password):
-            # return render_to_response('FiProcess/index.html',
-                # RequestContext(request, {'userInfoForm': userInfoForm, 'unCheckStaff': u'当前用户密码为默认密码，请立即修改'}))
+        clearSession(request)
+        if check_password(staff.workId, staff.password):
+            return render(request, 'FiProcess/index.html',
+                {'userInfoForm': userInfoForm, 'unCheckStaff': u'当前用户密码为默认密码，请立即修改'})
         if request.user.is_authenticated():
             return render(request, 'FiProcess/index.html', {'userInfoForm': userInfoForm, 'orderList': self.getOrderList(request),
                     'userCheckList': StaffCheck.objects.all(), 'is_sysAdmin': True})
@@ -176,11 +187,14 @@ class IndexForm(forms.Form):
 
         for name, value in request.POST.iteritems():
             if name.startswith('checkStreamDetail'):
-                request.session['streamId'] = name[17:]
+                try:
+                    stream = FiStream.objects.get(id=name[17:])
+                except:
+                    messages.add_message(request, messages.ERROR, u'操作失败')
+                    return self.render(request, userInfoForm, staff)
+                request.session['streamId'] = stream.id
                 return HttpResponseRedirect(reverse('index', args={'streamDetail'}))
             if name.startswith('deleteOrder'):
-                if 'streamId' in request.session:
-                    del request.session['streamId']
                 try:
                     stream = FiStream.objects.get(id=name[11:])
                 except:
@@ -276,7 +290,7 @@ class IndexForm(forms.Form):
                 except:
                     messages.add_message(request, messages.ERROR, u'操作失败')
                     return self.render(request, userInfoForm, staff)
-                request.session['streamId'] = name[20:]
+                request.session['streamId'] = stream.id
                 return HttpResponseRedirect(reverse('index', args={'newstream'}))
 
         return logout(request)
@@ -288,8 +302,7 @@ class IndexForm(forms.Form):
             'travelApproval': u'差旅审批', 'receptApproval': u'公务接待审批', 'contractApproval': u'合同审批'}
 
     def getOrderList(self, request):
-        username = request.session['username']
-        streamList = FiStream.objects.filter(applicante__username=username)
+        streamList = FiStream.objects.filter(applicante__username=request.session['username'])
         orderList = []
         stageDic = {'create': u'未提交', 'project': u'项目负责人审核', 'department1': u'部门负责人审核',
                     'department2': u'部门书记审核', 'projectDepartment': u'项目部门负责人审核', 'school1': u'分管校领导审核',
@@ -316,8 +329,6 @@ class IndexForm(forms.Form):
         staff = getStaffFromRequest(request)
         if not staff:
             return logout(request, '用户信息异常，请保存本条错误信息，并联系管理员')
-        if 'streamId' in request.session:
-            del request.session['streamId']
         userInfoForm = self.getUserInfoForm(request, staff)
         return self.render(request, userInfoForm, staff)
 
