@@ -99,13 +99,13 @@ class ContractApprovalForm(forms.Form):
         else:
             for sign in signList:
                 if sign.stage == 'approvalOffice':
-                    if sign.descript == 'superviser':
+                    if sign.signer.department.name == u'纪委监察室':
                         superViser = sign
                 if sign.stage == 'approvalSchool':
                     schoolMasters = sign
                 if sign.stage == 'approvalDepartment':
                     deptSign = sign
-                if contract.stream.stage == sign.stage:
+                if contract.stream.stage == sign.stage and not sign.signed:
                     currentSigner = sign
                 if sign.signed:
                     unsigned = False
@@ -159,7 +159,6 @@ class ContractApprovalForm(forms.Form):
         superViserSign.stream = stream
         superViserSign.signer = superViser
         superViserSign.stage = 'approvalOffice'
-        superViserSign.descript = 'superviser'
         superViserSign.save()
         schoolSign = SignRecord()
         schoolSign.stream = stream
@@ -170,19 +169,16 @@ class ContractApprovalForm(forms.Form):
         financialSign.stream = stream
         financialSign.signer = financial.chief
         financialSign.stage = 'approvalOffice'
-        financialSign.descript = 'financial'
         financialSign.save()
         researchSign = SignRecord()
         researchSign.stream = stream
         researchSign.signer = research.chief
         researchSign.stage = 'approvalOffice'
-        researchSign.descript = 'research'
         researchSign.save()
         assetSign = SignRecord()
         assetSign.stream = stream
         assetSign.signer = asset.chief
         assetSign.stage = 'approvalOffice'
-        assetSign.descript = 'asset'
         assetSign.save()
         stream.stage = 'approvalDepartment'
         stream.save()

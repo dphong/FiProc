@@ -2,12 +2,13 @@
 from django import forms
 from django.shortcuts import render
 from django.core.urlresolvers import reverse
-from django.http import HttpResponseRedirect
+from django.http import HttpResponseRedirect, JsonResponse
 from django.contrib import messages, auth
 from django.contrib.auth.hashers import check_password, make_password
 from datetime import datetime
 
-from ..models import Staff, StaffCheck, FiStream, SignRecord, TravelRecord, Traveler, TravelRoute, IcbcCardRecord, SpendProof
+from ..models import Staff, StaffCheck, FiStream, SignRecord, TravelRecord, Traveler, TravelRoute
+from ..models import IcbcCardRecord, SpendProof
 
 
 class UserInfoForm(forms.Form):
@@ -150,21 +151,33 @@ class IndexForm(forms.Form):
                 {'userInfoForm': userInfoForm, 'orderList': self.getOrderList(request), 'signList': signList})
         return render(request, 'FiProcess/index.html', {'userInfoForm': userInfoForm, 'orderList': self.getOrderList(request)})
 
-    def streamStageChange(self, signRecord):
-        if signRecord.stream.stage == 'finish' or signRecord.stream.stage == 'refuesd':
-            return signRecord.stream.stage
-        if signRecord.stream.stage == 'approvalDepartment' or signRecord.stream.stage == 'approvalSchool':
-            return 'approved'
-        stageDict = {'create': 0, 'project': 1, 'department1': 2, 'department2': 3, 'projectDepartment': 4,
-                     'school1': 5, 'school2': 6, 'school3': 7, 'financial': 8, 'finish': 9}
+    def streamStageChange(self, stream):
+        if stream.stage == 'finish' or stream.stage == 'refuesd' or stream.stage == 'approved':
+            return stream.stage
+        querySet = SignRecord.objects.filter(stream__id=stream.id)
+        stageDict = None
+        finalStr = ''
+        if 'receptApproval' == stream.streamType or 'contractApproval' == stream.streamType:
+            if len(querySet) == 0:
+                return 'unapprove'
+            stageDict = {'unapprove': 0, 'approvalDepartment': 1, 'approvalOffice': 2, 'approvalSchool': 3, 'approved': 4}
+            finalStr = 'approved'
+        elif ('travelApproval' == stream.streamType or 'labor' == stream.streamType
+                or 'travel' == stream.streamType or 'common' == stream.streamType):
+            if len(querySet) == 0:
+                return 'create'
+            stageDict = {'create': 0, 'project': 1, 'department1': 2, 'department2': 3, 'projectDepartment': 4,
+                         'school1': 5, 'school2': 6, 'school3': 7, 'financial': 8, 'finish': 9}
+            finalStr = 'finish'
+        else:
+            raise Exception(u'报销单类型错误')
         minUnsignedStage = ""
-        if signRecord.signed and (stageDict[signRecord.stage] > stageDict[signRecord.stream.stage]):
-            raise Exception(u"审批状态异常")
-        if not signRecord.signed and (stageDict[signRecord.stage] > stageDict[signRecord.stream.stage]):
-            if len(minUnsignedStage) == 0 or stageDict[signRecord.stage] < stageDict[minUnsignedStage]:
-                minUnsignedStage = signRecord.stage
+        for item in querySet:
+            if not item.signed and (stageDict[item.stage] >= stageDict[stream.stage]):
+                if len(minUnsignedStage) == 0 or stageDict[item.stage] < stageDict[minUnsignedStage]:
+                    minUnsignedStage = item.stage
         if len(minUnsignedStage) == 0:
-            minUnsignedStage = 'finish'
+            minUnsignedStage = finalStr
         return minUnsignedStage
 
     def post(self, request):
@@ -266,6 +279,9 @@ class IndexForm(forms.Form):
                 userInfoForm.currentTab = 'signList'
                 return self.render(request, userInfoForm, staff)
             if name.startswith('signPermit'):
+                if not check_password(request.POST['signOkPassword'], staff.password):
+                    messages.add_message(request, messages.ERROR, u'密码错误')
+                    return self.render(request, userInfoForm, staff)
                 try:
                     item = SignRecord.objects.get(id=name[10:])
                 except:
@@ -277,7 +293,7 @@ class IndexForm(forms.Form):
                 item.save()
                 userInfoForm.currentTab = 'signList'
                 try:
-                    item.stream.stage = self.streamStageChange(item)
+                    item.stream.stage = self.streamStageChange(item.stream)
                     item.stream.save()
                 except Exception, e:
                     messages.add_message(request, messages.ERROR, str(e))
@@ -326,10 +342,19 @@ class IndexForm(forms.Form):
         return signList
 
     def get(self, request):
+        tab = request.GET.get('currentTab')
+        if tab:
+            request.session['currentIndexTab'] = tab
+            request.session.save()
+            return JsonResponse("")
         staff = getStaffFromRequest(request)
         if not staff:
             return logout(request, '用户信息异常，请保存本条错误信息，并联系管理员')
         userInfoForm = self.getUserInfoForm(request, staff)
+        if 'currentIndexTab' in request.session:
+            userInfoForm.currentTab = request.session['currentIndexTab']
+        else:
+            userInfoForm.currentTab = 'order'
         return self.render(request, userInfoForm, staff)
 
     def getUserInfoForm(self, request, staff):
@@ -344,7 +369,6 @@ class IndexForm(forms.Form):
         else:
             userInfoForm.fields['username'].widget.attrs['readonly'] = True
             userInfoForm.fields['username'].label = u'用户名'
-        userInfoForm.currentTab = 'order'
         if staff.department.name == u'财务处':
             userInfoForm.isCwcStaff = True
         return userInfoForm

@@ -26,6 +26,9 @@
                     $(formList[i]).hide()
                 }
             }
+            var url = location.protocol + "//" + window.location.hostname + ":"
+                      + location.port + "/index/?currentTab=" + target;
+            $.getJSON(url, {}, function(json) {});
         }
         {% if is_sysAdmin %}
         $('#confirmUserCheck').on('show.bs.modal', function (e) {
@@ -206,7 +209,8 @@
                     </thead>
                     <tbody>
                     {% for order in orderList %}
-                        <tr{% if order.stage == "拒绝审批" %} class="danger"{% endif %}>
+                        <tr{% if order.stage == "拒绝审批" %} class="danger"{% endif %}
+                           {% if order.stage == "已审批" or order.stage == "付款完成" %} class="success"{% endif %}>
                             <td class="text-center">{{ forloop.counter }}</td>
                             <td class="text-center">{{ order.applyDate }}</td>
                             <td class="text-center">{{ order.department.name }}</td>
@@ -225,7 +229,7 @@
                                 <a href="#submit" data-toggle="modal" class="btn btn-primary"
                                     name="fiProc{{ order.id }}" role="button">报销</a>
                             {% endif %}
-                            {% if order.stage == "已审批" %}
+                            {% if order.stage == "已审批" and order.streamType = "差旅审批" %}
                                 <input type="submit" class="btn btn-success" name="createApprovalStream{{ order.id }}" value="报销单">
                             {% endif %}
                             </td>
