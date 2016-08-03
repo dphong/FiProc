@@ -109,7 +109,7 @@
                 <button type="submit" name="logout" class="btn btn-primary navbar-btn pull-right" style="margin:0px 0px 0px 0px">注销</button>
                 {% if userInfoForm.isCwcStaff %}
                 {% if not unCheckStaff %}
-                <button type="submit" name="cwc" class="btn btn-primary navbar-btn pull-right" style="margin:0px 4px 0px 0px">报销单审批</button>
+                <a href={% url 'cwc' %} class="btn btn-primary navbar-btn pull-right" style="margin:0px 4px 0px 0px">报销单审批</a>
                 {% endif %}
                 {% endif %}
             </form>

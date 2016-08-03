@@ -67,6 +67,11 @@ def index(request, target=None):
     if target:
         return indexTarget(request, target)
     IndexForm.clearSession(request)
+    if 'office' in request.session:
+        if request.session['office'] == 'cwc':
+            return HttpResponseRedirect(reverse('cwc'))
+        else:
+            del request.session['office']
     if request.method == 'GET':
         form = IndexForm.IndexForm(request.GET)
         return form.get(request)

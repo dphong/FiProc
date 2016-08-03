@@ -195,8 +195,8 @@ class IndexForm(forms.Form):
             return HttpResponseRedirect(reverse('index', args={'newstream'}))
         elif "newApproval" in request.POST:
             return HttpResponseRedirect(reverse('index', args={'newApproval'}))
-        elif "cwc" in request.POST:
-            return HttpResponseRedirect(reverse('cwc'))
+        elif 'logout' in request.POST:
+            return logout(request)
 
         for name, value in request.POST.iteritems():
             if name.startswith('checkStreamDetail'):
@@ -253,8 +253,13 @@ class IndexForm(forms.Form):
                         raise Exception('日期格式错误，请在报销日期中填写"年-月-日"格式的日期')
                     if request.POST['submitHalfDay'] == 'morning':
                         item.cwcSumbitDate = datetime(time.year, time.month, time.day, 9, 0, 0)
+                        item.number = item.cwcSumbitDate.strftime('%Y%m%d') + '0'
                     else:
                         item.cwcSumbitDate = datetime(time.year, time.month, time.day, 14, 0, 0)
+                        item.number = item.cwcSumbitDate.strftime('%Y%m%d') + '1'
+                    signQuery = FiStream.objects.filter(number__startswith=item.cwcSumbitDate.strftime('%Y%m%d'))
+                    item.number += "%03d" % (len(signQuery) + 1)
+                    print item.number
                     item.stage = 'cwcSubmit'
                     item.save()
                     messages.add_message(request, messages.SUCCESS, u'报销预约成功')
@@ -308,7 +313,6 @@ class IndexForm(forms.Form):
                     return self.render(request, userInfoForm, staff)
                 request.session['streamId'] = stream.id
                 return HttpResponseRedirect(reverse('index', args={'newstream'}))
-
         return logout(request)
 
     def sortOrder(self, stream):

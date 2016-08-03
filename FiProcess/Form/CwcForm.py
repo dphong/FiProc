@@ -16,18 +16,28 @@ class CwcForm(forms.Form):
             querySet = FiStream.objects.filter(stage='cwcSubmit')
         else:
             querySet = FiStream.objects.filter(stage='cwcChecking', cwcDealer__username=dealer)
-        typeDic = {'common': u'普通', 'travel': u'差旅', 'labor': u'劳务'}
+        typeDic = {'common': u'普通', 'travel': u'差旅', 'labor': u'劳务', 'travelApproval': u'差旅'}
+        querySet = sorted(querySet, key=self.sortOrder)
         for item in querySet:
             stream = {}
             stream['projectName'] = item.projectName
             stream['applicante'] = item.applicante.name
             stream['supportDept'] = item.department.name
             stream['streamType'] = typeDic[item.streamType]
+            stream['time'] = item.cwcSumbitDate.strftime('%Y-%m-%d')
+            if item.cwcSumbitDate.hour > 12:
+                stream['time'] += u'下午'
+            else:
+                stream['time'] += u'上午'
             stream['id'] = item.id
             streamList.append(stream)
         return streamList
 
+    def sortOrder(self, stream):
+        return stream.cwcSumbitDate
+
     def get(self, request):
+        request.session['office'] = 'cwc'
         if request.GET.get('target') == 'allStream':
             streamList = self.getStreamList()
             return JsonResponse(streamList, safe=False)
@@ -37,6 +47,9 @@ class CwcForm(forms.Form):
         return render(request, 'FiProcess/cwc.html', {'form': self})
 
     def post(self, request):
+        if 'returnIndex' in request.POST:
+            del request.session['office']
+            return HttpResponseRedirect(reverse('index', args={''}))
         for name, value in request.POST.iteritems():
             if name.startswith('dealWith'):
                 try:
