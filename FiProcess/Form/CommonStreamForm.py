@@ -9,7 +9,7 @@ from datetime import datetime
 from decimal import Decimal
 
 from ..models import Staff, FiStream, SpendProof, CashPay, IcbcCardRecord, CompanyPayRecord
-import IndexForm
+import FormPublic
 
 
 class CommonStreamForm(ModelForm):
@@ -75,9 +75,9 @@ class CommonStreamForm(ModelForm):
             self.payType = 0
 
     def get(self, request):
-        staff = IndexForm.getStaffFromRequest(request)
+        staff = FormPublic.getStaffFromRequest(request)
         if not staff:
-            return IndexForm.logout(request, '用户信息异常，请保存本条错误信息，并联系管理员')
+            return FormPublic.logout(request, '用户信息异常，请保存本条错误信息，并联系管理员')
         form = CommonStreamForm(
             initial={'myDepartment': staff.department.name,
                 'name': staff.name, 'workId': staff.workId, 'applyDate': datetime.today().strftime('%Y-%m-%d'),
@@ -173,9 +173,9 @@ class CommonStreamForm(ModelForm):
             return render(request, 'FiProcess/commonStream.html',
                 {'form': form, 'errorMsg': errorMsg, 'list': icbcList, 'ccbList': ccbList, 'companyList': companyList})
 
-        staff = IndexForm.getStaffFromRequest(request)
+        staff = FormPublic.getStaffFromRequest(request)
         if not staff:
-            return IndexForm.logout(request, u'用户信息异常，请保存本条错误信息，并联系管理员')
+            return FormPublic.logout(request, u'用户信息异常，请保存本条错误信息，并联系管理员')
         stream.applicante = staff
         stream.projectLeader = staff
         stream.stage = 'create'
@@ -207,7 +207,7 @@ class CommonStreamForm(ModelForm):
         try:
             icbcCardRec.staff = Staff.objects.get(name__exact=icbc.name, icbcCard__exact=icbc.icbcCard)
         except:
-            return IndexForm.logout(request, '用户信息异常，请保存本条错误信息，并联系管理员')
+            return FormPublic.logout(request, '用户信息异常，请保存本条错误信息，并联系管理员')
         icbcCardRec.date = icbc.date
         icbcCardRec.spendAmount = Decimal(icbc.amount)
         icbcCardRec.cantApplyAmount = Decimal(icbc.amount) - Decimal(icbc.actualAmount)

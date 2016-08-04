@@ -3,12 +3,14 @@ from django.shortcuts import render_to_response
 from django.http import HttpResponseRedirect
 from django.core.urlresolvers import reverse
 
-from Form import IndexForm
+from Form import FormPublic
+from Form.IndexForm import IndexForm
 from Form.LoginForm import LoginForm
 from Form.CwcForm import CwcForm
 from Form.RegisterForm import RegisterForm
 from Form.NewStreamForm import NewStreamForm
 from Form.ApprovalForm import ApprovalForm
+from Form.PrintForm import PrintForm
 
 
 def error(request):
@@ -63,29 +65,36 @@ def indexTarget(request, target):
 
 def index(request, target=None):
     if 'username' not in request.session:
-        return IndexForm.logout(request, u'当前用户未登录，请登录')
+        return FormPublic.logout(request, u'当前用户未登录，请登录')
     if target:
         return indexTarget(request, target)
-    IndexForm.clearSession(request)
+    FormPublic.clearSession(request)
     if 'office' in request.session:
         if request.session['office'] == 'cwc':
             return HttpResponseRedirect(reverse('cwc'))
         else:
             del request.session['office']
     if request.method == 'GET':
-        form = IndexForm.IndexForm(request.GET)
+        form = IndexForm(request.GET)
         return form.get(request)
     if request.method == 'POST':
-        form = IndexForm.IndexForm(request.POST)
+        form = IndexForm(request.POST)
         return form.post(request)
 
 
 def cwc(request):
     if 'username' not in request.session:
-        return IndexForm.logout(request, '当前用户未登录，请登录')
+        return FormPublic.logout(request, '当前用户未登录，请登录')
     if request.method == 'GET':
         form = CwcForm(request.GET)
         return form.get(request)
     if request.method == 'POST':
         form = CwcForm(request.POST)
         return form.post(request)
+
+
+def printStream(request, target):
+    if 'username' not in request.session:
+        return FormPublic.logout(request, '当前用户未登录，请登录')
+    form = PrintForm()
+    return form.get(request, target)

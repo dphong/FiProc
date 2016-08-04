@@ -26,6 +26,7 @@ urlpatterns = [
     url(r'register/', FiProcess.views.register, name='register'),
     url(r'^error/', FiProcess.views.error, name='error'),
     url(r'^index/(?P<target>[a-zA-Z]*)$', FiProcess.views.index, name='index'),
+    url(r'^index/(?P<target>[0-9]*)$', FiProcess.views.printStream, name='printStream'),
     url(r'^captcha/', include('captcha.urls')),
     url(r'^cwc/$', FiProcess.views.cwc, name='cwc'),
     # url(r'^favicon\.ico$', favicon_view),

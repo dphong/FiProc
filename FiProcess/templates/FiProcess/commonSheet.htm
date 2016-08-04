@@ -1,0 +1,403 @@
+﻿<html xmlns:v="urn:schemas-microsoft-com:vml"
+xmlns:o="urn:schemas-microsoft-com:office:office"
+xmlns:x="urn:schemas-microsoft-com:office:excel"
+xmlns="http://www.w3.org/TR/REC-html40">
+{% load staticfiles %} 
+
+<head>
+<meta http-equiv=Content-Type content="text/html; charset=utf-8">
+<link rel="stylesheet" type="text/css" href="{% static 'FiProcess/commonStyleSheet.css' %}"/>
+<style>
+<!--table
+	{mso-displayed-decimal-separator:"\.";
+	mso-displayed-thousand-separator:"\,";}
+@page
+	{margin:.17in .04in .16in .23in;
+	mso-header-margin:.16in;
+	mso-footer-margin:.16in;
+	mso-page-orientation:landscape;}
+ruby
+	{ruby-align:left;}
+rt
+	{color:windowtext;
+	font-size:9.0pt;
+	font-weight:400;
+	font-style:normal;
+	text-decoration:none;
+	font-family:宋体;
+	mso-generic-font-family:auto;
+	mso-font-charset:134;
+	mso-char-type:none;
+	display:none;}
+-->
+</style>
+</head>
+
+<body link=blue vlink=purple class=xl68>
+
+<table border=0 cellpadding=0 cellspacing=0 width=910 style='border-collapse:collapse;table-layout:fixed;width:684pt'>
+ <col class=xl68 width=43 style='mso-width-source:userset;mso-width-alt:1376;width:32pt'>
+ <col class=xl68 width=71 style='mso-width-source:userset;mso-width-alt:2272;width:53pt'>
+ <col class=xl68 width=41 style='mso-width-source:userset;mso-width-alt:1312;width:31pt'>
+ <col class=xl68 width=61 style='mso-width-source:userset;mso-width-alt:1952;width:46pt'>
+ <col class=xl68 width=71 style='mso-width-source:userset;mso-width-alt:2272;width:53pt'>
+ <col class=xl68 width=41 style='mso-width-source:userset;mso-width-alt:1312;width:31pt'>
+ <col class=xl68 width=61 style='mso-width-source:userset;mso-width-alt:1952;width:46pt'>
+ <col class=xl68 width=99 style='mso-width-source:userset;mso-width-alt:3168;width:74pt'>
+ <col class=xl68 width=58 style='mso-width-source:userset;mso-width-alt:1856;width:44pt'>
+ <col class=xl68 width=102 style='mso-width-source:userset;mso-width-alt:3264;width:77pt'>
+ <col class=xl68 width=63 style='mso-width-source:userset;mso-width-alt:2016;width:47pt'>
+ <col class=xl68 width=83 style='mso-width-source:userset;mso-width-alt:2656;width:62pt'>
+ <col class=xl68 width=90 style='mso-width-source:userset;mso-width-alt:2880;width:68pt'>
+ <col class=xl68 width=9 style='mso-width-source:userset;mso-width-alt:288;width:7pt'>
+ <col class=xl68 width=17 style='mso-width-source:userset;mso-width-alt:544;width:13pt'>
+ <tr height=35 style='mso-height-source:userset;height:26.25pt'>
+  <td height=35 class=xl68 width=43 style='height:26.25pt;width:32pt'><a name="Print_Area"></a></td>
+  <td colspan=11 class=xl78 width=751 style='width:564pt'>合 肥 师 范 学 院 单 据 报 销 封 面</td>
+  <td class=xl68 width=90 style='width:68pt'></td>
+  <td rowspan=16 class=xl98 width=9 style='width:7pt'>　</td>
+  <td rowspan=16 class=xl99 width=17 style='width:13pt'>请 沿 此 虚 线 剪 开<span style='mso-spacerun:yes'>&nbsp;</span></td>
+ </tr>
+ <tr height=30 style='mso-height-source:userset;height:22.5pt'>
+  <td height=30 class=xl68 style='height:22.5pt'></td>
+  <td class=xl76>部门：{{stream.applicante.department}}</td>
+  <td class=xl78></td>
+  <td class=xl68></td>
+  <td class=xl76>报销人：{{stream.applicante.name}}</td>
+  <td class=xl76></td>
+  <td class=xl68></td>
+  <td class=xl76 colspan=2 style='mso-ignore:colspan'>
+   联系电话：{{stream.applicante.phoneNumber}}<span style='mso-spacerun:yes'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </span>
+  </td>
+  <td class=xl87><span style='mso-spacerun:yes'>&nbsp;&nbsp;&nbsp; </span>报销日期:{{stream.applyDate|date:"Y-m-d"}}<span style='mso-spacerun:yes'>&nbsp;</span></td>
+  <td class=xl87>　</td>
+  <td class=xl87><span style='mso-spacerun:yes'>&nbsp; </span>单据张数：</td>
+  <td class=xl68></td>
+ </tr>
+ <tr class=xl89 height=50 style='mso-height-source:userset;height:37.5pt'>
+  <td height=50 class=xl89 style='height:37.5pt'></td>
+  <td class=xl71>开支类别</td>
+  <td class=xl74 width=41 style='border-left:none;width:31pt'>票据张数</td>
+  <td class=xl71 style='border-left:none'>金<span
+  style='mso-spacerun:yes'>&nbsp; </span>额</td>
+  <td class=xl71 style='border-left:none'>开支类别</td>
+  <td class=xl74 width=41 style='border-left:none;width:31pt'>票据张数</td>
+  <td class=xl71 style='border-left:none'>金<span
+  style='mso-spacerun:yes'>&nbsp; </span>额</td>
+  <td class=xl75 width=99 style='border-left:none;width:74pt'>收款人工（学）号：</td>
+  <td class=xl69 style='border-left:none'>　</td>
+  <td class=xl69 style='border-top:none;border-left:none'>收款人：</td>
+  <td class=xl88 width=63 style='border-top:none;border-left:none;width:47pt'>建行工资卡号</td>
+  <td colspan=2 class=xl66 style='border-left:none'>　</td>
+ </tr>
+ <tr height=25 style='mso-height-source:userset;height:18.75pt'>
+  <td height=25 class=xl68 style='height:18.75pt'></td>
+  <td class=xl81 style='border-top:none'>办公用品</td>
+  <td class=xl81 style='border-top:none;border-left:none'>　</td>
+  <td class=xl81 style='border-top:none;border-left:none'>　</td>
+  <td class=xl81 style='border-top:none;border-left:none'>会议费</td>
+  <td class=xl72 style='border-top:none;border-left:none'>　</td>
+  <td class=xl72 style='border-top:none;border-left:none'>　</td>
+  <td class=xl77 style='border-top:none;border-left:none;border-right:none'>公务卡消费报销<span
+  style='display:none'>，请务必依据消费POS单或银行短信，详细填写以下信息：</span></td>
+  <td class=xl77 style='border-top:none;border-left:none;border-right:none'>　</td>
+  <td class=xl77 style='border-top:none;border-left:none;border-right:none'>　</td>
+  <td class=xl77 style='border-top:none;border-left:none;border-right:none'>　</td>
+  <td class=xl77 style='border-top:none;border-left:none;border-right:none'>　</td>
+  <td class=xl72 style='border-top:none;border-left:none'>　</td>
+ </tr>
+ <tr height=25 style='mso-height-source:userset;height:18.75pt'>
+  <td height=25 class=xl68 style='height:18.75pt'></td>
+  <td class=xl81 style='border-top:none'>书报资料费</td>
+  <td class=xl77 style='border-top:none;border-left:none'>　</td>
+  <td class=xl81 style='border-top:none;border-left:none'>　</td>
+  <td class=xl81 style='border-top:none;border-left:none'>培训费</td>
+  <td class=xl72 style='border-top:none;border-left:none'>　</td>
+  <td class=xl72 style='border-top:none;border-left:none'>　</td>
+  <td class=xl66 style='border-top:none;border-left:none'>持卡人姓名</td>
+  <td class=xl66 style='border-top:none;border-left:none'>消费日期</td>
+  <td class=xl66 style='border-top:none;border-left:none'>消费金额</td>
+  <td class=xl66 style='border-top:none;border-left:none'>实报金额</td>
+  <td colspan=2 class=xl95 width=173 style='border-right:.5pt solid black;
+  border-left:none;width:130pt'>公务卡号</td>
+ </tr>
+ <tr height=25 style='mso-height-source:userset;height:18.75pt'>
+  <td height=25 class=xl68 style='height:18.75pt'></td>
+  <td class=xl81 style='border-top:none'>印刷费</td>
+  <td class=xl81 style='border-top:none;border-left:none'>　</td>
+  <td class=xl81 style='border-top:none;border-left:none'>　</td>
+  <td class=xl81 style='border-top:none;border-left:none'>招待费</td>
+  <td class=xl72 style='border-top:none;border-left:none'>　</td>
+  <td class=xl72 style='border-top:none;border-left:none'>　</td>
+  <td class=xl69 style='border-top:none;border-left:none'>1、</td>
+  <td class=xl73 style='border-top:none;border-left:none'> 月 日</td>
+  <td class=xl66 style='border-top:none;border-left:none'>　</td>
+  <td class=xl66 style='border-top:none;border-left:none'>　</td>
+  <td colspan=2 class=xl88 width=173 style='border-left:none;width:130pt'>　</td>
+ </tr>
+ <tr height=25 style='mso-height-source:userset;height:18.75pt'>
+  <td height=25 class=xl68 style='height:18.75pt'></td>
+  <td class=xl81 style='border-top:none'>邮电费</td>
+  <td class=xl81 style='border-top:none;border-left:none'>　</td>
+  <td class=xl81 style='border-top:none;border-left:none'>　</td>
+  <td class=xl81 style='border-top:none;border-left:none'>交通费</td>
+  <td class=xl72 style='border-top:none;border-left:none'>　</td>
+  <td class=xl72 style='border-top:none;border-left:none'>　</td>
+  <td class=xl69 style='border-top:none;border-left:none'>2、</td>
+  <td class=xl73 style='border-top:none;border-left:none'> 月 日</td>
+  <td class=xl66 style='border-top:none;border-left:none'>　</td>
+  <td class=xl66 style='border-top:none;border-left:none'>　</td>
+  <td colspan=2 class=xl110 style='border-left:none'>　</td>
+ </tr>
+ <tr height=30 style='mso-height-source:userset;height:22.5pt'>
+  <td height=30 class=xl68 style='height:22.5pt'></td>
+  <td class=xl81 style='border-top:none'>住宿费</td>
+  <td class=xl81 style='border-top:none;border-left:none'>　</td>
+  <td class=xl81 style='border-top:none;border-left:none'>　</td>
+  <td class=xl81 style='border-top:none;border-left:none'>专用材料</td>
+  <td class=xl72 style='border-top:none;border-left:none'>　</td>
+  <td class=xl72 style='border-top:none;border-left:none'>　</td>
+  <td class=xl69 style='border-top:none;border-left:none'>3、</td>
+  <td class=xl73 style='border-top:none;border-left:none'> 月 日</td>
+  <td class=xl66 style='border-top:none;border-left:none'>　</td>
+  <td class=xl72 style='border-top:none;border-left:none'>　</td>
+  <td colspan=2 class=xl94 style='border-left:none'>　</td>
+ </tr>
+ <tr height=25 style='mso-height-source:userset;height:18.75pt'>
+  <td height=25 class=xl68 style='height:18.75pt'></td>
+  <td class=xl81 style='border-top:none'>出国费</td>
+  <td class=xl81 style='border-top:none;border-left:none'>　</td>
+  <td class=xl81 style='border-top:none;border-left:none'>　</td>
+  <td class=xl81 style='border-top:none;border-left:none'>设备购置费</td>
+  <td class=xl72 style='border-top:none;border-left:none'>　</td>
+  <td class=xl72 style='border-top:none;border-left:none'>　</td>
+  <td class=xl69 style='border-top:none;border-left:none'>4、</td>
+  <td class=xl73 style='border-top:none;border-left:none'> 月 日</td>
+  <td class=xl66 style='border-top:none;border-left:none'>　</td>
+  <td class=xl72 style='border-top:none;border-left:none'>　</td>
+  <td colspan=2 class=xl94 style='border-left:none'>　</td>
+ </tr>
+ <tr height=25 style='mso-height-source:userset;height:18.75pt'>
+  <td height=25 class=xl68 style='height:18.75pt'></td>
+  <td class=xl81 style='border-top:none'>维修维护费</td>
+  <td class=xl81 style='border-top:none;border-left:none'>　</td>
+  <td class=xl81 style='border-top:none;border-left:none'>　</td>
+  <td class=xl81 style='border-top:none;border-left:none'>其他</td>
+  <td class=xl72 style='border-top:none;border-left:none'>　</td>
+  <td class=xl72 style='border-top:none;border-left:none'>　</td>
+  <td colspan=6 rowspan=2 class=xl90 width=495 style='width:372pt'>对公转账，请详细填写以下信息：<font
+  class="font6"><span style='mso-spacerun:yes'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+  </span><br>
+    收款单位名称：<br>
+    账号及开户行：</font></td>
+ </tr>
+ <tr height=25 style='mso-height-source:userset;height:18.75pt'>
+  <td height=25 class=xl68 style='height:18.75pt'></td>
+  <td class=xl81 style='border-top:none'>医疗费</td>
+  <td class=xl81 style='border-top:none;border-left:none'>　</td>
+  <td class=xl81 style='border-top:none;border-left:none'>　</td>
+  <td class=xl81 style='border-top:none;border-left:none'>　</td>
+  <td class=xl72 style='border-top:none;border-left:none'>　</td>
+  <td class=xl72 style='border-top:none;border-left:none'>　</td>
+ </tr>
+ <tr height=25 style='mso-height-source:userset;height:18.75pt'>
+  <td height=25 class=xl68 style='height:18.75pt'></td>
+  <td colspan=6 class=xl77>合计（小写）</td>
+  <td class=xl69 style='border-top:none;border-left:none'><font class="font8">合计大写</font><font
+  class="font6">：<span style='mso-spacerun:yes'>&nbsp;&nbsp;&nbsp; </span></font><span
+  style='display:none'><font class="font6">佰<span
+  style='mso-spacerun:yes'>&nbsp;&nbsp;&nbsp; </span>拾<span
+  style='mso-spacerun:yes'>&nbsp;&nbsp; </span>万<span
+  style='mso-spacerun:yes'>&nbsp;&nbsp; </span>仟<span
+  style='mso-spacerun:yes'>&nbsp;&nbsp;&nbsp; </span>佰<span
+  style='mso-spacerun:yes'>&nbsp;&nbsp;&nbsp; </span>拾<span
+  style='mso-spacerun:yes'>&nbsp;&nbsp;&nbsp; </span>元<span
+  style='mso-spacerun:yes'>&nbsp;&nbsp; </span>角<span
+  style='mso-spacerun:yes'>&nbsp;&nbsp; </span>分<span
+  style='mso-spacerun:yes'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span></font></span></td>
+  <td class=xl69 style='border-top:none;border-left:none'>　</td>
+  <td class=xl69 style='border-top:none;border-left:none'>　</td>
+  <td class=xl69 style='border-top:none;border-left:none'>　</td>
+  <td class=xl69 style='border-top:none;border-left:none'>　</td>
+  <td class=xl72 style='border-top:none;border-left:none'>　</td>
+ </tr>
+ <tr height=36 style='mso-height-source:userset;height:27.0pt'>
+  <td height=36 class=xl68 style='height:27.0pt'></td>
+  <td colspan=5 rowspan=2 class=xl90 width=285 style='width:214pt'>校领导审批：<span
+  style='mso-spacerun:yes'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span></td>
+  <td colspan=2 rowspan=2 class=xl90 width=160 style='width:120pt'>部门负责人审批：</td>
+  <td colspan=3 class=xl104 width=223 style='border-right:.5pt solid black;
+  border-left:none;width:168pt'>项目负责人审批：</td>
+  <td colspan=2 rowspan=2 class=xl100 width=173 style='border-right:.5pt solid black;
+  border-bottom:.5pt solid black;width:130pt'>说明：</td>
+ </tr>
+ <tr height=36 style='mso-height-source:userset;height:27.0pt'>
+  <td height=36 class=xl68 style='height:27.0pt'></td>
+  <td colspan=3 class=xl104 width=223 style='border-right:.5pt solid black;
+  border-left:none;width:168pt'>财务负责人审批：</td>
+ </tr>
+ <tr height=28 style='mso-height-source:userset;height:21.0pt'>
+  <td height=28 class=xl68 style='height:21.0pt'></td>
+  <td colspan=7 class=xl71>★报销人承诺：本人所提供的票据已经过查验，真实合法。</td>
+  <td colspan=5 class=xl107 style='border-right:.5pt solid black;border-left:
+  none'>核报：</td>
+ </tr>
+ <tr height=29 style='mso-height-source:userset;height:21.75pt'>
+  <td height=29 class=xl84 style='height:21.75pt'>　</td>
+  <td colspan=12 class=xl97><span style='mso-spacerun:yes'>&nbsp;
+  </span>温馨提示：以上内容均手工填写。</td>
+ </tr>
+ <tr height=0 style='display:none;mso-height-source:userset;mso-height-alt:
+  450'>
+  <td class=xl68></td>
+  <td class=xl68></td>
+  <td class=xl67></td>
+  <td class=xl80></td>
+  <td class=xl80></td>
+  <td class=xl80></td>
+  <td class=xl80></td>
+  <td class=xl79 width=99 style='width:74pt'></td>
+  <td class=xl79 width=58 style='width:44pt'></td>
+  <td class=xl79 width=102 style='width:77pt'></td>
+  <td class=xl79 width=63 style='width:47pt'></td>
+  <td class=xl79 width=83 style='width:62pt'></td>
+  <td class=xl68></td>
+  <td class=xl68></td>
+  <td class=xl67></td>
+ </tr>
+ <tr height=0 style='display:none;mso-height-source:userset;mso-height-alt:
+  450'>
+  <td class=xl68></td>
+  <td class=xl68></td>
+  <td class=xl67></td>
+  <td class=xl80></td>
+  <td class=xl80></td>
+  <td class=xl80></td>
+  <td class=xl80></td>
+  <td class=xl79 width=99 style='width:74pt'></td>
+  <td class=xl79 width=58 style='width:44pt'></td>
+  <td class=xl79 width=102 style='width:77pt'></td>
+  <td class=xl79 width=63 style='width:47pt'></td>
+  <td class=xl79 width=83 style='width:62pt'></td>
+  <td class=xl68></td>
+  <td class=xl68></td>
+  <td class=xl67></td>
+ </tr>
+ <tr height=0 style='display:none;mso-height-source:userset;mso-height-alt:
+  375'>
+  <td class=xl68></td>
+  <td class=xl68></td>
+  <td class=xl68></td>
+  <td class=xl68></td>
+  <td class=xl68></td>
+  <td class=xl68></td>
+  <td class=xl68></td>
+  <td class=xl68></td>
+  <td class=xl68></td>
+  <td class=xl68></td>
+  <td class=xl68></td>
+  <td class=xl68></td>
+  <td class=xl68></td>
+  <td class=xl68></td>
+  <td class=xl68></td>
+ </tr>
+ <tr height=0 style='display:none;mso-height-source:userset;mso-height-alt:
+  375'>
+  <td class=xl68></td>
+  <td class=xl68></td>
+  <td class=xl68></td>
+  <td class=xl68></td>
+  <td class=xl68></td>
+  <td class=xl68></td>
+  <td class=xl68></td>
+  <td class=xl68></td>
+  <td class=xl68></td>
+  <td class=xl68></td>
+  <td class=xl68></td>
+  <td class=xl68></td>
+  <td class=xl68></td>
+  <td class=xl68></td>
+  <td class=xl68></td>
+ </tr>
+ <tr height=0 style='display:none;mso-height-source:userset;mso-height-alt:
+  360'>
+  <td class=xl70>　</td>
+  <td class=xl68></td>
+  <td class=xl68></td>
+  <td class=xl68></td>
+  <td class=xl68></td>
+  <td class=xl68></td>
+  <td class=xl68></td>
+  <td class=xl68></td>
+  <td class=xl68></td>
+  <td class=xl68></td>
+  <td class=xl68></td>
+  <td class=xl68></td>
+  <td class=xl68></td>
+  <td class=xl68></td>
+  <td class=xl66>　</td>
+ </tr>
+ <tr height=0 style='display:none;mso-height-source:userset;mso-height-alt:
+  1170'>
+  <td colspan=8 class=xl91>　</td>
+  <td class=xl68></td>
+  <td class=xl68></td>
+  <td class=xl68></td>
+  <td class=xl68></td>
+  <td class=xl68></td>
+  <td class=xl68></td>
+  <td class=xl68></td>
+ </tr>
+ <tr class=xl65 height=0 style='display:none;mso-height-source:userset;
+  mso-height-alt:435'>
+  <td class=xl65></td>
+  <td class=xl65></td>
+  <td class=xl65></td>
+  <td class=xl65></td>
+  <td class=xl65></td>
+  <td class=xl65></td>
+  <td class=xl65></td>
+  <td class=xl65></td>
+  <td class=xl65></td>
+  <td class=xl65></td>
+  <td class=xl65></td>
+  <td class=xl65></td>
+  <td class=xl65></td>
+  <td class=xl65></td>
+  <td class=xl65></td>
+ </tr>
+ <tr height=25 style='mso-height-source:userset;height:18.75pt'>
+  <td height=25 class=xl68 style='height:18.75pt'></td>
+  <td colspan=5 class=xl82></td>
+  <td class=xl82></td>
+  <td class=xl85></td>
+  <td colspan=5 class=xl93>请<span style='mso-spacerun:yes'>&nbsp; </span>沿<span
+  style='mso-spacerun:yes'>&nbsp; </span>此<span style='mso-spacerun:yes'>&nbsp;
+  </span>虚<span style='mso-spacerun:yes'>&nbsp; </span>线<span
+  style='mso-spacerun:yes'>&nbsp; </span>剪<span style='mso-spacerun:yes'>&nbsp;
+  </span>开</td>
+  <td class=xl86>　</td>
+  <td class=xl67></td>
+ </tr>
+ <tr height=16 style='height:12.0pt'>
+  <td height=16 class=xl68 style='height:12.0pt'></td>
+  <td class=xl83></td>
+  <td class=xl68></td>
+  <td class=xl68></td>
+  <td class=xl68></td>
+  <td class=xl68></td>
+  <td class=xl68></td>
+  <td class=xl68></td>
+  <td class=xl68></td>
+  <td class=xl68></td>
+  <td class=xl68></td>
+  <td class=xl68></td>
+  <td class=xl68></td>
+  <td class=xl68></td>
+  <td class=xl68></td>
+ </tr>
+</table>
+
+</body>
+
+</html>

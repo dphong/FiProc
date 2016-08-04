@@ -3,12 +3,13 @@ from django import forms
 from django.shortcuts import render
 from django.core.urlresolvers import reverse
 from django.http import HttpResponseRedirect, JsonResponse
-from django.contrib import messages, auth
+from django.contrib import messages
 from django.contrib.auth.hashers import check_password, make_password
 from datetime import datetime
 
 from ..models import Staff, StaffCheck, FiStream, SignRecord, TravelRecord, Traveler, TravelRoute
 from ..models import IcbcCardRecord, SpendProof
+import FormPublic
 
 
 class UserInfoForm(forms.Form):
@@ -52,34 +53,6 @@ class UserInfoForm(forms.Form):
     isCwcStaff = False
 
 
-def logout(request, message='已注销'):
-    if request.user.is_authenticated():
-        auth.logout(request)
-    if request.session.get('username', ""):
-        del request.session['username']
-    messages.add_message(request, messages.SUCCESS, message)
-    return HttpResponseRedirect(reverse('login'))
-
-
-def getStaffFromRequest(request):
-    try:
-        staff = Staff.objects.get(username__exact=request.session['username'])
-    except:
-        return None
-    return staff
-
-
-def clearSession(request):
-    if 'streamId' in request.session:
-        del request.session['streamId']
-    if 'TravelRecord' in request.session:
-        del request.session['TravelRecord']
-    if 'hireLaborId' in request.session:
-        del request.session['hireLaborId']
-    if 'staffLaborId' in request.session:
-        del request.session['staffLaborId']
-
-
 class IndexForm(forms.Form):
     def saveUserInfoForm(self, request, staff):
         userInfoForm = UserInfoForm(request.POST)
@@ -102,7 +75,7 @@ class IndexForm(forms.Form):
                 messages.add_message(request, messages.ERROR, '保存失败: 用户名已存在')
                 return self.render(request, userInfoForm, staff)
             staff.save()
-            return logout(request, u'请用修改后的用户名重新登录')
+            return FormPublic.logout(request, u'请用修改后的用户名重新登录')
         staff.save()
         userInfoForm.password = ''
         messages.add_message(request, messages.SUCCESS, '保存成功')
@@ -135,7 +108,7 @@ class IndexForm(forms.Form):
         return self.render(request, userInfoForm, renderStaff)
 
     def render(self, request, userInfoForm, staff):
-        clearSession(request)
+        FormPublic.clearSession(request)
         if check_password(staff.workId, staff.password):
             return render(request, 'FiProcess/index.html',
                 {'userInfoForm': userInfoForm, 'unCheckStaff': u'当前用户密码为默认密码，请立即修改'})
@@ -181,9 +154,9 @@ class IndexForm(forms.Form):
         return minUnsignedStage
 
     def post(self, request):
-        staff = getStaffFromRequest(request)
+        staff = FormPublic.getStaffFromRequest(request)
         if not staff:
-            return logout(request, '用户信息异常，请保存本条错误信息，并联系管理员')
+            return FormPublic.logout(request, '用户信息异常，请保存本条错误信息，并联系管理员')
         userInfoForm = self.getUserInfoForm(request, staff)
         if "saveUserInfo" in request.POST:
             return self.saveUserInfoForm(request, staff)
@@ -196,7 +169,7 @@ class IndexForm(forms.Form):
         elif "newApproval" in request.POST:
             return HttpResponseRedirect(reverse('index', args={'newApproval'}))
         elif 'logout' in request.POST:
-            return logout(request)
+            return FormPublic.logout(request)
 
         for name, value in request.POST.iteritems():
             if name.startswith('checkStreamDetail'):
@@ -313,7 +286,7 @@ class IndexForm(forms.Form):
                     return self.render(request, userInfoForm, staff)
                 request.session['streamId'] = stream.id
                 return HttpResponseRedirect(reverse('index', args={'newstream'}))
-        return logout(request)
+        return FormPublic.logout(request)
 
     def sortOrder(self, stream):
         return stream.applyDate
@@ -350,10 +323,10 @@ class IndexForm(forms.Form):
         if tab:
             request.session['currentIndexTab'] = tab
             request.session.save()
-            return JsonResponse("")
-        staff = getStaffFromRequest(request)
+            return JsonResponse("", safe=False)
+        staff = FormPublic.getStaffFromRequest(request)
         if not staff:
-            return logout(request, '用户信息异常，请保存本条错误信息，并联系管理员')
+            return FormPublic.logout(request, '用户信息异常，请保存本条错误信息，并联系管理员')
         userInfoForm = self.getUserInfoForm(request, staff)
         if 'currentIndexTab' in request.session:
             userInfoForm.currentTab = request.session['currentIndexTab']

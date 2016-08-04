@@ -1,12 +1,14 @@
 # -*- coding: utf-8 -*-
 from django import forms
 from django.shortcuts import render
-from django.http import HttpResponseRedirect
+from django.http import HttpResponseRedirect, StreamingHttpResponse
 from django.core.urlresolvers import reverse
 from django.contrib import messages
+from xlrd import open_workbook
+from xlutils.copy import copy
 
 from ..models import IcbcCardRecord, CompanyPayRecord, CashPay
-import NewStreamForm
+import FormPublic
 
 
 class CommonStreamDetail(forms.Form):
@@ -120,7 +122,7 @@ class CommonStreamDetail(forms.Form):
             typeAmount[int(com.spendProof.spendType)] += com.spendProof.spendAmount
         typeList = self.getTypeAmountList(typeAmount)
         try:
-            signList, stageInfo = NewStreamForm.getStreamStageInfo(stream)
+            signList, stageInfo = FormPublic.getStreamStageInfo(stream)
         except:
             messages.add_message(request, messages.ERROR, '审核状态异常')
             return HttpResponseRedirect(reverse('index', args={''}))
@@ -141,8 +143,11 @@ class CommonStreamDetail(forms.Form):
                 {'form': form, 'typeList': typeList, 'icbcList': icbcQuery, 'ccbList': ccbQuery, 'comList': comQuery,
                     'signList': signList, 'signErrorMsg': u'所属部门负责人不存在!'})
 
-        sign1, sign11, sign12, schoolSign1, schoolSign2, schoolSign3, schoolSigner, deptSigner, unsigned = NewStreamForm.getSigner(stream, amount, signList)
+        sign1, sign11, sign12, schoolSign1, schoolSign2, schoolSign3, schoolSigner, deptSigner, unsigned = FormPublic.getSigner(stream, amount, signList)
         return render(request, 'FiProcess/commonStreamDetail.html',
             {'form': form, 'typeList': typeList, 'icbcList': icbcQuery, 'ccbList': ccbQuery, 'comList': comQuery, 'signList': signList,
                 'unsigned': unsigned, 'sign1': sign1, 'sign12': sign12, 'sign11': sign11, 'schoolSigner': schoolSigner, 'deptSigner': deptSigner,
                 'schoolSign1': schoolSign1, 'schoolSign2': schoolSign2, 'schoolSign3': schoolSign3})
+
+    def printStream(self, request, stream):
+        return render(request, 'FiProcess/commonSheet.htm', {'stream': stream})

@@ -12,8 +12,9 @@
     <style type="text/css">
     </style>
     <script type="text/javascript">
-    function dic2Html(json, type){
-        html = "<td class='text-center'>" + json['applicante'] + "</td>"
+    function dic2Html(i, json, type){
+        html = "<td class='text-center'>" + (i+1) + "</td>"
+                + "<td class='text-center'>" + json['applicante'] + "</td>"
                 + "<td class='text-center'>" + json['projectName'] + "</td>"
                 + "<td class='text-center'>" + json['supportDept'] + "</td>"
                 + "<td class='text-center'>" + json['streamType'] + "</td>"
@@ -43,7 +44,7 @@
         $.getJSON(url, {}, function(json) {
             for (var i = 0; i < json.length; i++){
                 $('#tabMyStream').append("<tr id='myStream" + i + "'></tr>");
-                $('#myStream' + i).html(dic2Html(json[i], 1));
+                $('#myStream' + i).html(dic2Html(i, json[i], 1));
             }
         });
     }
@@ -62,7 +63,7 @@
             $.getJSON(url, {}, function(json) {
                 for (var i = 0; i < json.length; i++){
                     $('#tabAllStream').append("<tr id='allStream" + i + "'></tr>");
-                    $('#allStream' + i).html(dic2Html(json[i], 2));
+                    $('#allStream' + i).html(dic2Html(i, json[i], 2));
                 }
             });
         });
@@ -96,6 +97,7 @@
         <table class="table table-bordered table-hover table-striped" id="tabMyStream">
             <thead>
                 <tr>
+                    <th class="text-center">#</th>
                     <th class="text-center col-md-2">报销人</th>
                     <th class="text-center">项目名称</th>
                     <th class="text-center col-md-3">经费所属部门</th>
@@ -114,6 +116,7 @@
         <table class="table table-bordered table-hover table-striped" id="tabAllStream">
             <thead>
                 <tr>
+                    <th class="text-center">#</th>
                     <th class="text-center col-md-2">报销人</th>
                     <th class="text-center">项目名称</th>
                     <th class="text-center col-md-3">经费所属部门</th>

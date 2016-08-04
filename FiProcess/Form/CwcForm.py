@@ -6,7 +6,7 @@ from django.http import HttpResponseRedirect, JsonResponse
 from django.contrib import messages
 
 from ..models import FiStream, Staff
-import IndexForm
+import FormPublic
 
 
 class CwcForm(forms.Form):
@@ -55,7 +55,7 @@ class CwcForm(forms.Form):
                 try:
                     staff = Staff.objects.get(username=request.session['username'])
                 except:
-                    return IndexForm.logout(request, u'登录状态异常!')
+                    return FormPublic.logout(request, u'登录状态异常!')
                 try:
                     item = FiStream.objects.get(id=name[8:])
                 except:

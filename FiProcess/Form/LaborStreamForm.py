@@ -8,8 +8,7 @@ from django.contrib import messages
 from datetime import datetime
 
 from ..models import Staff, FiStream, Department, StaffLaborPay, HireLaborPay
-import IndexForm
-import NewStreamForm
+import FormPublic
 
 
 class LaborStreamForm(ModelForm):
@@ -58,9 +57,9 @@ class LaborStreamForm(ModelForm):
     currentStage = forms.CharField()
 
     def get(self, request):
-        staff = IndexForm.getStaffFromRequest(request)
+        staff = FormPublic.getStaffFromRequest(request)
         if not staff:
-            return IndexForm.logout(request, '用户信息异常，请保存本条错误信息，并联系管理员')
+            return FormPublic.logout(request, '用户信息异常，请保存本条错误信息，并联系管理员')
         form = LaborStreamForm(
             initial={'myDepartment': staff.department.name,
                 'name': staff.name, 'workId': staff.workId, 'applyDate': datetime.today().strftime('%Y-%m-%d'),
@@ -96,7 +95,7 @@ class LaborStreamForm(ModelForm):
             stream.stage = 'cantModify'
             stream.save()
         try:
-            signList, stageInfo = NewStreamForm.getStreamStageInfo(stream)
+            signList, stageInfo = FormPublic.getStreamStageInfo(stream)
         except:
             messages.add_message(request, messages.ERROR, '审核状态异常')
             return HttpResponseRedirect(reverse('index', args={''}))
@@ -117,7 +116,7 @@ class LaborStreamForm(ModelForm):
                     'staffPayList': staffPayList, 'hirePayList': hirePayList, 'total': amount,
                     'signList': signList, 'signErrorMsg': u'所属部门负责人不存在!'})
 
-        sign1, sign11, sign12, schoolSign1, schoolSign2, schoolSign3, schoolSigner, deptSigner, unsigned = NewStreamForm.getSigner(stream, amount, signList)
+        sign1, sign11, sign12, schoolSign1, schoolSign2, schoolSign3, schoolSigner, deptSigner, unsigned = FormPublic.getSigner(stream, amount, signList)
         return render(request, 'FiProcess/laborStream.html',
             {'form': form, 'cantModify': True,
                 'staffPayList': staffPayList, 'hirePayList': hirePayList, 'total': amount, 'signList': signList,
@@ -134,9 +133,9 @@ class LaborStreamForm(ModelForm):
                 return HttpResponseRedirect(reverse('index', args={''}))
         else:
             stream = FiStream()
-            staff = IndexForm.getStaffFromRequest(request)
+            staff = FormPublic.getStaffFromRequest(request)
             if not staff:
-                return IndexForm.logout(request, '用户信息异常，请保存本条错误信息，并联系管理员')
+                return FormPublic.logout(request, '用户信息异常，请保存本条错误信息，并联系管理员')
             stream.applicante = staff
             stream.applyDate = request.POST['applyDate']
             try:
@@ -288,3 +287,6 @@ class LaborStreamForm(ModelForm):
         return render(request, 'FiProcess/laborStream.html',
             {'form': self, 'departmentList': Department.objects.filter(), 'type': 'hire', 'modify': True,
                 'pay': labor, 'staffPayList': staffPayList, 'hirePayList': hirePayList, 'total': amount})
+
+    def printStream(self, request, stream):
+        return render(request, 'FiProcess/laborSheet.htm', {'stream': stream})

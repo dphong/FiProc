@@ -8,7 +8,7 @@ from django.forms import ModelForm
 from datetime import datetime
 
 from ..models import FiStream, TravelRecord, Department, Staff, SpendProof, Traveler, TravelRoute, IcbcCardRecord
-import IndexForm
+import FormPublic
 
 
 class TravelStreamForm(ModelForm):
@@ -103,9 +103,9 @@ class TravelStreamForm(ModelForm):
              'routeList': routeList, 'list': icbcPayList})
 
     def postNew(self, request):
-        staff = IndexForm.getStaffFromRequest(request)
+        staff = FormPublic.getStaffFromRequest(request)
         if not staff:
-            return IndexForm.logout(request, '当前用户登陆异常')
+            return FormPublic.logout(request, '当前用户登陆异常')
         form = TravelStreamForm(
             initial={'department': staff.department.name,
                 'name': staff.name, 'workId': staff.workId, 'applyDate': datetime.today().strftime('%Y-%m-%d'),
@@ -147,9 +147,9 @@ class TravelStreamForm(ModelForm):
                 return HttpResponseRedirect(reverse('index', args={''}))
         else:
             stream = FiStream()
-            staff = IndexForm.getStaffFromRequest(request)
+            staff = FormPublic.getStaffFromRequest(request)
             if not staff:
-                return IndexForm.logout(request, '当前用户登陆异常')
+                return FormPublic.logout(request, '当前用户登陆异常')
             stream.applicante = staff
             try:
                 dept = Department.objects.get(id=request.POST['supportDept'])

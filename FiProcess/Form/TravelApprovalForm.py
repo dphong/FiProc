@@ -7,7 +7,7 @@ from django.contrib import messages
 from datetime import datetime
 
 from ..models import Staff, SchoolMaster, Department, TravelRecord, FiStream, SignRecord
-import IndexForm
+import FormPublic
 
 
 class TravelApprovalForm(forms.Form):
@@ -41,7 +41,7 @@ class TravelApprovalForm(forms.Form):
         try:
             user = Staff.objects.get(username=username)
         except:
-            return IndexForm.logout(request, '当前用户登陆异常')
+            return FormPublic.logout(request, '当前用户登陆异常')
         form = TravelApprovalForm(
             initial={'department': user.department.name, 'name': user.name, 'duty': duty, 'companionCnt': cnt}
         )

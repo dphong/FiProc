@@ -184,3 +184,6 @@ class ContractApprovalForm(forms.Form):
         stream.save()
         messages.add_message(request, messages.SUCCESS, u'提交成功')
         return HttpResponseRedirect(reverse('index', args={''}))
+
+    def printStream(self, request, stream):
+        return render(request, 'FiProcess/commonSheet.htm', {'stream': stream})
