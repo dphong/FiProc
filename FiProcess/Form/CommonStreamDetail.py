@@ -103,7 +103,7 @@ class CommonStreamDetail(forms.Form):
             i += 1
         return result
 
-    def get(self, request, stream):
+    def getTypeQuery(self, stream):
         icbcQuery = IcbcCardRecord.objects.filter(spendProof__fiStream__id=stream.id)
         ccbQuery = CashPay.objects.filter(spendProof__fiStream__id=stream.id)
         comQuery = CompanyPayRecord.objects.filter(spendProof__fiStream__id=stream.id)
@@ -112,7 +112,6 @@ class CommonStreamDetail(forms.Form):
         for icbc in icbcQuery:
             amount = amount + icbc.spendProof.spendAmount
             typeAmount[int(icbc.spendProof.spendType)] += icbc.spendProof.spendAmount
-            icbc.date = icbc.date.strftime('%Y-%m-%d')
             icbc.cantApplyAmount = icbc.spendProof.spendAmount - icbc.cantApplyAmount
         for ccb in ccbQuery:
             amount = amount + ccb.spendProof.spendAmount
@@ -120,12 +119,16 @@ class CommonStreamDetail(forms.Form):
         for com in comQuery:
             amount = amount + com.spendProof.spendAmount
             typeAmount[int(com.spendProof.spendType)] += com.spendProof.spendAmount
-        typeList = self.getTypeAmountList(typeAmount)
+        return (typeAmount, amount, icbcQuery, ccbQuery, comQuery)
+
+    def get(self, request, stream):
         try:
             signList, stageInfo = FormPublic.getStreamStageInfo(stream)
         except:
             messages.add_message(request, messages.ERROR, '审核状态异常')
             return HttpResponseRedirect(reverse('index', args={''}))
+        typeAmount, amount, icbcQuery, ccbQuery, comQuery = self.getTypeQuery(stream)
+        typeList = self.getTypeAmountList(typeAmount)
         form = CommonStreamDetail(
             initial={
                 'department': stream.applicante.department.name,
@@ -150,4 +153,35 @@ class CommonStreamDetail(forms.Form):
                 'schoolSign1': schoolSign1, 'schoolSign2': schoolSign2, 'schoolSign3': schoolSign3})
 
     def printStream(self, request, stream):
-        return render(request, 'FiProcess/commonSheet.htm', {'stream': stream})
+        typeAmount, amount, icbcQuery, ccbQuery, comQuery = self.getTypeQuery(stream)
+        dept1, dept2, school1, school2, school3 = FormPublic.getSignedSigner(stream)
+        ccb = None
+        ccbList = None
+        if len(ccbQuery) == 1:
+            ccb = ccbQuery[0]
+        elif len(ccbQuery) > 1:
+            ccbList = ccbQuery
+        com = None
+        comList = None
+        if len(comQuery) == 1:
+            com = comQuery[0]
+        elif len(comQuery) > 1:
+            comList = comQuery
+        icbc = None
+        icbcList = None
+        icbcIndex = None
+        if len(icbcQuery) > 0 and len(icbcQuery) <= 4:
+            icbc = icbcQuery
+        elif len(icbcQuery) > 4:
+            icbc = icbcQuery[:3]
+            icbcList = icbcQuery[3:]
+            icbcIndex = 1
+            if ccbList:
+                icbcIndex = icbcIndex + 1
+            if comList:
+                icbcIndex = icbcIndex + 1
+        return render(request, 'FiProcess/commonSheet.htm',
+            {'stream': stream, 'amount': amount, 'bigAmount': FormPublic.numtoCny(amount), 'typeAmount': typeAmount,
+                'dept1': dept1, 'dept2': dept2, 'school1': school1, 'shcool2': school2, 'school3': school3,
+                'ccb': ccb, 'ccbList': ccbList, 'com': com, 'comList': comList,
+                'icbc': icbc, 'icbcList': icbcList, 'icbcIndex': icbcIndex})

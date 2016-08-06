@@ -3,7 +3,7 @@ from django.contrib import messages, auth
 from django.core.urlresolvers import reverse
 from django.http import HttpResponseRedirect
 
-from ..models import SignRecord, SchoolMaster, Staff, FiStream
+from ..models import SignRecord, SchoolMaster, Staff
 
 
 def logout(request, message='已注销'):
@@ -101,3 +101,49 @@ def getSigner(stream, amount, signList):
             unsigned = False
     return (sign1, sign11, sign12, schoolSign1, schoolSign2, schoolSign3,
         schoolSigner, deptSigner, unsigned)
+
+
+def getSignedSigner(stream):
+    signList = SignRecord.objects.filter(stream__id=stream.id)
+    dept1 = None
+    dept2 = None
+    school1 = None
+    school2 = None
+    school3 = None
+    for sign in signList:
+        if sign.refused or not sign.signed:
+            continue
+        if sign.stage == 'department1':
+            dept1 = sign
+        if sign.stage == 'department2':
+            dept2 = sign
+        if sign.stage == 'school1':
+            school1 = sign
+        if sign.stage == 'school2':
+            school2 = sign
+        if sign.stage == 'school3':
+            school3 = sign
+    return (dept1, dept2, school1, school2, school3)
+
+
+def numtoCny(num):
+    capNum = ['<font class="font6">零</font>',
+            '<font class="font6">壹</font>',
+            '<font class="font6">贰</font>',
+            '<font class="font6">叁</font>',
+            '<font class="font6">肆</font>',
+            '<font class="font6">伍</font>',
+            '<font class="font6">陆</font>',
+            '<font class="font6">柒</font>',
+            '<font class="font6">捌</font>',
+            '<font class="font6">玖</font>']
+    snum = str('%010.02f') % num
+    return (capNum[int(snum[0])] + ' <font class="font8">佰</font> '
+            + capNum[int(snum[1])] + ' <font class="font8">拾</font> '
+            + capNum[int(snum[2])] + ' <font class="font8">万</font> '
+            + capNum[int(snum[3])] + ' <font class="font8">仟</font> '
+            + capNum[int(snum[4])] + ' <font class="font8">佰</font> '
+            + capNum[int(snum[5])] + ' <font class="font8">拾</font> '
+            + capNum[int(snum[6])] + ' <font class="font8">元</font> '
+            + capNum[int(snum[8])] + ' <font class="font8">角</font> '
+            + capNum[int(snum[9])] + ' <font class="font8">分</font> ')

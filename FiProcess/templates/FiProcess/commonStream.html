@@ -139,10 +139,11 @@
     function addIcbc(i, staffName, date, payAmount, actualAmount, card, type){
         $('#tab_icbcCard').append('<tr id="addr'+i+'"></tr>');
         $('#addr'+i).html(
-            "<td>"+ i +"</td>\n" + name('icbc', i, staffName, 'cardHolderName') + icbcDate(i, date) + amount('icbc', i, payAmount)
+            "<td>"+ i +"</td>\n" + name('icbc', i, staffName, 'cardHolderName') + icbcDate(i, date) + amount('icbc', i, payAmount, 'amount')
             + amount('icbc', i, actualAmount, 'actualAmount') + cardNum('icbc', i, card) + spendTypes('icbc', i, type));
         i++; 
         $('#streamForm').validator('update');
+        $('#streamForm').validator('validate');
         return i;
     }
     function addCcb(i, staffName, payAmount, card, type){
@@ -152,6 +153,7 @@
             + cardNum('ccb', i, card) + spendTypes('ccb', i, type) +"</td>");
         i++;
         $('#streamForm').validator('update');
+        $('#streamForm').validator('validate');
         return i;
     }
     function addCompany(i, comName, payAmount, card, bankName, type){
@@ -161,6 +163,7 @@
             + cardNum('company', i, card) + name('company', i, bankName, 'bankName') + spendTypes('company', i, type) + "</td>");
         i++;
         $('#streamForm').validator('update');
+        $('#streamForm').validator('validate');
         return i;
     }
     $(document).ready(function(){
@@ -184,6 +187,7 @@
                 $("#addr"+(i-1)).html('');
                 i--;
                 $('#streamForm').validator('update');
+                $('#streamForm').validator('validate');
             }
         });
         $("#add_row_ccb").click(function(){
@@ -194,6 +198,7 @@
                 $("#addr_ccb"+(i_ccb-1)).html('');
                 i_ccb--;
                 $('#streamForm').validator('update');
+                $('#streamForm').validator('validate');
             }
         })
         $("#add_row_com").click(function(){
@@ -204,6 +209,7 @@
                 $("#addr_com"+(i_com-1)).html('');
                 i_com--;
                 $('#streamForm').validator('update');
+                $('#streamForm').validator('validate');
             }
         })
     })

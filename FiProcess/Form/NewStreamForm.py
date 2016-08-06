@@ -150,7 +150,7 @@ class NewStreamForm(forms.Form):
             sign1.signer = stream.department.chief
         elif stream.department.secretary and str(stream.department.secretary.id) == signer:
             sign1.signer = stream.department.secretary
-        elif not stream.department.secretary and stream.department.chief and stream.department.chief.name == signer:
+        elif stream.department.chief and stream.department.chief.name == signer:
             sign1.signer = stream.department.chief
         else:
             messages.add_message(request, messages.ERROR, '提交报销单失败, 查找部门负责人失败')

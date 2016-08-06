@@ -112,6 +112,7 @@
             + cardNum('icbc', i, card) + spendTypes('icbc', i, type));
         i++; 
         $('#streamForm').validator('update');
+        $('#streamForm').validator('validate');
         return i++;
     }
     function addCcbRecord(i, payAmount, type){
@@ -120,6 +121,7 @@
             "<td>"+i+"</td>\n" + amount('ccb', i, payAmount, 'amount') + spendTypes('ccb', i, type));
         i++;
         $('#streamForm').validator('update')
+        $('#streamForm').validator('validate');
         return i;
     }
     function addTraveler(i, name, duty){
@@ -128,6 +130,7 @@
             "<td>"+i+"</td>\n" + text('name', i, name, 'traveler') + text('duty', i, duty, 'traveler'));
         i++;
         $('#streamForm').validator('update');
+        $('#streamForm').validator('validate');
         return i;
     }
     function addTravelRoute(i, routeDate, start, end, payAmount){
@@ -137,6 +140,7 @@
             + text('end', i, end, 'position') + amount('travelRoute', i, payAmount, 'amount'));
         i++;
         $('#streamForm').validator('update');
+        $('#streamForm').validator('validate');
         return i;
     }
     $(document).ready(function(){
@@ -171,6 +175,7 @@
                 $("#addr"+(i-1)).html('');
                 i--;
                 $('#streamForm').validator('update')
+                $('#streamForm').validator('validate');
             }
         });
         $("#add_travelRoute").click(function(){
@@ -181,6 +186,7 @@
                 $("#addr_travelRoute"+(i_travelRoute-1)).html('');
                 i_travelRoute--;
                 $('#streamForm').validator('update')
+                $('#streamForm').validator('validate');
             }
         });
         $("#add_row_ccb").click(function(){
@@ -191,6 +197,7 @@
                 $("#addr_ccb"+(i_ccb-1)).html('');
                 i_ccb--;
                 $('#streamForm').validator('update')
+                $('#streamForm').validator('validate');
             }
         })
         $("#add_row_traveler").click(function(){
@@ -201,6 +208,7 @@
                 $("#addr_traveler"+(i_traveler-1)).html('');
                 i_traveler--;
                 $('#streamForm').validator('update')
+                $('#streamForm').validator('validate');
             }
         });
     })

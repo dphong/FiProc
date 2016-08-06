@@ -166,7 +166,7 @@
                 {% for icbc in icbcList %}
                     <tr>
                         <td class="text-center">{{ icbc.staff.name }}</td>
-                        <td class="text-center">{{ icbc.date }}</td>
+                        <td class="text-center">{{ icbc.date|date:"Y-m-d" }}</td>
                         <td class="text-center">{{ icbc.spendProof.spendAmount }}</td>
                         <td class="text-center">{{ icbc.cantApplyAmount }}</td>
                         <td class="text-center">{{ icbc.staff.icbcCard }}</td>

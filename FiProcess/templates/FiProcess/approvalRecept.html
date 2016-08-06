@@ -36,6 +36,7 @@
             + text('recept', i, duty, 'duty') + text('recept', i, com, 'com'));
         i++; 
         $('#streamForm').validator('update');
+        $('#streamForm').validator('validate');
         return i;
     }
     function addStaff(i, name, workId, duty){
@@ -45,6 +46,7 @@
             + text('staff', i, duty, 'duty'));
         i++; 
         $('#streamForm').validator('update');
+        $('#streamForm').validator('validate');
         return i;
     }
     $(document).ready(function(){
@@ -68,6 +70,7 @@
                 $("#addr_person"+(i_person-1)).html('');
                 i_person--;
                 $('#streamForm').validator('update');
+                $('#streamForm').validator('validate');
             }
         });
         $("#add_staff").click(function(){
@@ -78,6 +81,7 @@
                 $("#addr_staff"+(i_staff-1)).html('');
                 i_staff--;
                 $('#streamForm').validator('update');
+                $('#streamForm').validator('validate');
             }
         });
     })
