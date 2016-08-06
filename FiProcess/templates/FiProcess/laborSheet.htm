@@ -1,7 +1,4 @@
-﻿<html xmlns:v="urn:schemas-microsoft-com:vml"
-xmlns:o="urn:schemas-microsoft-com:office:office"
-xmlns:x="urn:schemas-microsoft-com:office:excel"
-xmlns="http://www.w3.org/TR/REC-html40">
+﻿<html xmlns:v="urn:schemas-microsoft-com:vml"xmlns:o="urn:schemas-microsoft-com:office:office"xmlns:x="urn:schemas-microsoft-com:office:excel"xmlns="http://www.w3.org/TR/REC-html40">
 {% load staticfiles %} 
 
 <head>
@@ -31,72 +28,104 @@ rt
 	mso-char-type:none;
 	display:none;}
 -->
+     .page { page-break-after:always; size: landscape}
+      .append-table {
+          font-family: arial, sans-serif;
+          border-collapse: collapse;
+          width: 520px;
+      }
+      .append-td {
+          border: 1px solid #000000;
+          text-align: left;
+          padding: 8px;
+      }
+      .print-margin {margin: 1cm 1cm 1cm 1cm}
 </style>
 </head>
 
 <body link=blue vlink=purple class=xl65>
-
-<table border=0 cellpadding=0 cellspacing=0 width=766 style='border-collapse:
- collapse;table-layout:fixed;width:575pt'>
- <col class=xl65 width=43 style='mso-width-source:userset;mso-width-alt:1376;
- width:32pt'>
- <col class=xl65 width=47 style='mso-width-source:userset;mso-width-alt:1504;
- width:35pt'>
- <col class=xl65 width=85 style='mso-width-source:userset;mso-width-alt:2720;
- width:64pt'>
- <col class=xl65 width=149 style='mso-width-source:userset;mso-width-alt:4768;
- width:112pt'>
- <col class=xl65 width=137 style='mso-width-source:userset;mso-width-alt:4384;
- width:103pt'>
- <col class=xl65 width=136 style='mso-width-source:userset;mso-width-alt:4352;
- width:102pt'>
- <col class=xl65 width=97 style='mso-width-source:userset;mso-width-alt:3104;
- width:73pt'>
+<div class="page">
+<table border=0 cellpadding=0 cellspacing=0 width=766 style='border-collapse:collapse;table-layout:fixed;width:575pt'>
+ <col class=xl65 width=43 style='mso-width-source:userset;mso-width-alt:1376;width:32pt'>
+ <col class=xl65 width=47 style='mso-width-source:userset;mso-width-alt:1504;width:35pt'>
+ <col class=xl65 width=85 style='mso-width-source:userset;mso-width-alt:2720;width:64pt'>
+ <col class=xl65 width=149 style='mso-width-source:userset;mso-width-alt:4768;width:112pt'>
+ <col class=xl65 width=137 style='mso-width-source:userset;mso-width-alt:4384;width:103pt'>
+ <col class=xl65 width=136 style='mso-width-source:userset;mso-width-alt:4352;width:102pt'>
+ <col class=xl65 width=97 style='mso-width-source:userset;mso-width-alt:3104;width:73pt'>
  <col class=xl65 width=72 style='width:54pt'>
  <tr height=27 style='height:20.25pt'>
-  <td colspan=7 height=27 class=xl66 width=694 style='height:20.25pt;
-  width:521pt'>合 肥 师 范 学 院 领 款 单</td>
+  <td colspan=7 height=27 class=xl66 width=694 style='height:20.25pt;width:521pt'>合 肥 师 范 学 院 领 款 单</td>
   <td class=xl67 width=72 style='width:54pt'></td>
  </tr>
  <tr height=27 style='height:20.25pt'>
-  <td colspan=3 height=27 class=xl75 style='height:20.25pt'>领款人单位：</td>
+  <td colspan=3 height=27 class=xl75 style='height:20.25pt'>&nbsp;&nbsp;领款人单位：{{stream.applicante.department.name}}</td>
   <td class=xl69></td>
   <td class=xl69></td>
-  <td colspan=2 class=xl75>年<span style='mso-spacerun:yes'>&nbsp;&nbsp;
-  </span>月<span style='mso-spacerun:yes'>&nbsp;&nbsp; </span>日</td>
+  <td colspan=2 class=xl75>{{stream.applyDate|date:"Y 年 m 月 d 日"}}</td>
   <td class=xl66></td>
  </tr>
  <tr height=40 style='mso-height-source:userset;height:30.0pt'>
-  <td colspan=3 height=40 class=xl76 style='border-right:.5pt solid black;
-  height:30.0pt'>领款项目：</td>
-  <td colspan=4 class=xl80 style='border-right:.5pt solid black;border-left:
-  none'>　</td>
+  <td colspan=3 height=40 class=xl76 style='border-right:.5pt solid black;height:30.0pt'>领款项目：</td>
+  <td colspan=4 class=xl80 style='border-right:.5pt solid black;border-left:none'>{{stream.projectName}}</td>
   <td class=xl66></td>
  </tr>
  <tr height=40 style='mso-height-source:userset;height:30.0pt'>
-  <td colspan=3 height=40 class=xl76 style='border-right:.5pt solid black;
-  height:30.0pt'>金额（大写）：</td>
-  <td colspan=4 class=xl80 style='border-right:.5pt solid black;border-left:
-  none'><span
-  style='mso-spacerun:yes'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-  </span>￥：</td>
+  <td colspan=3 height=40 class=xl76 style='border-right:.5pt solid black;height:30.0pt'>金额（大写）：</td>
+  <td colspan=2 class=xl80 style='border-right:none;border-left:none'>{{amountBig|safe}}</td>
+  <td colspan=2 class=xl80 style='border-right:.5pt solid black;border-left:none'>￥：{{amount}}</td>
   <td class=xl66></td>
  </tr>
  <tr height=40 style='mso-height-source:userset;height:30.0pt'>
-  <td colspan=7 height=40 class=xl76 style='border-right:.5pt solid black;
-  height:30.0pt'>领款人签字：</td>
+  <td colspan=7 height=40 class=xl76 style='border-right:.5pt solid black;height:30.0pt'>领款人签字：</td>
   <td class=xl66></td>
  </tr>
  <tr height=40 style='mso-height-source:userset;height:30.0pt'>
-  <td colspan=7 height=40 class=xl76 style='border-right:.5pt solid black;
-  height:30.0pt'>经手人签字：</td>
+  <td colspan=7 height=40 class=xl76 style='border-right:.5pt solid black;height:30.0pt'>经手人签字：</td>
   <td class=xl66></td>
  </tr>
  <tr class=xl70 height=77 style='mso-height-source:userset;height:57.75pt'>
-  <td colspan=3 height=77 class=xl82 width=175 style='border-right:.5pt solid black;
-  height:57.75pt;width:131pt'>校领导审批：<span
-  style='mso-spacerun:yes'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span></td>
-  <td class=xl71 width=149 style='width:112pt'>部门负责人审批：</td>
+  <td colspan=3 height=77 class=xl82 width=175 style='border-right:.5pt solid black;height:57.75pt;width:131pt'>
+    校领导审批：
+      <font class="font5">
+      {% if school1 %}
+        <br>
+        {{school1.descript}}
+        <br>
+        {{school1.signer.name}} {{school1.signedTime|date:"Y-m-d"}}
+      {% endif %}
+      {% if school2 %}
+        <br>
+        {{school2.descript}}
+        <br>
+        {{school2.signer.name}} {{school2.signedTime|date:"Y-m-d"}}
+      {% endif %}
+      {% if school3 %}
+        <br>
+        {{school3.descript}}
+        <br>
+        {{school3.signer.name}} {{school3.signedTime|date:"Y-m-d"}}
+      {% endif %}
+      </font>
+    <br>
+  </td>
+  <td class=xl71 width=149 style='width:112pt'>
+    部门负责人审批：
+    <font class="font5">
+    {% if dept1 %}
+      <br>
+      {{dept1.descript}}
+      <br>
+      {{dept1.signer.name}} {{dept1.signedTime|date:"Y-m-d"}}
+    {% endif %}
+    {% if dept2 %}
+      <br>
+      {{dept2.descript}}
+      <br>
+      {{dept2.signer.name}} {{dept2.signedTime|date:"Y-m-d"}}
+    {% endif %}
+    </font>
+  </td>
   <td class=xl72 width=137 style='width:103pt'>项目负责人审批：</td>
   <td class=xl73 width=136 style='width:102pt'>财务负责人审批：</td>
   <td class=xl74 width=97 style='width:73pt'>审核：</td>
@@ -113,14 +142,31 @@ rt
   <td class=xl66></td>
  </tr>
  <tr height=18 style='height:13.5pt'>
-  <td colspan=8 height=18 class=xl85 style='height:13.5pt'>请<span
-  style='mso-spacerun:yes'>&nbsp; </span>沿<span style='mso-spacerun:yes'>&nbsp;
-  </span>此<span style='mso-spacerun:yes'>&nbsp; </span>虚<span
-  style='mso-spacerun:yes'>&nbsp; </span>线<span style='mso-spacerun:yes'>&nbsp;
-  </span>剪<span style='mso-spacerun:yes'>&nbsp; </span>开</td>
+  <td colspan=8 height=18 class=xl85 style='height:13.5pt'>
+    请<span style='mso-spacerun:yes'>&nbsp; </span>
+    沿<span style='mso-spacerun:yes'>&nbsp; </span>
+    此<span style='mso-spacerun:yes'>&nbsp; </span>
+    虚<span style='mso-spacerun:yes'>&nbsp; </span>
+    线<span style='mso-spacerun:yes'>&nbsp; </span>
+    剪<span style='mso-spacerun:yes'>&nbsp; </span>
+    开
+  </td>
  </tr>
 </table>
-
+</div>
+{% if staffList %}
+<div class="page">
+  <div class="print-margin">
+    <h3>附件1：校内教职工劳务发放表</h3>
+  </div>
+</div>
+{% endif %}
+{% if laborList %}
+<div class="page">
+  <div class="print-margin">
+    <h3>附件{% if staffList %}2{% else %}1{% endif %}：外聘专家课酬（劳务）发放表</h3>
+  </div>
+</div>
+{% endif %}
 </body>
-
 </html>

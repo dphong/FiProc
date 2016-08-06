@@ -126,7 +126,7 @@ def getSignedSigner(stream):
     return (dept1, dept2, school1, school2, school3)
 
 
-def numtoCny(num):
+def numtoCny(num, append=True, space=' '):
     capNum = ['<font class="font6">零</font>',
             '<font class="font6">壹</font>',
             '<font class="font6">贰</font>',
@@ -137,13 +137,29 @@ def numtoCny(num):
             '<font class="font6">柒</font>',
             '<font class="font6">捌</font>',
             '<font class="font6">玖</font>']
-    snum = str('%010.02f') % num
-    return (capNum[int(snum[0])] + ' <font class="font8">佰</font> '
-            + capNum[int(snum[1])] + ' <font class="font8">拾</font> '
-            + capNum[int(snum[2])] + ' <font class="font8">万</font> '
-            + capNum[int(snum[3])] + ' <font class="font8">仟</font> '
-            + capNum[int(snum[4])] + ' <font class="font8">佰</font> '
-            + capNum[int(snum[5])] + ' <font class="font8">拾</font> '
-            + capNum[int(snum[6])] + ' <font class="font8">元</font> '
-            + capNum[int(snum[8])] + ' <font class="font8">角</font> '
-            + capNum[int(snum[9])] + ' <font class="font8">分</font> ')
+    chara = ['<font class="font8">佰</font>',
+            '<font class="font8">拾</font>',
+            '<font class="font8">万</font>',
+            '<font class="font8">仟</font>',
+            '<font class="font8">佰</font>',
+            '<font class="font8">拾</font>',
+            '<font class="font8">元</font>',
+            '<font class="font8">.</font>',
+            '<font class="font8">角</font>',
+            '<font class="font8">分</font>']
+    snum = None
+    if append:
+        snum = str('%010.02f') % num
+    else:
+        snum = str(num)
+    i = len(snum)
+    if i > 10:
+        return ''
+    result = ''
+    diff = len(chara) - i
+    while i > 0:
+        i -= 1
+        if snum[i] == '.':
+            continue
+        result = space + capNum[int(snum[i])] + space + chara[i + diff] + result
+    return result

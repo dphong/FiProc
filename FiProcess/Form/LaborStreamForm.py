@@ -289,4 +289,9 @@ class LaborStreamForm(ModelForm):
                 'pay': labor, 'staffPayList': staffPayList, 'hirePayList': hirePayList, 'total': amount})
 
     def printStream(self, request, stream):
-        return render(request, 'FiProcess/laborSheet.htm', {'stream': stream})
+        amount, staffPayList, hirePayList = self.getPayList(stream)
+        dept1, dept2, school1, school2, school3 = FormPublic.getSignedSigner(stream)
+        return render(request, 'FiProcess/laborSheet.htm',
+            {'stream': stream, 'amount': amount, 'amountBig': FormPublic.numtoCny(amount, False, ''),
+                'dept1': dept1, 'dept2': dept2, 'school1': school1, 'shcool2': school2, 'school3': school3,
+                'staffList': staffPayList, 'laborList': hirePayList})

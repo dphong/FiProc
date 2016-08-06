@@ -27,13 +27,11 @@
        display:none;}
      -->
      .page { page-break-after:always; size: landscape}
-
       .append-table {
           font-family: arial, sans-serif;
           border-collapse: collapse;
           width: 520px;
       }
-
       .append-td {
           border: 1px solid #000000;
           text-align: left;
@@ -265,13 +263,13 @@
         <br>
         {{school2.signer.name}} {{school2.signedTime|date:"Y-m-d"}}
       {% endif %}
-      </font>
       {% if school3 %}
         <br>
         {{school3.descript}}
         <br>
         {{school3.signer.name}} {{school3.signedTime|date:"Y-m-d"}}
       {% endif %}
+      </font>
     </td>
     <td colspan=2 rowspan=2 class=xl90 width=160 style='width:120pt'>
       部门负责人审批：
