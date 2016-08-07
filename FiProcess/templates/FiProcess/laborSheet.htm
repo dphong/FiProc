@@ -32,7 +32,7 @@ rt
       .append-table {
           font-family: arial, sans-serif;
           border-collapse: collapse;
-          width: 520px;
+          width: 800px;
       }
       .append-td {
           border: 1px solid #000000;
@@ -158,13 +158,93 @@ rt
 <div class="page">
   <div class="print-margin">
     <h3>附件1：校内教职工劳务发放表</h3>
+    <div style='height:20.25pt;width:621pt'>
+      <p class=xl86>院系、部（公章）：{{stream.applicante.department.name}}
+        &nbsp;&nbsp;&nbsp;&nbsp;
+        {{stream.applyDate|date:"Y 年 m 月 d 日"}}&nbsp;&nbsp;单位：元
+      </p>
+    </div>
+    <table class="append-table">
+      <tr>
+        <th class="append-td">序号</th>
+        <th class="append-td">职员代码</th>
+        <th class="append-td">部门</th>
+        <th class="append-td">姓名</th>
+        <th class="append-td">职务（职称）</th>
+        <th class="append-td">时间</th>
+        <th class="append-td">事项</th>
+        <th class="append-td">工资卡号</th>
+        <th class="append-td">开户行</th>
+        <th class="append-td">应发酬金</th>
+      </tr>
+      {% for item in staffList %}
+      <tr>
+        <td class="append-td">{{forloop.counter}}</td>
+        <td class="append-td">{{item.staff.workId}}</td>
+        <td class="append-td">{{item.staff.department.name}}</td>
+        <td class="append-td">{{item.staff.name}}</td>
+        <td class="append-td">{{item.duty}}</td>
+        <td class="append-td">{{item.date|date:"Y年m月d日"}}</td>
+        <td class="append-td">{{item.reason}}</td>
+        <td class="append-td">{{item.staff.ccbCard}}</td>
+        <td class="append-td">{{item.bankName}}</td>
+        <td class="append-td">{{item.amount}}</td>
+      </tr>
+      {% endfor %}
+      <tr>
+        <td colspan=3 class="append-td" style='text-align:center;'>合&nbsp;&nbsp;计：</td>
+        <td colspan=5 class="append-td">{{staffAmountBig|safe}}</td>
+        <td colspan=2 class="append-td">￥：{{staffAmount}}</td>
+      </tr>
+    </table>
   </div>
 </div>
 {% endif %}
-{% if laborList %}
+{% if hireList %}
 <div class="page">
   <div class="print-margin">
     <h3>附件{% if staffList %}2{% else %}1{% endif %}：外聘专家课酬（劳务）发放表</h3>
+    <div style='height:20.25pt;width:621pt'>
+      <p class=xl86>院系、部（公章）：{{stream.applicante.department.name}}
+        &nbsp;&nbsp;&nbsp;&nbsp;
+        {{stream.applyDate|date:"Y 年 m 月 d 日"}}&nbsp;&nbsp;单位：元
+      </p>
+    </div>
+    <table class="append-table">
+      <tr>
+        <th class="append-td">序号</th>
+        <th class="append-td">姓名</th>
+        <th class="append-td">工作单位</th>
+        <th class="append-td">职务（职称）</th>
+        <th class="append-td">身份证号码</th>
+        <th class="append-td">时间</th>
+        <th class="append-td">事项</th>
+        <th class="append-td">开户名</th>
+        <th class="append-td">账号</th>
+        <th class="append-td">开户行</th>
+        <th class="append-td">应发酬金</th>
+      </tr>
+      {% for item in hireList %}
+      <tr>
+        <td class="append-td">{{forloop.counter}}</td>
+        <td class="append-td">{{item.name}}</td>
+        <td class="append-td">{{item.belong}}</td>
+        <td class="append-td">{{item.duty}}</td>
+        <td class="append-td">{{item.personId}}</td>
+        <td class="append-td">{{item.date|date:"Y年m月d日"}}</td>
+        <td class="append-td">{{item.reason}}</td>
+        <td class="append-td">{{item.accountName}}</td>
+        <td class="append-td">{{item.card}}</td>
+        <td class="append-td">{{item.bankName}}</td>
+        <td class="append-td">{{item.amount}}</td>
+      </tr>
+      {% endfor %}
+      <tr>
+        <td colspan=3 class="append-td" style='text-align:center;'>合&nbsp;&nbsp;计：</td>
+        <td colspan=5 class="append-td">{{hireAmountBig|safe}}</td>
+        <td colspan=3 class="append-td">￥：{{hireAmount}}</td>
+      </tr>
+    </table>
   </div>
 </div>
 {% endif %}
