@@ -89,14 +89,14 @@ class TravelStreamForm(ModelForm):
         cashList = SpendProof.objects.filter(fiStream__id=stream.id).exclude(proofDescript='icbc')
         icbcList = IcbcCardRecord.objects.filter(spendProof__fiStream__id=stream.id)
         icbcPayList = []
-        for record in icbcList:
+        for item in icbcList:
             icbc = self.IcbcPay()
-            icbc.date = record.date.strftime('%Y-%m-%d')
-            icbc.name = record.staff.name
-            icbc.amount = record.spendProof.spendAmount
-            icbc.actualAmount = icbc.amount - record.cantApplyAmount
-            icbc.payType = record.spendProof.spendType
-            icbc.icbcCard = record.staff.icbcCard
+            icbc.date = item.date.strftime('%Y-%m-%d')
+            icbc.name = item.staff.name
+            icbc.amount = item.spendProof.spendAmount
+            icbc.actualAmount = icbc.amount - item.cantApplyAmount
+            icbc.payType = item.spendProof.spendType
+            icbc.icbcCard = item.staff.icbcCard
             icbcPayList.append(icbc)
         return render(request, 'FiProcess/travelStream.html',
             {'form': form, 'fundDepartment': stream.department, 'ccbList': cashList, 'travelerList': travelerList,
@@ -132,6 +132,8 @@ class TravelStreamForm(ModelForm):
         if 'streamId' in request.session:
             try:
                 stream = FiStream.objects.get(id=request.session['streamId'])
+                if stream.stage == 'approved':
+                    stream.stage = 'createFromApp'
                 record = TravelRecord.objects.get(fiStream__id=stream.id)
                 # clear old for modify operate
                 queryList = Traveler.objects.filter(record__id=record.id)
@@ -200,7 +202,7 @@ class TravelStreamForm(ModelForm):
             except:
                 errorMsg.append('第' + str(i) + '条现金支付记录金额错误')
             cash.spendType = request.POST['ccb_spendType' + str(i)]
-            if casher:
+            if casher and casher.id != stream.applicante.id:
                 cash.proofDescript = str(casher.id)
             else:
                 cash.proofDescript = ''
@@ -277,7 +279,6 @@ class TravelStreamForm(ModelForm):
         stream.applyDate = self.cleaned_data['applyDate']
         stream.projectName = self.cleaned_data['projectName']
         stream.descript = self.cleaned_data['descript']
-        stream.stage = 'create'
         stream.save()
         for spendProof in cashList:
             spendProof.fiStream = stream
@@ -285,11 +286,13 @@ class TravelStreamForm(ModelForm):
         if stream.stage == 'create':
             record.fiStream = stream
             record.duty = ''
-            record.companionCnt = len(travelerList)
+            record.reason = stream.descript
+            record.travelType = ''
+            record.travelDescript = ''
+            record.approveDate = stream.applyDate
             if len(routeList) > 0:
                 record.leaveDate = datetime.strptime(routeList[0].date, '%Y-%m-%d')
                 record.destination = routeList[0].end
-                record.startPosition = routeList[0].start
             else:
                 record.leaveDate = datetime.now()
                 record.returnDate = datetime.now()
@@ -299,12 +302,12 @@ class TravelStreamForm(ModelForm):
                 record.returnDate = datetime.strptime(routeList[1].date, '%Y-%m-%d')
             else:
                 record.returnDate = datetime.now()
-            record.travelGrant = 0.0
-            record.foodGrant = 0.0
-            record.reason = stream.descript
-            record.travelType = ''
-            record.travelDescript = ''
-            record.save()
+        if len(routeList) > 0:
+            record.startPosition = routeList[0].start
+        record.companionCnt = len(travelerList)
+        record.travelGrant = 0.0
+        record.foodGrant = 0.0
+        record.save()
         for traveler in travelerList:
             traveler.record = record
             traveler.save()

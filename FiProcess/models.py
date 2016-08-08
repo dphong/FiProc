@@ -50,7 +50,7 @@ class FiStream(models.Model):
     applyDate = models.DateTimeField()
     department = models.ForeignKey(Department, on_delete=models.CASCADE)
     projectLeader = models.ForeignKey(Staff, on_delete=models.CASCADE, related_name="projectLeader")
-    # stage: 'create' 'project' 'department1' 'department2' 'projectDepartment' 'school1' 'school2' 'school3'
+    # stage: 'createFromApp' 'create' 'project' 'department1' 'department2' 'projectDepartment' 'school1' 'school2' 'school3'
     #        'financial' 'finish' 'refused' 'cwcSubmit' 'cwcChecking' 'cwcpaid' 'cantModify'
     # approval before create: 'unapprove' 'approvalDepartment' 'approvalOffice' 'approvalSchool' 'approved'
     stage = models.CharField(max_length=64)
@@ -111,6 +111,7 @@ class CompanyPayRecord(models.Model):
 
 
 class TravelRecord(models.Model):
+    approveDate = models.DateTimeField()
     approvalSign = models.ForeignKey(SignRecord, on_delete=models.CASCADE, null=True)
     fiStream = models.ForeignKey(FiStream, on_delete=models.CASCADE)
     duty = models.CharField(max_length=32)

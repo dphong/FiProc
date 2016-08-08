@@ -33,7 +33,7 @@
         {% endif %}
         <form class="form" action="" method="post">  
             {% csrf_token %} 
-            {% if form.currentStage.value == "create" %}
+            {% if form.currentStage.value == "create" or form.currentStage.value == "createFromApp" %}
                 <input name="createStream" type="submit" class="btn btn-primary" {% if form.amount.value == "0" %}disabled=True{% endif %}{% if signErrorMsg %}disabled=True{% endif %} value="生成报销单"></input>
                 <input name="modifyStream" type="submit" class="btn btn-primary" value="修改"></input>
                 {% if stream.streamType == "travelApproval" %}
@@ -197,7 +197,7 @@
                 <tbody>
                 {% for route in travelRoute %}
                 <tr>
-                    <td class="text-center">{{ route.date }}</td>
+                    <td class="text-center">{{ route.date|date:"Y-m-d" }}</td>
                     <td class="text-center">{{ route.start }}</td>
                     <td class="text-center">{{ route.end }}</td>
                     <td class="text-center">{{ route.amount }}</td>
@@ -220,7 +220,7 @@
                 {% for icbc in icbcList %}
                     <tr>
                         <td class="text-center">{{ icbc.staff.name }}</td>
-                        <td class="text-center">{{ icbc.date }}</td>
+                        <td class="text-center">{{ icbc.date|date:"Y-m-d" }}</td>
                         <td class="text-center">{{ icbc.spendProof.spendAmount }}</td>
                         <td class="text-center">{{ icbc.cantApplyAmount }}</td>
                         <td class="text-center">{{ icbc.staff.icbcCard }}</td>

@@ -5,7 +5,7 @@ from django.http import HttpResponseRedirect
 from django.core.urlresolvers import reverse
 from django.contrib import messages
 
-from ..models import SpendProof, IcbcCardRecord, TravelRecord, Traveler, TravelRoute
+from ..models import SpendProof, IcbcCardRecord, TravelRecord, Traveler, TravelRoute, Staff
 import FormPublic
 
 
@@ -83,16 +83,11 @@ class TravelStreamDetail(forms.Form):
             i += 1
         return result
 
-    def get(self, request, stream):
-        try:
-            record = TravelRecord.objects.get(fiStream__id=stream.id)
-        except:
-            messages.add_message(request, messages.ERROR, '查找差旅报销单信息失败')
-            return HttpResponseRedirect(reverse('index', args={''}))
-        cashList = SpendProof.objects.filter(fiStream__id=stream.id).exclude(proofDescript='icbc')
+    def getTravelDetail(self, record):
+        cashList = SpendProof.objects.filter(fiStream__id=record.fiStream.id).exclude(proofDescript='icbc')
         travelerList = Traveler.objects.filter(record__id=record.id)
         travelRouteList = TravelRoute.objects.filter(record__id=record.id)
-        icbcList = IcbcCardRecord.objects.filter(spendProof__fiStream__id=stream.id)
+        icbcList = IcbcCardRecord.objects.filter(spendProof__fiStream__id=record.fiStream.id)
         amount = 0
         typeAmount = [0 for n in range(6)]
         for cash in cashList:
@@ -103,10 +98,16 @@ class TravelStreamDetail(forms.Form):
             actualAmount = icbc.spendProof.spendAmount - icbc.cantApplyAmount
             amount += actualAmount
             typeAmount[int(icbc.spendProof.spendType)] += actualAmount
-            icbc.date = icbc.date.strftime('%Y-%m-%d')
             icbc.cantApplyAmount = actualAmount
-        for route in travelRouteList:
-            route.date = route.date.strftime('%Y-%m-%d')
+        return (cashList, travelerList, travelRouteList, icbcList, amount, typeAmount)
+
+    def get(self, request, stream):
+        try:
+            record = TravelRecord.objects.get(fiStream__id=stream.id)
+        except:
+            messages.add_message(request, messages.ERROR, '查找差旅报销单信息失败')
+            return HttpResponseRedirect(reverse('index', args={''}))
+        cashList, travelerList, travelRouteList, icbcList, amount, typeAmount = self.getTravelDetail(record)
         typeList = self.getTypeAmountList(typeAmount)
         try:
             signList, stageInfo = FormPublic.getStreamStageInfo(stream)
@@ -138,4 +139,55 @@ class TravelStreamDetail(forms.Form):
                 'schoolSign1': schoolSign1, 'schoolSign2': schoolSign2, 'schoolSign3': schoolSign3})
 
     def printStream(self, request, stream):
-        return render(request, 'FiProcess/travelSheet.htm', {'stream': stream})
+        try:
+            record = TravelRecord.objects.get(fiStream__id=stream.id)
+        except:
+            messages.add_message(request, messages.ERROR, '查找差旅报销单信息失败')
+            return HttpResponseRedirect(reverse('index', args={''}))
+        cashList, rawTravelerList, rawTravelRouteList, rawIcbcList, amount, typeAmount = self.getTravelDetail(record)
+        casher = stream.applicante
+        if cashList and len(cashList[0].proofDescript) > 0:
+            try:
+                casher = Staff.objects.get(id=int(cashList[0].proofDescript))
+            except:
+                casher = stream.applicante
+        dept1, dept2, school1, school2, school3 = FormPublic.getSignedSigner(stream)
+        carPlate = None
+        carDriver = None
+        traveler = None
+        travelerList = None
+        icbc = None
+        icbcList = None
+        route = None
+        routeList = None
+        routeIdx = None
+        if len(rawTravelerList) <= 4:
+            traveler = rawTravelerList
+        else:
+            traveler = rawTravelerList[:3]
+            travelerList = rawTravelerList[3:]
+        if len(rawIcbcList) <= 5:
+            icbc = rawIcbcList
+        else:
+            icbc = rawIcbcList[:4]
+            icbcList = rawIcbcList[4:]
+        if len(rawTravelRouteList) < 4:
+            route = rawTravelRouteList
+        else:
+            route = rawTravelRouteList[3:]
+            routeList = rawTravelRouteList[3:]
+            routeIdx = 1
+            if icbcList:
+                routeIdx += 1
+            if travelerList:
+                routeIdx += 1
+        if record.travelType == 'officialCar' or record.travelType == 'selfCar':
+            carPlate = record.travelDescript[record.travelDescript.index(':') + 1:record.travelDescript.index(',')]
+            carDriver = record.travelDescript[record.travelDescript.index(','):]
+            carDriver = carDriver[carDriver.index(':') + 1:]
+        return render(request, 'FiProcess/travelSheet.htm',
+            {'stream': stream, 'casher': casher, 'record': record, 'carPlate': carPlate, 'carDriver': carDriver,
+                'dept1': dept1, 'dept2': dept2, 'school1': school1, 'shcool2': school2, 'school3': school3,
+                'typeAmount': typeAmount, 'traveler': traveler, 'travelerList': travelerList,
+                'travelRoute': route, 'routeList': routeList, 'routeIdx': routeIdx,
+                'icbc': icbc, 'icbcList': icbcList, 'amount': amount})

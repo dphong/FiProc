@@ -2,6 +2,7 @@
 {% load staticfiles %} 
 <head>
   <meta http-equiv=Content-Type content="text/html; charset=utf-8">
+  <title>合肥师范学院单据报销封面</title>
   <link rel="stylesheet" type="text/css" href="{% static 'FiProcess/commonStyleSheet.css' %}"/>
   <style>
     <!--table
@@ -74,10 +75,8 @@
     <td class=xl76>报销人：{{stream.applicante.name}}</td>
     <td class=xl76></td>
     <td class=xl68></td>
-    <td class=xl76 colspan=2 style='mso-ignore:colspan'>
-     联系电话：{{stream.applicante.phoneNumber}}<span style='mso-spacerun:yes'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </span>
-   </td>
-   <td class=xl87><span style='mso-spacerun:yes'>&nbsp;&nbsp;&nbsp; </span>报销日期:{{stream.applyDate|date:"Y-m-d"}}<span style='mso-spacerun:yes'>&nbsp;</span></td>
+    <td class=xl76 colspan=2 style='mso-ignore:colspan'>联系电话：{{stream.applicante.phoneNumber}}</td>
+   <td class=xl87><span style='mso-spacerun:yes'>&nbsp; </span>报销日期:{{stream.applyDate|date:"Y-m-d"}}</td>
    <td class=xl87>　</td>
    <td class=xl87><span style='mso-spacerun:yes'>&nbsp; </span>单据张数：</td>
    <td class=xl68></td>
@@ -494,8 +493,7 @@
 </div>
 {% endif %}
 {% if icbcList %}
-<div class="page">
-  <div class="print-margin">
+<div class="page print-margin">
   <h3>附件{{icbcIndex}}：公务卡消费记录</h3>
   <table class="append-table">
     <tr>
@@ -517,7 +515,6 @@
     </tr>
     {% endfor %}
   </table>
-  </div>
 </div>
 {% endif %}
 </body>

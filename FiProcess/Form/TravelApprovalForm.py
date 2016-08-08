@@ -71,7 +71,7 @@ class TravelApprovalForm(forms.Form):
         else:
             sign.stage = 'approvalDepartment'
         stream = record.fiStream
-        stream.stage = 'approving'
+        stream.stage = sign.stage
         stream.save()
         sign.stream = stream
         sign.save()
@@ -130,10 +130,10 @@ class TravelApprovalForm(forms.Form):
         fiStream.streamType = 'travelApproval'
         fiStream.applyDate = datetime.now()
         fiStream.projectName = record.reason
-        fiStream.descript = record.travelDescript
+        fiStream.descript = record.reason
         fiStream.save()
         record.fiStream = fiStream
-        record.duty = self.cleaned_data['duty']
+        record.approveDate = datetime.now()
         record.companionCnt = self.cleaned_data['companionCnt']
         record.save()
         request.session['TravelRecord'] = record.id

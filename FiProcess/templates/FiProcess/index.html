@@ -232,11 +232,8 @@
                             {% if order.stage == "已审批" and order.streamType = "差旅审批" %}
                                 <input type="submit" class="btn btn-success" name="createApprovalStream{{ order.id }}" value="报销单">
                             {% endif %}
-                            {% if order.stage == "等待财务审核" or order.stage == "财务正在审核" %}
-                                <a href='{% url 'index' '' %}{{order.number}}' target="_blank" class="btn btn-success">打印</a>
-                            {% endif %}
-                            {% if order.stage == "已审批" %}
-                                <a href='{% url 'index' ''%}{{order.number}}' target="_blank" class="btn btn-success">打印</a>
+                            {% if order.stage == "等待财务审核" or order.stage == "财务正在审核" or order.stage == "已审批"%}
+                                <a href='{% url 'index' '' %}{% if order.number %}{{order.number}}{% else %}0{{order.id}}{% endif %}' target="_blank" class="btn btn-success">打印</a>
                             {% endif %}
                             </td>
                         </tr>

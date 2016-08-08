@@ -15,7 +15,10 @@ from ContractApprovalForm import ContractApprovalForm
 class PrintForm(forms.Form):
     def get(self, request, target):
         try:
-            stream = FiStream.objects.get(number=target)
+            if target.startswith('0'):
+                stream = FiStream.objects.get(id=int(target))
+            else:
+                stream = FiStream.objects.get(number=target)
         except:
             messages.add_message(request, messages.ERROR, u'打印失败')
             return HttpResponseRedirect(reverse('index', args={''}))

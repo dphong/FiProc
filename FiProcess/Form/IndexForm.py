@@ -130,12 +130,14 @@ class IndexForm(forms.Form):
         querySet = SignRecord.objects.filter(stream__id=stream.id)
         stageDict = None
         finalStr = ''
-        if 'receptApproval' == stream.streamType or 'contractApproval' == stream.streamType:
+        if ('receptApproval' == stream.streamType or 'contractApproval' == stream.streamType
+                or ('travelApproval' == stream.streamType and 'approv' in stream.stage and 'approved' != stream.stage)):
             if len(querySet) == 0:
                 return 'unapprove'
             stageDict = {'unapprove': 0, 'approvalDepartment': 1, 'approvalOffice': 2, 'approvalSchool': 3, 'approved': 4}
             finalStr = 'approved'
-        elif ('travelApproval' == stream.streamType or 'labor' == stream.streamType
+        elif (('travelApproval' == stream.streamType and ('approv' not in stream.stage or stream.stage == 'approved'))
+                or 'labor' == stream.streamType
                 or 'travel' == stream.streamType or 'common' == stream.streamType):
             if len(querySet) == 0:
                 return 'create'
@@ -232,7 +234,6 @@ class IndexForm(forms.Form):
                         item.number = item.cwcSumbitDate.strftime('%Y%m%d') + '1'
                     signQuery = FiStream.objects.filter(number__startswith=item.cwcSumbitDate.strftime('%Y%m%d'))
                     item.number += "%03d" % (len(signQuery) + 1)
-                    print item.number
                     item.stage = 'cwcSubmit'
                     item.save()
                     messages.add_message(request, messages.SUCCESS, u'报销预约成功')
@@ -297,7 +298,7 @@ class IndexForm(forms.Form):
     def getOrderList(self, request):
         streamList = FiStream.objects.filter(applicante__username=request.session['username'])
         orderList = []
-        stageDic = {'create': u'未提交', 'project': u'项目负责人审核', 'department1': u'部门负责人审核',
+        stageDic = {'createFromApp': u'未提交', 'create': u'未提交', 'project': u'项目负责人审核', 'department1': u'部门负责人审核',
                     'department2': u'部门书记审核', 'projectDepartment': u'项目部门负责人审核', 'school1': u'分管校领导审核',
                     'school2': u'财务校领导审核', 'school3': u'学校书记审核', 'financial': u'财务处审核', 'finish': u'审批结束',
                     'refused': u'拒绝审批', 'cwcSubmit': u'等待财务审核', 'cwcChecking': u'财务正在审核', 'cwcpaid': u'付款完成', 'cantModify': u'未提交',
