@@ -187,7 +187,7 @@ class TravelStreamDetail(forms.Form):
             carDriver = carDriver[carDriver.index(':') + 1:]
         return render(request, 'FiProcess/travelSheet.htm',
             {'stream': stream, 'casher': casher, 'record': record, 'carPlate': carPlate, 'carDriver': carDriver,
-                'dept1': dept1, 'dept2': dept2, 'school1': school1, 'shcool2': school2, 'school3': school3,
+                'dept1': dept1, 'dept2': dept2, 'school1': school1, 'school2': school2, 'school3': school3,
                 'typeAmount': typeAmount, 'traveler': traveler, 'travelerList': travelerList,
                 'travelRoute': route, 'routeList': routeList, 'routeIdx': routeIdx,
                 'icbc': icbc, 'icbcList': icbcList, 'amount': amount})

@@ -299,6 +299,6 @@ class LaborStreamForm(ModelForm):
             hireAmount += item.amount
         return render(request, 'FiProcess/laborSheet.htm',
             {'stream': stream, 'amount': amount, 'amountBig': FormPublic.numtoCny(amount, False, ''),
-                'dept1': dept1, 'dept2': dept2, 'school1': school1, 'shcool2': school2, 'school3': school3,
+                'dept1': dept1, 'dept2': dept2, 'school1': school1, 'school2': school2, 'school3': school3,
                 'staffList': staffPayList, 'staffAmount': staffAmount, 'staffAmountBig': FormPublic.numtoCny(staffAmount, False, ''),
                 'hireList': hirePayList, 'hireAmount': hireAmount, 'hireAmountBig': FormPublic.numtoCny(hireAmount, False, '')})

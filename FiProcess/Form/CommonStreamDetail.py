@@ -180,6 +180,6 @@ class CommonStreamDetail(forms.Form):
                 icbcIndex = icbcIndex + 1
         return render(request, 'FiProcess/commonSheet.htm',
             {'stream': stream, 'amount': amount, 'bigAmount': FormPublic.numtoCny(amount), 'typeAmount': typeAmount,
-                'dept1': dept1, 'dept2': dept2, 'school1': school1, 'shcool2': school2, 'school3': school3,
+                'dept1': dept1, 'dept2': dept2, 'school1': school1, 'school2': school2, 'school3': school3,
                 'ccb': ccb, 'ccbList': ccbList, 'com': com, 'comList': comList,
                 'icbc': icbc, 'icbcList': icbcList, 'icbcIndex': icbcIndex})
