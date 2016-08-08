@@ -1,11 +1,9 @@
 # -*- coding: utf-8 -*-
 from django import forms
 from django.shortcuts import render
-from django.http import HttpResponseRedirect, StreamingHttpResponse
+from django.http import HttpResponseRedirect
 from django.core.urlresolvers import reverse
 from django.contrib import messages
-from xlrd import open_workbook
-from xlutils.copy import copy
 
 from ..models import IcbcCardRecord, CompanyPayRecord, CashPay
 import FormPublic
