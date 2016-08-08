@@ -186,4 +186,34 @@ class ContractApprovalForm(forms.Form):
         return HttpResponseRedirect(reverse('index', args={''}))
 
     def printStream(self, request, stream):
-        return render(request, 'FiProcess/commonSheet.htm', {'stream': stream})
+        try:
+            contract = Contract.objects.get(stream__id=stream.id)
+        except:
+            messages.add_message(request, messages.ERROR, u'查找失败')
+            return HttpResponseRedirect(reverse('index', args={''}))
+        signList = SignRecord.objects.filter(stream__id=contract.stream.id)
+        deptSign = None
+        superViserSign = None
+        schoolSign = None
+        financialSign = None
+        researchSign = None
+        assetSign = None
+        for sign in signList:
+            sign.descript
+            if sign.stage == 'approvalDepartment':
+                deptSign = sign
+            if sign.stage == 'approvalSchool':
+                schoolSign = sign
+            if sign.stage == 'approvalOffice':
+                if sign.signer.department.name == u'财务处':
+                    financialSign = sign
+                if sign.signer.department.name == u'纪委监察室':
+                    superViserSign = sign
+                if sign.signer.department.name == u'科研处':
+                    researchSign = sign
+                if sign.signer.department.name == u'资产管理处':
+                    assetSign = sign
+        return render(request, 'FiProcess/contractSheet.htm',
+            {'stream': stream, 'contract': contract, 'deptSign': deptSign, 'schoolSign': schoolSign,
+                'superViserSign': superViserSign, 'financialSign': financialSign, 'researchSign': researchSign,
+                'assetSign': assetSign})
