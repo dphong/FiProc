@@ -190,4 +190,39 @@ class ReceptApprovalForm(forms.Form):
         return HttpResponseRedirect(reverse('index', args={''}))
 
     def printStream(self, request, stream):
-        return render(request, 'FiProcess/commonSheet.htm', {'stream': stream})
+        try:
+            recept = Recept.objects.get(stream__id=stream.id)
+        except:
+            messages.add_message(request, messages.ERROR, u'打印失败')
+            return HttpResponseRedirect(reverse('index', args={''}))
+        signList = SignRecord.objects.filter(stream__id=stream.id)
+        deptSign = None
+        superViserSign = None
+        schoolSign = None
+        for sign in signList:
+            if sign.stage == "approvalSchool":
+                schoolSign = sign
+            if sign.stage == "approvalDepartment":
+                deptSign = sign
+            if sign.stage == 'approvalOffice':
+                superViserSign = sign
+        rawPersonList = ReceptPerson.objects.filter(recept__id=recept.id)
+        staffList = ReceptStaff.objects.filter(recept__id=recept.id)
+        staffString = ''
+        i = 0
+        for staff in staffList:
+            i += 1
+            staffString += staff.staff.name + u'，'
+            if i % 5 == 0:
+                staffString += '\n'
+        person = None
+        personList = None
+        if len(rawPersonList) <= 5:
+            person = rawPersonList
+        else:
+            person = rawPersonList[:4]
+            personList = rawPersonList[4:]
+        return render(request, 'FiProcess/receptSheet.htm',
+            {'stream': stream, 'recept': recept, 'staff': staffString,
+                'person': person, 'personList': personList,
+                'schoolSign': schoolSign, 'superViserSign': superViserSign, 'deptSign': deptSign})
