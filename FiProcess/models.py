@@ -59,7 +59,7 @@ class FiStream(models.Model):
     # type: 'common' 'travel' 'labor' 'travelApproval' 'receptApproval' 'contractApproval'
     streamType = models.CharField(max_length=16)
     number = models.CharField(max_length=12, null=True)
-    cwcSumbitDate = models.DateTimeField(null=True)
+    cwcSubmitDate = models.DateTimeField(null=True)
     cwcDealer = models.ForeignKey(Staff, on_delete=models.CASCADE, related_name="cwcDealer", null=True)
 
 

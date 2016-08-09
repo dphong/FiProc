@@ -47,7 +47,13 @@ def getStreamStageInfo(stream):
     elif stream.stage == 'cwcSubmit':
         return (signList, u'报销单由财务处分配中, 项目流水号：' + stream.number)
     elif stream.stage == 'cwcChecking':
-        return (signList, u'报销单由财务处"' + stream.cwcDealer.name + u'"处理中，项目流水号：' + stream.number)
+        try:
+            print stream.cwcSubmitDate.strftime('%Y年%m-%d %H').decode('utf-8')
+        except Exception, e:
+            print e
+        return (signList, u'报销单由财务处"' + stream.cwcDealer.name
+                + u'"处理中，项目流水号：' + stream.number
+                + u' 预计处理时间：' + stream.cwcSubmitDate.strftime('%Y年%m月%d日 %H点').decode('utf-8') + u'左右')
     elif stream.stage == 'cwcpaid':
         return (signList, u'报销单已由财务付款，项目流水号：' + stream.number)
     elif (('project' in stream.stage)

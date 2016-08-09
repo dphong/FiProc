@@ -222,12 +222,10 @@
                             </td>
                             <td class="text-center">
                             {% if order.stage == "未提交" or order.stage == "待审批" %}
-                                <a href="#delOrder" data-toggle="modal" class="btn btn-default"
-                                    name="deleteOrder{{ order.id }}" role="button">删除</a>
+                                <a href="#delOrder" data-toggle="modal" class="btn btn-default"name="deleteOrder{{ order.id }}" role="button">删除</a>
                             {% endif %}
                             {% if order.stage == "审批结束" %}
-                                <a href="#submit" data-toggle="modal" class="btn btn-primary"
-                                    name="fiProc{{ order.id }}" role="button">报销</a>
+                                <a href="#submit" data-toggle="modal" class="btn btn-primary"name="fiProc{{ order.id }}" role="button">报销</a>
                             {% endif %}
                             {% if order.stage == "已审批" and order.streamType = "差旅审批" %}
                                 <input type="submit" class="btn btn-success" name="createApprovalStream{{ order.id }}" value="报销单">

@@ -227,12 +227,12 @@ class IndexForm(forms.Form):
                     except:
                         raise Exception('日期格式错误，请在报销日期中填写"年-月-日"格式的日期')
                     if request.POST['submitHalfDay'] == 'morning':
-                        item.cwcSumbitDate = datetime(time.year, time.month, time.day, 9, 0, 0)
-                        item.number = item.cwcSumbitDate.strftime('%Y%m%d') + '0'
+                        item.cwcSubmitDate = datetime(time.year, time.month, time.day, 9, 0, 0)
+                        item.number = item.cwcSubmitDate.strftime('%Y%m%d') + '0'
                     else:
-                        item.cwcSumbitDate = datetime(time.year, time.month, time.day, 14, 0, 0)
-                        item.number = item.cwcSumbitDate.strftime('%Y%m%d') + '1'
-                    signQuery = FiStream.objects.filter(number__startswith=item.cwcSumbitDate.strftime('%Y%m%d'))
+                        item.cwcSubmitDate = datetime(time.year, time.month, time.day, 14, 0, 0)
+                        item.number = item.cwcSubmitDate.strftime('%Y%m%d') + '1'
+                    signQuery = FiStream.objects.filter(number__startswith=item.cwcSubmitDate.strftime('%Y%m%d'))
                     item.number += "%03d" % (len(signQuery) + 1)
                     item.stage = 'cwcSubmit'
                     item.save()

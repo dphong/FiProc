@@ -4,6 +4,7 @@ from django.shortcuts import render
 from django.core.urlresolvers import reverse
 from django.http import HttpResponseRedirect, JsonResponse
 from django.contrib import messages
+from datetime import datetime
 
 from ..models import FiStream, Staff
 import FormPublic
@@ -24,8 +25,8 @@ class CwcForm(forms.Form):
             stream['applicante'] = item.applicante.name
             stream['supportDept'] = item.department.name
             stream['streamType'] = typeDic[item.streamType]
-            stream['time'] = item.cwcSumbitDate.strftime('%Y-%m-%d')
-            if item.cwcSumbitDate.hour > 12:
+            stream['time'] = item.cwcSubmitDate.strftime('%Y-%m-%d')
+            if item.cwcSubmitDate.hour > 12:
                 stream['time'] += u'下午'
             else:
                 stream['time'] += u'上午'
@@ -34,9 +35,16 @@ class CwcForm(forms.Form):
         return streamList
 
     def sortOrder(self, stream):
-        return stream.cwcSumbitDate
+        return stream.cwcSubmitDate
 
     def get(self, request):
+        try:
+            staff = Staff.objects.get(username=request.session['username'])
+        except:
+            return FormPublic.logout(request, u'登录状态异常!')
+        if staff.department.name != u'财务处':
+            messages.add_message(request, messages.ERROR, u'操作异常')
+            return HttpResponseRedirect(reverse('index', args={''}))
         request.session['office'] = 'cwc'
         if request.GET.get('target') == 'allStream':
             streamList = self.getStreamList()
@@ -50,22 +58,38 @@ class CwcForm(forms.Form):
         if 'returnIndex' in request.POST:
             del request.session['office']
             return HttpResponseRedirect(reverse('index', args={''}))
+        try:
+            staff = Staff.objects.get(username=request.session['username'])
+        except:
+            return FormPublic.logout(request, u'登录状态异常!')
+        if staff.department.name != u'财务处':
+            messages.add_message(request, messages.ERROR, u'操作异常')
+            return HttpResponseRedirect(reverse('index', args={''}))
         for name, value in request.POST.iteritems():
-            if name.startswith('dealWith'):
+            if name.startswith('acceptStream'):
                 try:
-                    staff = Staff.objects.get(username=request.session['username'])
-                except:
-                    return FormPublic.logout(request, u'登录状态异常!')
-                try:
-                    item = FiStream.objects.get(id=name[8:])
+                    item = FiStream.objects.get(id=name[12:])
                 except:
                     messages.add_message(request, messages.ERROR, u'处理失败')
                     return render(request, 'FiProcess/cwc.html', {'form': self})
                 if item.stage == 'cwcSubmit':
                     item.cwcDealer = staff
                     item.stage = 'cwcChecking'
+                    dateStr = request.POST['submitDate'] + ' ' + request.POST['submitHour']
+                    try:
+                        submitTime = datetime.strptime(dateStr, '%Y-%m-%d %H')
+                    except:
+                        messages.add_message(request, messages.ERROR, u'日期格式错误')
+                        return render(request, 'FiProcess/cwc.html', {'form': self})
+                    item.cwcSubmitDate = submitTime
                     item.save()
-                elif item.stage == 'cwcChecking':
+            if name.startswith('dealWith'):
+                try:
+                    item = FiStream.objects.get(id=name[8:])
+                except:
+                    messages.add_message(request, messages.ERROR, u'处理失败')
+                    return render(request, 'FiProcess/cwc.html', {'form': self})
+                if item.stage == 'cwcChecking':
                     item.stage = 'cwcpaid'
                     item.save()
                 return HttpResponseRedirect(reverse('cwc'))
