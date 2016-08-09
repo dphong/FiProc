@@ -1,0 +1,162 @@
+<!DOCTYPE html>  
+{% load bootstrap3  %} 
+{% load staticfiles %} 
+<html lang="en">  
+<head>  
+    <meta charset="utf-8">  
+    <title>财务报账审批系统</title>  
+    <meta name="description" content="">  
+    <link rel="stylesheet" type="text/css" href="{% static 'FiProcess/bootstrap.min.css' %}" /> 
+    <script type="text/javascript" src="{% static 'FiProcess/jquery-2.2.4.min.js' %}"></script>
+    <script type="text/javascript" src="{% static 'FiProcess/bootstrap.min.js' %}"></script>
+    <script type="text/javascript" src="{% static 'FiProcess/validator.min.js' %}"></script>
+    <style type="text/css">
+    </style>
+    <script type="text/javascript">
+    function showTab(form){
+        var forms = new Array("form.mySign", "form.successStream", "form.failStream", "form.successApproval", "form.failApproval");
+        for (var i = 0; i < forms.length; i++){
+            if (form == forms[i]){
+                $(forms[i]).show();
+                continue;
+            }
+            $(forms[i]).hide();
+        }
+    }
+    $(document).ready(function(){
+        $('#mySign').click(function(){
+            showTab('form.mySign');
+        });
+        $('#successStream').click(function(){
+            showTab('form.successStream');
+        });
+        $('#failStream').click(function(){
+            showTab('form.failStream');
+        });
+        $('#successApproval').click(function(){
+            showTab('form.successApproval');
+        });
+        $('#failApproval').click(function(){
+            showTab('form.failApproval');
+        });
+        showTab('form.successStream');
+    })
+    </script>
+</head>
+<body>
+    <div class="container" style="max-width:1000px">
+    {% if messages %}
+        {% for message in messages %}
+            {% if message.level == DEFAULT_MESSAGE_LEVELS.ERROR %}
+                <div class="alert alert-danger">  
+                    <button type="button" class="close" data-dismiss="alert">×</button>  
+                    <h4>{{message}}</h4>
+                </div> 
+            {% endif %}
+        {% endfor %}
+    {% endif %}
+    <h2>我的报销及审批历史</h2>
+    <a href={% url 'index' '' %} class="btn btn-large btn-default navbar-btn pull-right">返回</a>
+    <ul class="nav nav-tabs">
+    <li id="mySign" class="active"><a data-toggle="tab" href="myStream">我的审批</a></li>
+    <li id = "successStream"><a data-toggle="tab" href="allStream">报销成功</a></li>
+    <li id = "failStream"><a data-toggle="tab" href="allStream">报销失败</a></li>
+    <li id = "successApproval"><a data-toggle="tab" href="allStream">申请审批成功</a></li>
+    <li id = "failApproval"><a data-toggle="tab" href="allStream">申请审批失败</a></li>
+    </ul>
+    <form role="form" class="mySign" action="" method="post" style="margin:20px 0px 20px 0px">
+        {% csrf_token %}
+        <table class="table table-bordered table-hover table-striped" id="tabMyStream">
+            <thead>
+                <tr>
+                    <th class="text-center">#</th>
+                    <th class="text-center col-md-2">创建日期</th>
+                    <th class="text-center">经费所属部门</th>
+                    <th class="text-center col-md-3">项目名称</th>
+                    <th class="text-center">类别</th>
+                    <th class="text-center col-md-1">详细</th>
+                </tr>
+            </thead>
+            <tbody>
+            </tbody>
+        </table>
+    </form>
+    <form role="form" class="successStream" action="" method="post" style="margin:20px 0px 20px 0px">
+        {% csrf_token %}
+        <table class="table table-bordered table-hover table-striped" id="tabAllStream">
+            <thead>
+                <tr>
+                    <th class="text-center">#</th>
+                    <th class="text-center col-md-2">报销人</th>
+                    <th class="text-center">项目名称</th>
+                    <th class="text-center col-md-3">经费所属部门</th>
+                    <th class="text-center">类别</th>
+                    <th class="text-center">预约时间</th>
+                    <th class="text-center col-md-1">详细</th>
+                    <th class="text-center col-md-1">操作</th>
+                </tr>
+            </thead>
+            <tbody>
+            </tbody>
+        </table>
+    </form>
+    <form role="form" class="failStream" action="" method="post" style="margin:20px 0px 20px 0px">
+        {% csrf_token %}
+        <table class="table table-bordered table-hover table-striped" id="tabAllStream">
+            <thead>
+                <tr>
+                    <th class="text-center">#</th>
+                    <th class="text-center col-md-2">报销人</th>
+                    <th class="text-center">项目名称</th>
+                    <th class="text-center col-md-3">经费所属部门</th>
+                    <th class="text-center">类别</th>
+                    <th class="text-center">预约时间</th>
+                    <th class="text-center col-md-1">详细</th>
+                    <th class="text-center col-md-1">操作</th>
+                </tr>
+            </thead>
+            <tbody>
+            </tbody>
+        </table>
+    </form>
+    <form role="form" class="successApproval" action="" method="post" style="margin:20px 0px 20px 0px">
+        {% csrf_token %}
+        <table class="table table-bordered table-hover table-striped" id="tabAllStream">
+            <thead>
+                <tr>
+                    <th class="text-center">#</th>
+                    <th class="text-center col-md-2">报销人</th>
+                    <th class="text-center">项目名称</th>
+                    <th class="text-center col-md-3">经费所属部门</th>
+                    <th class="text-center">类别</th>
+                    <th class="text-center">预约时间</th>
+                    <th class="text-center col-md-1">详细</th>
+                    <th class="text-center col-md-1">操作</th>
+                </tr>
+            </thead>
+            <tbody>
+            </tbody>
+        </table>
+    </form>
+    <form role="form" class="failApproval" action="" method="post" style="margin:20px 0px 20px 0px">
+        {% csrf_token %}
+        <table class="table table-bordered table-hover table-striped" id="tabAllStream">
+            <thead>
+                <tr>
+                    <th class="text-center">#</th>
+                    <th class="text-center col-md-2">报销人</th>
+                    <th class="text-center">项目名称</th>
+                    <th class="text-center col-md-3">经费所属部门</th>
+                    <th class="text-center">类别</th>
+                    <th class="text-center">预约时间</th>
+                    <th class="text-center col-md-1">详细</th>
+                    <th class="text-center col-md-1">操作</th>
+                </tr>
+            </thead>
+            <tbody>
+            </tbody>
+        </table>
+    </form>
+    </div>    
+</body>
+</html>

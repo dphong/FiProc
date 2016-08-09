@@ -72,26 +72,30 @@ class CwcForm(forms.Form):
                 except:
                     messages.add_message(request, messages.ERROR, u'处理失败')
                     return render(request, 'FiProcess/cwc.html', {'form': self})
-                if item.stage == 'cwcSubmit':
-                    item.cwcDealer = staff
-                    item.stage = 'cwcChecking'
-                    dateStr = request.POST['submitDate'] + ' ' + request.POST['submitHour']
-                    try:
-                        submitTime = datetime.strptime(dateStr, '%Y-%m-%d %H')
-                    except:
-                        messages.add_message(request, messages.ERROR, u'日期格式错误')
-                        return render(request, 'FiProcess/cwc.html', {'form': self})
-                    item.cwcSubmitDate = submitTime
-                    item.save()
+                if item.stage != 'cwcSubmit':
+                    messages.add_message(request, messages.ERROR, u'状态异常')
+                    return render(request, 'FiProcess/cwc.html', {'form': self})
+                item.cwcDealer = staff
+                item.stage = 'cwcChecking'
+                dateStr = request.POST['submitDate'] + ' ' + request.POST['submitHour']
+                try:
+                    submitTime = datetime.strptime(dateStr, '%Y-%m-%d %H')
+                except:
+                    messages.add_message(request, messages.ERROR, u'日期格式错误')
+                    return render(request, 'FiProcess/cwc.html', {'form': self})
+                item.cwcSubmitDate = submitTime
+                item.save()
             if name.startswith('dealWith'):
                 try:
                     item = FiStream.objects.get(id=name[8:])
                 except:
                     messages.add_message(request, messages.ERROR, u'处理失败')
                     return render(request, 'FiProcess/cwc.html', {'form': self})
-                if item.stage == 'cwcChecking':
-                    item.stage = 'cwcpaid'
-                    item.save()
+                if item.stage != 'cwcChecking':
+                    messages.add_message(request, messages.ERROR, u'状态异常')
+                    return render(request, 'FiProcess/cwc.html', {'form': self})
+                item.stage = 'cwcpaid'
+                item.save()
                 return HttpResponseRedirect(reverse('cwc'))
             if name.startswith('checkStreamDetail'):
                 try:

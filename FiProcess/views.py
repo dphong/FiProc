@@ -11,6 +11,7 @@ from Form.RegisterForm import RegisterForm
 from Form.NewStreamForm import NewStreamForm
 from Form.ApprovalForm import ApprovalForm
 from Form.PrintForm import PrintForm
+from Form.HistoryForm import HistoryForm
 
 
 def error(request):
@@ -98,3 +99,14 @@ def printStream(request, target):
         return FormPublic.logout(request, '当前用户未登录，请登录')
     form = PrintForm()
     return form.get(request, target)
+
+
+def history(request):
+    if 'username' not in request.session:
+        return FormPublic.logout(request, '当前用户未登录，请登录')
+    if request.method == 'GET':
+        form = HistoryForm(request.GET)
+        return form.get(request)
+    if request.method == 'POST':
+        form = HistoryForm(request.POST)
+        return form.post
