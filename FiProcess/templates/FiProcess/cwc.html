@@ -14,6 +14,7 @@
     <script type="text/javascript">
     function dic2Html(i, json, type){
         html = "<td class='text-center'>" + (i+1) + "</td>"
+                + "<td class='text-center'>" + json['number'] + "</td>"
                 + "<td class='text-center'>" + json['applicante'] + "</td>"
                 + "<td class='text-center'>" + json['projectName'] + "</td>"
                 + "<td class='text-center'>" + json['supportDept'] + "</td>"
@@ -21,55 +22,58 @@
                 + "<td class='text-center' id='time" + json['id'] + "'>" + json['time'] + "</td>"
                 + "<td class='text-center'>" 
                 + '<input type="submit" class="btn btn-default" name="checkStreamDetail' + json['id'] + '" value="查看">'
-                + "</td>"
-                + "<td class='text-center'>";
-        if (type == 1){ //myStream
+                + "</td>";
+        if (type == 'myStream'){ //myStream
+            html += "<td class='text-center'>";
             html += '<input type="submit" class="btn btn-success" value="已处理" name="dealWith'+ json['id'] + '">';
+            html += "</td>";
         }
-        else if (type == 2) { // allStream
+        else if (type == 'allStream') { // allStream
+            html += "<td class='text-center'>";
             html += '<a href="#submit" data-toggle="modal" class="btn btn-primary" name="acceptStream' + json['id'] + '" role="button">处理</a>'
+            html += "</td>";
         }
-        html += "</td>";
+        else if (type == 'myHistory'){ // myHistory
+        }
         return html;
     }
-    function showMyStream(){
-        $('form.allStream').hide();
-        $('form.myStream').show();
+    function showStream(target, page){
+        if (target != 'allStream')
+            $('form.allStream').hide();
+        if (target != 'myHistory')
+            $('form.myHistory').hide();
+        if (target != 'myStream')
+            $('form.myStream').hide();
+        $('form.' + target).show();
         var url = location.protocol + "//" + window.location.hostname + ":"
-                  + location.port + "/cwc/?target=myStream";
+                  + location.port + "/cwc/?target=" + target + "&page=" + page;
         $.getJSON(url, {}, function(json) {
             for (var i = 0; i < json.length; i++){
-                $('#tabMyStream').append("<tr id='myStream" + i + "'></tr>");
-                $('#myStream' + i).html(dic2Html(i, json[i], 1));
+                $('#tab' + target).append("<tr id='" + target + i + "'></tr>");
+                $('#' + target + i).html(dic2Html(i, json[i], target));
             }
         });
     }
     $(document).ready(function(){
         $('#myStream').click(function(){
-            $(this).tab('show');
-            return showMyStream()
+            return showStream('myStream', 1)
         });
         $('#allStream').click(function(){
-            $('form.myStream').hide();
-            $('form.allStream').show();
-            $(this).tab('show');
-            var url = location.protocol + "//" + window.location.hostname + ":"
-                      + location.port + "/cwc/?target=allStream&page=1";
-            $.getJSON(url, {}, function(json) {
-                for (var i = 0; i < json.length; i++){
-                    $('#tabAllStream').append("<tr id='allStream" + i + "'></tr>");
-                    $('#allStream' + i).html(dic2Html(i, json[i], 2));
-                }
-            });
+            return showStream('allStream', 1)
         });
-        showMyStream();
+        $('#myHistory').click(function(){
+            return showStream('myHistory', 1)
+        });
         $('#submit').on('show.bs.modal', function(e){
             var button = e.relatedTarget;
             document.getElementById("submitOrderOk").name = button.name;
             timeStr = document.getElementById("time" + button.name.substring('acceptStream'.length)).innerHTML;
             document.getElementById("userTime").innerHTML = '用户预约时间：' + timeStr;
             document.getElementById("submitDate").value = timeStr.substring(0, 'YYYY-mm-dd'.length)
-        })
+        });
+        {% if target %}
+        showStream('{{target}}', 1);
+        {% endif %}
     });
     </script>
 </head>
@@ -91,18 +95,20 @@
         {% csrf_token %}
         <button name="returnIndex" class="btn btn-primary navbar-btn pull-right">返回</button>
     </form>
-    <ul class="nav nav-tabs">
-    <li id="myStream" class="active"><a data-toggle="tab" href="myStream">我的报销单</a></li>
-    <li id = "allStream"><a data-toggle="tab" href="allStream">全部报销单</a></li>
+    <ul class="nav nav-tabs" id="formTab">
+    <li id="myStream"{% if target == "myStream" %} class="active"{% endif %}><a data-toggle="tab">我的报销单</a></li>
+    <li id="allStream"{% if target == "allStream" %} class="active"{% endif %}><a data-toggle="tab">全部报销单</a></li>
+    <li id="myHistory"{% if target == "myHistory" %} class="active"{% endif %}><a data-toggle="tab">处理过的报销单</a></li>
     <form role="form" class="myStream" action="" method="post" style="margin:20px 0px 20px 0px">
         {% csrf_token %}
-        <table class="table table-bordered table-hover table-striped" id="tabMyStream">
+        <table class="table table-bordered table-hover table-striped" id="tabmyStream">
             <thead>
                 <tr>
                     <th class="text-center">#</th>
+                    <th class="text-center">流水号</th>
                     <th class="text-center col-md-2">报销人</th>
-                    <th class="text-center">项目名称</th>
-                    <th class="text-center col-md-3">经费所属部门</th>
+                    <th class="text-center col-md-2">项目名称</th>
+                    <th class="text-center col-md-2">经费所属部门</th>
                     <th class="text-center">类别</th>
                     <th class="text-center">预约时间</th>
                     <th class="text-center col-md-1">详细</th>
@@ -113,15 +119,35 @@
             </tbody>
         </table>
     </form>
-    <form role="form" class="allStream" action="" method="post" style="margin:20px 0px 20px 0px">
+    <form role="form" class="myHistory" action="" method="post" style="margin:20px 0px 20px 0px">
         {% csrf_token %}
-        <table class="table table-bordered table-hover table-striped" id="tabAllStream">
+        <table class="table table-bordered table-hover table-striped" id="tabmyHistory">
             <thead>
                 <tr>
                     <th class="text-center">#</th>
+                    <th class="text-center">流水号</th>
                     <th class="text-center col-md-2">报销人</th>
-                    <th class="text-center">项目名称</th>
-                    <th class="text-center col-md-3">经费所属部门</th>
+                    <th class="text-center col-md-2">项目名称</th>
+                    <th class="text-center col-md-2">经费所属部门</th>
+                    <th class="text-center">类别</th>
+                    <th class="text-center">报销时间</th>
+                    <th class="text-center col-md-1">详细</th>
+                </tr>
+            </thead>
+            <tbody>
+            </tbody>
+        </table>
+    </form>
+    <form role="form" class="allStream" action="" method="post" style="margin:20px 0px 20px 0px">
+        {% csrf_token %}
+        <table class="table table-bordered table-hover table-striped" id="taballStream">
+            <thead>
+                <tr>
+                    <th class="text-center">#</th>
+                    <th class="text-center">流水号</th>
+                    <th class="text-center col-md-2">报销人</th>
+                    <th class="text-center col-md-2">项目名称</th>
+                    <th class="text-center col-md-2">经费所属部门</th>
                     <th class="text-center">类别</th>
                     <th class="text-center">预约时间</th>
                     <th class="text-center col-md-1">详细</th>

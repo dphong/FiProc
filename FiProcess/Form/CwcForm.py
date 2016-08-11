@@ -11,26 +11,38 @@ import FormPublic
 
 
 class CwcForm(forms.Form):
-    def getStreamList(self, dealer=''):
-        streamList = []
-        if dealer == '':
-            querySet = FiStream.objects.filter(stage='cwcSubmit')
-        else:
-            querySet = FiStream.objects.filter(stage='cwcChecking', cwcDealer__username=dealer).order_by('cwcSubmitDate')
+
+    def getStream(self, stream):
         typeDic = {'common': u'普通', 'travel': u'差旅', 'labor': u'劳务', 'travelApproval': u'差旅'}
+        item = {}
+        item['number'] = stream.number
+        item['projectName'] = stream.projectName
+        item['applicante'] = stream.applicante.name
+        item['supportDept'] = stream.department.name
+        item['streamType'] = typeDic[stream.streamType]
+        item['time'] = stream.cwcSubmitDate.strftime('%Y-%m-%d')
+        if stream.cwcSubmitDate.hour > 12:
+            item['time'] += u'下午'
+        else:
+            item['time'] += u'上午'
+        item['id'] = stream.id
+        return item
+
+    def getStreamList(self, dealer=None):
+        streamList = []
+        if dealer:
+            querySet = FiStream.objects.filter(stage='cwcChecking', cwcDealer__id=dealer.id).order_by('cwcSubmitDate')
+        else:
+            querySet = FiStream.objects.filter(stage='cwcSubmit')
         for item in querySet:
-            stream = {}
-            stream['projectName'] = item.projectName
-            stream['applicante'] = item.applicante.name
-            stream['supportDept'] = item.department.name
-            stream['streamType'] = typeDic[item.streamType]
-            stream['time'] = item.cwcSubmitDate.strftime('%Y-%m-%d')
-            if item.cwcSubmitDate.hour > 12:
-                stream['time'] += u'下午'
-            else:
-                stream['time'] += u'上午'
-            stream['id'] = item.id
-            streamList.append(stream)
+            streamList.append(self.getStream(item))
+        return streamList
+
+    def getHistory(self, staff):
+        streamList = []
+        querySet = FiStream.objects.filter(stage='cwcpaid', cwcDealer__id=staff.id).order_by('-cwcSubmitDate')
+        for item in querySet:
+            streamList.append(self.getStream(item))
         return streamList
 
     def get(self, request):
@@ -42,22 +54,35 @@ class CwcForm(forms.Form):
             messages.add_message(request, messages.ERROR, u'操作异常')
             return HttpResponseRedirect(reverse('index', args={''}))
         request.session['office'] = 'cwc'
-        if request.GET.get('target') == 'allStream':
+        target = request.GET.get('target')
+        if target:
+            request.session['currentCwcTab'] = target
+        if target == 'allStream':
             streamList = self.getStreamList()
             return JsonResponse(streamList, safe=False)
-        elif request.GET.get('target') == 'myStream':
-            streamList = self.getStreamList(request.session['username'])
+        elif target == 'myStream':
+            streamList = self.getStreamList(staff)
             return JsonResponse(streamList, safe=False)
-        return render(request, 'FiProcess/cwc.html', {'form': self})
+        elif target == 'myHistory':
+            streamList = self.getHistory(staff)
+            return JsonResponse(streamList, safe=False)
+        target = request.session['currentCwcTab']
+        if not target:
+            request.session['currentCwcTab'] = 'myStream'
+        return render(request, 'FiProcess/cwc.html', {'form': self, 'target': target})
 
     def post(self, request):
         if 'returnIndex' in request.POST:
             del request.session['office']
+            del request.session['currentCwcTab']
             return HttpResponseRedirect(reverse('index', args={''}))
         try:
             staff = Staff.objects.get(username=request.session['username'])
         except:
             return FormPublic.logout(request, u'登录状态异常!')
+        target = request.session['currentCwcTab']
+        if not target:
+            target = 'myStream'
         if staff.department.name != u'财务处':
             messages.add_message(request, messages.ERROR, u'操作异常')
             return HttpResponseRedirect(reverse('index', args={''}))
@@ -67,10 +92,10 @@ class CwcForm(forms.Form):
                     item = FiStream.objects.get(id=name[12:])
                 except:
                     messages.add_message(request, messages.ERROR, u'处理失败')
-                    return render(request, 'FiProcess/cwc.html', {'form': self})
+                    return render(request, 'FiProcess/cwc.html', {'form': self, 'target': target})
                 if item.stage != 'cwcSubmit':
                     messages.add_message(request, messages.ERROR, u'状态异常')
-                    return render(request, 'FiProcess/cwc.html', {'form': self})
+                    return render(request, 'FiProcess/cwc.html', {'form': self, 'target': target})
                 item.cwcDealer = staff
                 item.stage = 'cwcChecking'
                 dateStr = request.POST['submitDate'] + ' ' + request.POST['submitHour']
@@ -78,7 +103,7 @@ class CwcForm(forms.Form):
                     submitTime = datetime.strptime(dateStr, '%Y-%m-%d %H')
                 except:
                     messages.add_message(request, messages.ERROR, u'日期格式错误')
-                    return render(request, 'FiProcess/cwc.html', {'form': self})
+                    return render(request, 'FiProcess/cwc.html', {'form': self, 'target': target})
                 item.cwcSubmitDate = submitTime
                 item.save()
             if name.startswith('dealWith'):
@@ -86,10 +111,10 @@ class CwcForm(forms.Form):
                     item = FiStream.objects.get(id=name[8:])
                 except:
                     messages.add_message(request, messages.ERROR, u'处理失败')
-                    return render(request, 'FiProcess/cwc.html', {'form': self})
+                    return render(request, 'FiProcess/cwc.html', {'form': self, 'target': target})
                 if item.stage != 'cwcChecking':
                     messages.add_message(request, messages.ERROR, u'状态异常')
-                    return render(request, 'FiProcess/cwc.html', {'form': self})
+                    return render(request, 'FiProcess/cwc.html', {'form': self, 'target': target})
                 item.stage = 'cwcpaid'
                 item.save()
                 return HttpResponseRedirect(reverse('cwc'))
@@ -98,7 +123,7 @@ class CwcForm(forms.Form):
                     item = FiStream.objects.get(id=name[17:])
                 except:
                     messages.add_message(request, messages.ERROR, u'操作失败')
-                    return render(request, 'FiProcess/cwc.html', {'form': self})
+                    return render(request, 'FiProcess/cwc.html', {'form': self, 'target': target})
                 request.session['streamId'] = item.id
                 return HttpResponseRedirect(reverse('index', args={'streamDetail'}))
-        return render(request, 'FiProcess/cwc.html', {'form': self})
+        return render(request, 'FiProcess/cwc.html', {'form': self, 'target': target})

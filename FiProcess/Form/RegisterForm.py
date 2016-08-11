@@ -54,5 +54,4 @@ class RegisterForm(ModelForm):
             messages.add_message(request, messages.INFO, inst.username)
             return HttpResponseRedirect(reverse('login'))
         else:
-            print form.errors
             return render_to_response('FiProcess/register.html', RequestContext(request, {'form': form, 'register_success': False}))

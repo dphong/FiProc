@@ -216,7 +216,6 @@ class LaborStreamForm(ModelForm):
         pay.date = datetime.strptime(pay.date, '%Y-%m-%d')
         pay.save()
         if modifyLabor:
-            print modifyLabor
             modifyLabor.delete()
         return self.renderForm(request, stream)
 
