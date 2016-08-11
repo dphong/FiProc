@@ -16,9 +16,8 @@ class CwcForm(forms.Form):
         if dealer == '':
             querySet = FiStream.objects.filter(stage='cwcSubmit')
         else:
-            querySet = FiStream.objects.filter(stage='cwcChecking', cwcDealer__username=dealer)
+            querySet = FiStream.objects.filter(stage='cwcChecking', cwcDealer__username=dealer).order_by('cwcSubmitDate')
         typeDic = {'common': u'普通', 'travel': u'差旅', 'labor': u'劳务', 'travelApproval': u'差旅'}
-        querySet = sorted(querySet, key=self.sortOrder)
         for item in querySet:
             stream = {}
             stream['projectName'] = item.projectName
@@ -33,9 +32,6 @@ class CwcForm(forms.Form):
             stream['id'] = item.id
             streamList.append(stream)
         return streamList
-
-    def sortOrder(self, stream):
-        return stream.cwcSubmitDate
 
     def get(self, request):
         try:

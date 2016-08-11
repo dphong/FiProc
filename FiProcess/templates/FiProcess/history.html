@@ -13,33 +13,48 @@
     <style type="text/css">
     </style>
     <script type="text/javascript">
+    function dic2Html(i, json, type){
+        html = "<td class='text-center'>" + (i+1) + "</td>"
+                + "<td class='text-center'>" + json['applicante'] + "</td>"
+                + "<td class='text-center'>" + json['date'] + "</td>"
+                + "<td class='text-center'>" + json['supportDept'] + "</td>"
+                + "<td class='text-center'>" + json['projectName'] + "</td>"
+                + "<td class='text-center'>" + json['streamType'] + "</td>"
+                + "<td class='text-center'>" 
+                + '<input type="submit" class="btn btn-default" name="checkStreamDetail' + json['id'] + '" value="查看">'
+                + "</td>";
+        return html;
+    }
     function showTab(form){
-        var forms = new Array("form.mySign", "form.successStream", "form.failStream", "form.successApproval", "form.failApproval");
+        var forms = new Array("mySign", "successStream", "failStream", "successApproval");
         for (var i = 0; i < forms.length; i++){
             if (form == forms[i]){
-                $(forms[i]).show();
-                continue;
+                var url = location.protocol + "//" + window.location.hostname + ":"
+                          + location.port + "/history/?target=" + form;
+                $.getJSON(url, {}, function(json) {
+                    $('#tabMyStream').empty()
+                    for (var i = 0; i < json.length; i++){
+                        $('#tabMyStream').append("<tr id='myStream" + i + "'></tr>");
+                        $('#myStream' + i).html(dic2Html(i, json[i], 1));
+                    }
+                });
             }
-            $(forms[i]).hide();
         }
     }
     $(document).ready(function(){
         $('#mySign').click(function(){
-            showTab('form.mySign');
+            showTab('mySign');
         });
         $('#successStream').click(function(){
-            showTab('form.successStream');
+            showTab('successStream');
         });
         $('#failStream').click(function(){
-            showTab('form.failStream');
+            showTab('failStream');
         });
         $('#successApproval').click(function(){
-            showTab('form.successApproval');
+            showTab('successApproval');
         });
-        $('#failApproval').click(function(){
-            showTab('form.failApproval');
-        });
-        showTab('form.successStream');
+        showTab('successStream');
     })
     </script>
 </head>
@@ -56,101 +71,28 @@
         {% endfor %}
     {% endif %}
     <h2>我的报销及审批历史</h2>
-    <a href={% url 'index' '' %} class="btn btn-large btn-default navbar-btn pull-right">返回</a>
+    <form role="form" class="returnForm" method="post">
+        {% csrf_token %}
+        <button name="returnIndex" class="btn btn-primary navbar-btn pull-right">返回</button>
+    </form>
     <ul class="nav nav-tabs">
-    <li id="mySign" class="active"><a data-toggle="tab" href="myStream">我的审批</a></li>
-    <li id = "successStream"><a data-toggle="tab" href="allStream">报销成功</a></li>
-    <li id = "failStream"><a data-toggle="tab" href="allStream">报销失败</a></li>
-    <li id = "successApproval"><a data-toggle="tab" href="allStream">申请审批成功</a></li>
-    <li id = "failApproval"><a data-toggle="tab" href="allStream">申请审批失败</a></li>
+    <li id="successStream" class="active"><a data-toggle="tab">报销成功</a></li>
+    <li id="successApproval"><a data-toggle="tab">审批成功</a></li>
+    <li id="failStream"><a data-toggle="tab">报销及审批失败</a></li>
+    <li id="mySign"><a data-toggle="tab">审批历史</a></li>
     </ul>
-    <form role="form" class="mySign" action="" method="post" style="margin:20px 0px 20px 0px">
+    <form role="form" class="historyForm" action="" method="post" style="margin:20px 0px 20px 0px">
         {% csrf_token %}
         <table class="table table-bordered table-hover table-striped" id="tabMyStream">
             <thead>
                 <tr>
                     <th class="text-center">#</th>
-                    <th class="text-center col-md-2">创建日期</th>
+                    <th class="text-center col-md-2">报销人</th>
+                    <th class="text-center col-md-2">报销日期</th>
                     <th class="text-center">经费所属部门</th>
                     <th class="text-center col-md-3">项目名称</th>
                     <th class="text-center">类别</th>
                     <th class="text-center col-md-1">详细</th>
-                </tr>
-            </thead>
-            <tbody>
-            </tbody>
-        </table>
-    </form>
-    <form role="form" class="successStream" action="" method="post" style="margin:20px 0px 20px 0px">
-        {% csrf_token %}
-        <table class="table table-bordered table-hover table-striped" id="tabAllStream">
-            <thead>
-                <tr>
-                    <th class="text-center">#</th>
-                    <th class="text-center col-md-2">报销人</th>
-                    <th class="text-center">项目名称</th>
-                    <th class="text-center col-md-3">经费所属部门</th>
-                    <th class="text-center">类别</th>
-                    <th class="text-center">预约时间</th>
-                    <th class="text-center col-md-1">详细</th>
-                    <th class="text-center col-md-1">操作</th>
-                </tr>
-            </thead>
-            <tbody>
-            </tbody>
-        </table>
-    </form>
-    <form role="form" class="failStream" action="" method="post" style="margin:20px 0px 20px 0px">
-        {% csrf_token %}
-        <table class="table table-bordered table-hover table-striped" id="tabAllStream">
-            <thead>
-                <tr>
-                    <th class="text-center">#</th>
-                    <th class="text-center col-md-2">报销人</th>
-                    <th class="text-center">项目名称</th>
-                    <th class="text-center col-md-3">经费所属部门</th>
-                    <th class="text-center">类别</th>
-                    <th class="text-center">预约时间</th>
-                    <th class="text-center col-md-1">详细</th>
-                    <th class="text-center col-md-1">操作</th>
-                </tr>
-            </thead>
-            <tbody>
-            </tbody>
-        </table>
-    </form>
-    <form role="form" class="successApproval" action="" method="post" style="margin:20px 0px 20px 0px">
-        {% csrf_token %}
-        <table class="table table-bordered table-hover table-striped" id="tabAllStream">
-            <thead>
-                <tr>
-                    <th class="text-center">#</th>
-                    <th class="text-center col-md-2">报销人</th>
-                    <th class="text-center">项目名称</th>
-                    <th class="text-center col-md-3">经费所属部门</th>
-                    <th class="text-center">类别</th>
-                    <th class="text-center">预约时间</th>
-                    <th class="text-center col-md-1">详细</th>
-                    <th class="text-center col-md-1">操作</th>
-                </tr>
-            </thead>
-            <tbody>
-            </tbody>
-        </table>
-    </form>
-    <form role="form" class="failApproval" action="" method="post" style="margin:20px 0px 20px 0px">
-        {% csrf_token %}
-        <table class="table table-bordered table-hover table-striped" id="tabAllStream">
-            <thead>
-                <tr>
-                    <th class="text-center">#</th>
-                    <th class="text-center col-md-2">报销人</th>
-                    <th class="text-center">项目名称</th>
-                    <th class="text-center col-md-3">经费所属部门</th>
-                    <th class="text-center">类别</th>
-                    <th class="text-center">预约时间</th>
-                    <th class="text-center col-md-1">详细</th>
-                    <th class="text-center col-md-1">操作</th>
                 </tr>
             </thead>
             <tbody>

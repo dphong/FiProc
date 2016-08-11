@@ -70,6 +70,8 @@ def index(request, target=None):
     if target:
         return indexTarget(request, target)
     FormPublic.clearSession(request)
+    if 'history' in request.session:
+        return HttpResponseRedirect(reverse('history'))
     if 'office' in request.session:
         if request.session['office'] == 'cwc':
             return HttpResponseRedirect(reverse('cwc'))
@@ -109,4 +111,4 @@ def history(request):
         return form.get(request)
     if request.method == 'POST':
         form = HistoryForm(request.POST)
-        return form.post
+        return form.post(request)

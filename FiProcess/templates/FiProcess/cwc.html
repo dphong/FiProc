@@ -35,7 +35,6 @@
     function showMyStream(){
         $('form.allStream').hide();
         $('form.myStream').show();
-        var $form = $('form.myStream');
         var url = location.protocol + "//" + window.location.hostname + ":"
                   + location.port + "/cwc/?target=myStream";
         $.getJSON(url, {}, function(json) {
@@ -54,7 +53,6 @@
             $('form.myStream').hide();
             $('form.allStream').show();
             $(this).tab('show');
-            var $form = $('form.allStream');
             var url = location.protocol + "//" + window.location.hostname + ":"
                       + location.port + "/cwc/?target=allStream&page=1";
             $.getJSON(url, {}, function(json) {
