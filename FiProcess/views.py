@@ -61,6 +61,9 @@ def indexTarget(request, target):
         if target == "approvalDetail":
             form = ApprovalForm(request.POST)
             return form.postDetail(request)
+    if target == "testException":
+        print 'exception ' + target
+        raise Exception('test')
     return HttpResponseRedirect(reverse('index', args={''}))
 
 
