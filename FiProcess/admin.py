@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Department, SchoolMaster, Staff
+from .models import Department, SchoolMaster, Staff, FiStaffCode
 from django import forms
 from django.db.models import Q
 
@@ -27,6 +27,12 @@ class SchoolMasterForm(forms.ModelForm):
         self.fields['staff'].queryset = Staff.objects.filter(Q(department__id=4) | Q(department__id=5))
 
 
+class StaffCodeForm(forms.ModelForm):
+    class Meta:
+        model = FiStaffCode
+        fields = ['department', 'code', 'name']
+
+
 class DepartmentAdmin(admin.ModelAdmin):
     list_display = ('name', 'secretary', 'chief')
     form = DepartmentSelectForm
@@ -36,6 +42,12 @@ class SchoolMasterAdmin(admin.ModelAdmin):
     list_display = ('staff', 'duty', 'dutyDescript')
     form = SchoolMasterForm
 
+
+class StaffCodeAdmin(admin.ModelAdmin):
+    list_display = ('department', 'code', 'name')
+    form = StaffCodeForm
+
 # Register your models here.
 admin.site.register(Department, DepartmentAdmin)
 admin.site.register(SchoolMaster, SchoolMasterAdmin)
+admin.site.register(FiStaffCode, StaffCodeAdmin)

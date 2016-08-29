@@ -198,3 +198,9 @@ class Contract(models.Model):
     projectCom = models.CharField(max_length=1024)
     lawyer = models.CharField(max_length=256)
     content = models.CharField(max_length=20000)
+
+
+class FiStaffCode(models.Model):
+    department = models.ForeignKey(Department, on_delete=models.CASCADE)
+    code = models.CharField(max_length=16)
+    name = models.CharField(max_length=64)

@@ -37,6 +37,14 @@ class UserInfoForm(forms.Form):
             }
         ),
     )
+    fiCode = forms.CharField(
+        label=u'职员代码',
+        widget=forms.TextInput(
+            attrs={
+                'readonly': 'readonly'
+            }
+        ),
+    )
     department = forms.CharField(
         label=u'部门',
         widget=forms.TextInput(
@@ -340,6 +348,7 @@ class IndexForm(forms.Form):
     def getUserInfoForm(self, request, staff):
         userInfoForm = UserInfoForm(
             initial={'username': staff.username, 'name': staff.name, 'workId': staff.workId,
+                     'fiCode': FormPublic.getFiCode(staff.department.id, staff.name),
                      'phoneNumber': staff.phoneNumber, 'department': staff.department.name,
                      'icbcCard': staff.icbcCard, 'ccbCard': staff.ccbCard, }
         )

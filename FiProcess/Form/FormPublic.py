@@ -2,8 +2,9 @@
 from django.contrib import messages, auth
 from django.core.urlresolvers import reverse
 from django.http import HttpResponseRedirect
+from django.db.models import Q
 
-from ..models import SignRecord, SchoolMaster, Staff
+from ..models import SignRecord, SchoolMaster, Staff, FiStaffCode
 
 
 def logout(request, message='已注销'):
@@ -165,3 +166,10 @@ def numtoCny(num, append=True, space=' '):
             continue
         result = space + capNum[int(snum[i])] + space + chara[i + diff] + result
     return result
+
+def getFiCode(deptId, name):
+    try:
+        item = FiStaffCode.objects.get(Q(name=name, department__id=deptId))
+        return item.code
+    except:
+        return u'不存在'
