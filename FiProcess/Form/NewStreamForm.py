@@ -29,6 +29,7 @@ class NewStreamForm(forms.Form):
         if stream.streamType == 'travelApproval':
             form = TravelStreamForm(request.GET)
             return form.get(request, stream)
+        return render(request, 'FiProcess/newStream.html')
 
     def newFiStreamType(self, request):
         streamType = request.POST['newStreamType']
