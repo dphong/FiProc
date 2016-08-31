@@ -86,6 +86,7 @@ def index(request, target=None):
     if request.method == 'POST':
         form = IndexForm(request.POST)
         return form.post(request)
+    return HttpResponseRedirect(reverse('index', args={''}))
 
 
 def cwc(request):

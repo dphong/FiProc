@@ -66,7 +66,10 @@ class CwcForm(forms.Form):
         elif target == 'myHistory':
             streamList = self.getHistory(staff)
             return JsonResponse(streamList, safe=False)
-        target = request.session['currentCwcTab']
+        try:
+            target = request.session['currentCwcTab']
+        except:
+            pass
         if not target:
             request.session['currentCwcTab'] = 'myStream'
         return render(request, 'FiProcess/cwc.html', {'form': self, 'target': target})

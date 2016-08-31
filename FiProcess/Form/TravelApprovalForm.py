@@ -135,6 +135,8 @@ class TravelApprovalForm(forms.Form):
         record.fiStream = fiStream
         record.approveDate = datetime.now()
         record.companionCnt = self.cleaned_data['companionCnt']
+        record.travelGrant = 0
+        record.foodGrant = 0
         record.save()
         request.session['TravelRecord'] = record.id
         request.session['streamId'] = fiStream.id
