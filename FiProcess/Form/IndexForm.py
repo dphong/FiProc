@@ -312,7 +312,8 @@ class IndexForm(forms.Form):
                     'refused': u'拒绝审批', 'cwcSubmit': u'等待财务审核', 'cwcChecking': u'财务正在审核', 'cwcpaid': u'付款完成', 'cantModify': u'未提交',
                     'unapprove': u'待审批', 'approvalDepartment': u'部门负责人审批中', 'approvalOffice': u'处室负责人审批中', 'approvalSchool': u'学校负责人审批中', 'approved': u'已审批'}
         for item in streamList:
-            if item.stage == 'refused' or item.stage == 'cwcpaid' or item.stage == 'approved':
+            if (item.stage == 'refused' or item.stage == 'cwcpaid'
+                    or (item.stage == 'approved' and item.streamType != 'travelApproval')):
                 continue
             item.applyDate = item.applyDate.strftime('%Y-%m-%d')
             item.stage = stageDic[item.stage]

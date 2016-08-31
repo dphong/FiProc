@@ -185,6 +185,7 @@ class TravelStreamDetail(forms.Form):
             carPlate = record.travelDescript[record.travelDescript.index(':') + 1:record.travelDescript.index(',')]
             carDriver = record.travelDescript[record.travelDescript.index(','):]
             carDriver = carDriver[carDriver.index(':') + 1:]
+        casher.workId = FormPublic.getFiCode(casher.department.id, casher.name)
         return render(request, 'FiProcess/travelSheet.htm',
             {'stream': stream, 'casher': casher, 'record': record, 'carPlate': carPlate, 'carDriver': carDriver,
                 'dept1': dept1, 'dept2': dept2, 'school1': school1, 'school2': school2, 'school3': school3,

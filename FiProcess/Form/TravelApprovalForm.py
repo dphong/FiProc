@@ -36,21 +36,17 @@ class TravelApprovalForm(forms.Form):
         label=u'同行人数'
     )
 
-    def renderPage(self, request, duty, cnt):
+    def getPost(self, request):
         username = request.session['username']
         try:
             user = Staff.objects.get(username=username)
         except:
             return FormPublic.logout(request, '当前用户登陆异常')
         form = TravelApprovalForm(
-            initial={'department': user.department.name, 'name': user.name, 'duty': duty, 'companionCnt': cnt}
+            initial={'department': user.department.name, 'name': user.name}
         )
         schoolMasterList = SchoolMaster.objects.filter(duty__startswith='school')
         departmentList = Department.objects.filter()
-        return (form, schoolMasterList, departmentList, user)
-
-    def getPost(self, request):
-        form, schoolMasterList, departmentList, user = self.renderPage(request, '', '')
         return render(request, 'FiProcess/approvalTravel.html',
             {'form': form, 'schoolMasterList': schoolMasterList, 'departmentList': departmentList})
 
@@ -81,7 +77,17 @@ class TravelApprovalForm(forms.Form):
         return HttpResponseRedirect(reverse('index', args={''}))
 
     def post(self, request):
-        form, schoolMasterList, departmentList, user = self.renderPage(request, request.POST['duty'], request.POST['companionCnt'])
+        username = request.session['username']
+        try:
+            user = Staff.objects.get(username=username)
+        except:
+            return FormPublic.logout(request, '当前用户登陆异常')
+        form = TravelApprovalForm(
+            initial={'department': user.department.name, 'name': user.name,
+                     'duty': request.POST['duty'], 'companionCnt': request.POST['companionCnt']}
+        )
+        schoolMasterList = SchoolMaster.objects.filter(duty__startswith='school')
+        departmentList = Department.objects.filter()
         record = TravelRecord()
         fiStream = FiStream()
         record.duty = request.POST['duty']
@@ -161,7 +167,12 @@ class TravelApprovalForm(forms.Form):
         except:
             messages.add_message(request, messages.ERROR, '查看审批单失败')
             return HttpResponseRedirect(reverse('index', args={''}))
-        form, schoolMasterList, departmentList, user = self.renderPage(request, record.duty, record.companionCnt)
+        form = TravelApprovalForm(
+            initial={'department': fiStream.applicante.department.name, 'name': fiStream.applicante.name,
+                     'duty': record.duty, 'companionCnt': record.companionCnt}
+        )
+        schoolMasterList = SchoolMaster.objects.filter(duty__startswith='school')
+        departmentList = Department.objects.filter()
         carPlate = None
         carDriver = None
         if record.travelType == 'officialCar' or record.travelType == 'selfCar':
@@ -181,4 +192,4 @@ class TravelApprovalForm(forms.Form):
             {'form': form, 'schoolMasterList': schoolMasterList, 'departmentList': departmentList,
             'travelRecord': record, 'carPlate': carPlate, 'carDriver': carDriver, 'funDeptId': record.fiStream.department.id,
             'submitApproval': True, 'signerList': self.getSignerList(record.fiStream.department), 'signer': signer,
-            'signDescript': signDescript})
+            'signDescript': signDescript, 'fundDeptId': record.fiStream.department.id})

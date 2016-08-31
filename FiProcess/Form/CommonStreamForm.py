@@ -243,7 +243,7 @@ class CommonStreamForm(ModelForm):
         ccbRec.workDate = datetime.today()
         try:
             staff = Staff.objects.get(name__exact=ccb.name, ccbCard__exact=ccb.ccbCard)
-            ccbRec.receiverWorkId = staff.workId
+            ccbRec.receiverWorkId = FormPublic.getFiCode(staff.department.id, staff.name)
             ccbRec.receiverBelong = staff.department.name
         except:
             ccbRec.receiverWorkId = '0'

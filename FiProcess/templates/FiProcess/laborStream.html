@@ -281,10 +281,10 @@
                 <tbody>
                 {% for item in staffPayList %}
                     <tr>
-                        <td class="text-center">{{item.staff.department.name}}</td>
-                        <td class="text-center">{{item.staff.name}}</td>
-                        <td class="text-center">{{item.staff.ccbCard}}</td>
-                        <td class="text-center">{{item.amount}}</td>
+                        <td class="text-center">{{item.staffLaborPay.staff.department.name}}</td>
+                        <td class="text-center">{{item.staffLaborPay.staff.name}}</td>
+                        <td class="text-center">{{item.staffLaborPay.staff.ccbCard}}</td>
+                        <td class="text-center">{{item.staffLaborPay.amount}}</td>
                         {% if not cantModify %}
                         <td class="text-center">
                             <input type="submit" class="btn btn-default" name='delStaffLaborPay{{item.id}}' value="删除">

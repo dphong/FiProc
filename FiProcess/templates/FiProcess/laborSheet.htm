@@ -181,15 +181,15 @@ rt
       {% for item in staffList %}
       <tr>
         <td class="append-td">{{forloop.counter}}</td>
-        <td class="append-td">{{item.staff.workId}}</td>
-        <td class="append-td">{{item.staff.department.name}}</td>
-        <td class="append-td">{{item.staff.name}}</td>
-        <td class="append-td">{{item.duty}}</td>
-        <td class="append-td">{{item.date|date:"Y年m月d日"}}</td>
-        <td class="append-td">{{item.reason}}</td>
-        <td class="append-td">{{item.staff.ccbCard}}</td>
-        <td class="append-td">{{item.bankName}}</td>
-        <td class="append-td">{{item.amount}}</td>
+        <td class="append-td">{{item.code}}</td>
+        <td class="append-td">{{item.staffLaborPay.staff.department.name}}</td>
+        <td class="append-td">{{item.staffLaborPay.staff.name}}</td>
+        <td class="append-td">{{item.staffLaborPay.duty}}</td>
+        <td class="append-td">{{item.staffLaborPay.date|date:"Y年m月d日"}}</td>
+        <td class="append-td">{{item.staffLaborPay.reason}}</td>
+        <td class="append-td">{{item.staffLaborPay.staff.ccbCard}}</td>
+        <td class="append-td">{{item.staffLaborPay.bankName}}</td>
+        <td class="append-td">{{item.staffLaborPay.amount}}</td>
       </tr>
       {% endfor %}
       <tr>

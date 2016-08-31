@@ -67,15 +67,22 @@ class LaborStreamForm(ModelForm):
         )
         return render(request, 'FiProcess/laborStream.html', {'form': form, 'departmentList': Department.objects.filter()})
 
+    class StaffPay:
+        def __init__(self, laborPay, code):
+            self.staffLaborPay = laborPay
+            self.code = code
+
     def getPayList(self, stream):
         amount = 0
         staffPayList = StaffLaborPay.objects.filter(stream__id=stream.id)
+        payList = []
         for pay in staffPayList:
+            payList.append(self.StaffPay(pay, FormPublic.getFiCode(pay.staff.department.id, pay.staff.name)))
             amount += pay.amount
         hirePayList = HireLaborPay.objects.filter(stream__id=stream.id)
         for pay in hirePayList:
             amount += pay.amount
-        return (amount, staffPayList, hirePayList)
+        return (amount, payList, hirePayList)
 
     def getDetail(self, request, stream):
         if stream.stage != 'create':
@@ -292,7 +299,7 @@ class LaborStreamForm(ModelForm):
         dept1, dept2, school1, school2, school3 = FormPublic.getSignedSigner(stream)
         staffAmount = 0
         for item in staffPayList:
-            staffAmount += item.amount
+            staffAmount += item.staffLaborPay.amount
         hireAmount = 0
         for item in hirePayList:
             hireAmount += item.amount

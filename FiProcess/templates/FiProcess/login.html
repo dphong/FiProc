@@ -25,6 +25,43 @@
         });
     });
     </script>
+    <style>
+    .tooltip {
+        position: relative;
+        display: inline-block;
+        border-bottom: 1px dotted black;
+    }
+
+    .tooltip .tooltiptext {
+        visibility: hidden;
+        width: 120px;
+        background-color: black;
+        color: #fff;
+        text-align: center;
+        border-radius: 6px;
+        padding: 5px 0;
+        position: absolute;
+        z-index: 1;
+        top: 150%;
+        left: 50%;
+        margin-left: -60px;
+    }
+
+    .tooltip .tooltiptext::after {
+        content: "";
+        position: absolute;
+        bottom: 100%;
+        left: 50%;
+        margin-left: -5px;
+        border-width: 5px;
+        border-style: solid;
+        border-color: transparent transparent black transparent;
+    }
+
+    .tooltip:hover .tooltiptext {
+        visibility: visible;
+    }
+    </style>
 </head>  
   
 <body>  
@@ -96,7 +133,12 @@
             </p>  
         </form>  
     </div>
-    <p  align="center">请使用谷歌、火狐或IE10以上内核浏览器</p>
+    <p  align="center">请使用最新的火狐浏览器
+    <a href='http://download.firefox.com.cn/releases-sha2/stub/official/zh-CN/Firefox-latest.exe'>
+        <img src='http://firefox.com.cn/media/img/mozcn/spread/110-30blue.png' alt='Spread Firefox Affiliate Button' border='0' />
+    </a>
+    以<font color="red">保证页面显示和打印正常</font>
+    </p>
     <p  align="center">意见及建议请发送至邮箱：jijunhe@qq.com</p>
     </div>  
 </body>  
