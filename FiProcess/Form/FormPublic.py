@@ -95,10 +95,11 @@ def getSigner(stream, amount, signList):
                 schoolSign2 = None
         if amount > 200000:
             try:
-                schoolSign3 = SchoolMaster.objects.get(duty__exact='school3')
+                schoolSign3 = SchoolMaster.objects.filter(duty__exact='school3')
             except:
                 schoolSign3 = None
     schoolSigner = None
+    schoolSigner3 = None
     deptSigner = None
     unsigned = True
     for sign in signList:
@@ -106,10 +107,12 @@ def getSigner(stream, amount, signList):
             schoolSigner = sign
         if sign.stage == 'department1':
             deptSigner = sign
+        if sign.stage == 'school3':
+            schoolSigner3 = sign
         if sign.signed:
             unsigned = False
     return (sign1, sign11, sign12, schoolSign1, schoolSign2, schoolSign3,
-        schoolSigner, deptSigner, unsigned)
+        schoolSigner, schoolSigner3, deptSigner, unsigned)
 
 
 def getSignedSigner(stream):

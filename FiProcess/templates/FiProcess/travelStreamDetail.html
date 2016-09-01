@@ -148,9 +148,17 @@
                 </div>
             {% endif %}
             {% if schoolSign3 %}
-                <div class="col-md-2">
+                <div class="col-md-3">
                     <label for="schoolSign3">学校负责人审核:</label>
-                    <input type="text" class="form-control" name="schoolSign3" value="{{ schoolSign3.staff.name }}" readonly="readonly">
+                    {% if schoolSigner3 %}
+                    <input type="text" class="form-control" name="schoolSign3" value="{{ schoolSigner3.signer.name }}" readonly="readonly">
+                    {% else %}
+                        <select class="form-control" name="schoolSign3">
+                        {% for signer in schoolSign3 %}
+                            <option value="{{ signer.staff.id }}">{{ signer.staff.name }}({{ signer.dutyDescript }})</option>
+                        {% endfor %}
+                        </select>
+                    {% endif %}
                 </div>
             {% endif %}
             </div>

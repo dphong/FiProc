@@ -227,7 +227,7 @@ class NewStreamForm(forms.Form):
             schoolSign3.stream = stream
             signer = request.POST['schoolSign3']
             try:
-                schoolSign3.signer = SchoolMaster.objects.get(Q(staff__name__exact=signer), Q(duty='school3')).staff
+                schoolSign3.signer = SchoolMaster.objects.get(Q(staff__id=signer), Q(duty='school3')).staff
             except:
                 messages.add_message(request, messages.ERROR, '提交报销单失败, 查找校长信息失败')
                 return HttpResponseRedirect(reverse('index', args={''}))

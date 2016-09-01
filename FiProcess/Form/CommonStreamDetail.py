@@ -144,10 +144,10 @@ class CommonStreamDetail(forms.Form):
                 {'form': form, 'typeList': typeList, 'icbcList': icbcQuery, 'ccbList': ccbQuery, 'comList': comQuery,
                     'signList': signList, 'signErrorMsg': u'所属部门负责人不存在!'})
 
-        sign1, sign11, sign12, schoolSign1, schoolSign2, schoolSign3, schoolSigner, deptSigner, unsigned = FormPublic.getSigner(stream, amount, signList)
+        sign1, sign11, sign12, schoolSign1, schoolSign2, schoolSign3, schoolSigner, schoolSigner3, deptSigner, unsigned = FormPublic.getSigner(stream, amount, signList)
         return render(request, 'FiProcess/commonStreamDetail.html',
             {'form': form, 'typeList': typeList, 'icbcList': icbcQuery, 'ccbList': ccbQuery, 'comList': comQuery, 'signList': signList,
-                'unsigned': unsigned, 'sign1': sign1, 'sign12': sign12, 'sign11': sign11, 'schoolSigner': schoolSigner, 'deptSigner': deptSigner,
+                'unsigned': unsigned, 'sign1': sign1, 'sign12': sign12, 'sign11': sign11, 'schoolSigner': schoolSigner, 'schoolSigner3': schoolSigner3, 'deptSigner': deptSigner,
                 'schoolSign1': schoolSign1, 'schoolSign2': schoolSign2, 'schoolSign3': schoolSign3, 'firstSigner': firstSigner})
 
     def printStream(self, request, stream):
