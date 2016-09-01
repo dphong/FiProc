@@ -4,12 +4,16 @@ from django.shortcuts import render
 from django.http import HttpResponseRedirect
 from django.core.urlresolvers import reverse
 from django.contrib import messages
+from django.db.models import Q
+from datetime import datetime
+from django.contrib.auth.hashers import check_password
 
 from CommonStreamForm import CommonStreamForm
 from CommonStreamDetail import CommonStreamDetail
 from TravelStreamForm import TravelStreamForm
 from TravelStreamDetail import TravelStreamDetail
 from LaborStreamForm import LaborStreamForm
+import FormPublic
 
 from ..models import FiStream, SignRecord, SchoolMaster
 
@@ -134,6 +138,33 @@ class NewStreamForm(forms.Form):
         if "laborStreamForm" in request.POST:
             form = LaborStreamForm(request.POST)
             return form.post(request, stream)
+        if "modifyLaborStream" in request.POST:
+            form = LaborStreamForm(request.POST)
+            return form.modifyCreatedForm(request, stream)
+        if "signOkConfirm" in request.POST:
+            staff = FormPublic.getStaffFromRequest(request)
+            if not staff:
+                return FormPublic.logout(request, '用户信息异常，或未登录系统')
+            if not check_password(request.POST['signOkPassword'], staff.password):
+                messages.add_message(request, messages.ERROR, u'密码错误')
+                return HttpResponseRedirect(reverse('index', args={''}))
+            try:
+                item = SignRecord.objects.get(stream__id=stream.id)
+            except:
+                messages.add_message(request, messages.ERROR, u'操作失败')
+                return HttpResponseRedirect(reverse('index', args={''}))
+            item.signed = True
+            item.descript = request.POST['signOkDescript']
+            item.signedTime = datetime.now()
+            item.save()
+            try:
+                item.stream.stage = FormPublic.streamStageChange(item.stream)
+                item.stream.save()
+            except Exception, e:
+                messages.add_message(request, messages.ERROR, str(e))
+                return HttpResponseRedirect(reverse('index', args={''}))
+            messages.add_message(request, messages.SUCCESS, u'审核成功')
+            return HttpResponseRedirect(reverse('index', args={''}))
         response = self.laborPost(request)
         if response:
             return response
@@ -176,7 +207,7 @@ class NewStreamForm(forms.Form):
             schoolSign1.stream = stream
             signer = request.POST['schoolSign1']
             try:
-                schoolSign1.signer = SchoolMaster.objects.get(staff__id=signer).staff
+                schoolSign1.signer = SchoolMaster.objects.get(Q(staff__id=signer), Q(duty='school1')).staff
             except:
                 messages.add_message(request, messages.ERROR, '提交报销单失败, 查找分管校长信息失败')
                 return HttpResponseRedirect(reverse('index', args={''}))
@@ -186,7 +217,7 @@ class NewStreamForm(forms.Form):
             schoolSign2.stream = stream
             signer = request.POST['schoolSign2']
             try:
-                schoolSign2.signer = SchoolMaster.objects.get(staff__name__exact=signer).staff
+                schoolSign2.signer = SchoolMaster.objects.get(Q(staff__name__exact=signer), Q(duty='school2')).staff
             except:
                 messages.add_message(request, messages.ERROR, '提交报销单失败, 查找主管财务校长信息失败')
                 return HttpResponseRedirect(reverse('index', args={''}))
@@ -196,7 +227,7 @@ class NewStreamForm(forms.Form):
             schoolSign3.stream = stream
             signer = request.POST['schoolSign3']
             try:
-                schoolSign3.signer = SchoolMaster.objects.get(staff__name__exact=signer).staff
+                schoolSign3.signer = SchoolMaster.objects.get(Q(staff__name__exact=signer), Q(duty='school3')).staff
             except:
                 messages.add_message(request, messages.ERROR, '提交报销单失败, 查找校长信息失败')
                 return HttpResponseRedirect(reverse('index', args={''}))

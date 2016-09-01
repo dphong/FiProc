@@ -14,6 +14,9 @@
     </style>
     <script type="text/javascript">
     $(document).ready(function(){
+        $('.dropdown-menu a').click(function() {
+            $(this).closest('.dropdown').find('input.countrycode').val($(this).attr('data-value'));
+        });
         $.fn.validator.Constructor.INPUT_SELECTOR = ':input:not([type="submit"], button):enabled'
         function setVisible(target){
             var targetList = new Array("user", "order", "changepsw", "signList", "staffCheck")
@@ -299,12 +302,16 @@
                             <td class="text-center">{{ forloop.counter }}</td>
                             <td class="text-center">{{ sign.stream.department.name }}</td>
                             <td class="text-center">{{ sign.stream.projectName }}</td>
-                            <td class="text-center">{{ sign.stage}}</td>
+                            <td class="text-center">{{ sign.descript }}</td>
                             <td class="text-center">
                                 <input type="submit" class="btn btn-default" name="checkStreamDetail{{ sign.stream.id }}" value="查看">
                             </td>
                             <td class="text-center">
+                            {% if sign.stage == "department1" %}
+                                <input type="submit" class="btn btn-default" name="checkStreamDetail{{ sign.stream.id }}" value="通过">
+                            {% else %}
                                 <a href="#signOk" data-toggle="modal" class="btn btn-default" name="signPermit{{ sign.id }}" role="button">通过</a>
+                            {% endif %}
                             </td>
                             <td class="text-center">
                                 <a href="#refuseSign" data-toggle="modal" class="btn btn-default" name="signRefuse{{ sign.id }}" role="button">拒绝</a>
@@ -333,7 +340,15 @@
                             <label for="signOkPassword">请输入密码:</label>
                             <input type="password" name="signOkPassword" maxlength="24" class="form-control" placeholder="请输入密码">
                             <label for="signOkDescript">请输入留言</label>
-                            <input type="text" name="signOkDescript" type="submit" class="form-control" maxlength=1024>
+                            <div class="input-group dropdown">
+                              <input type="text" class="form-control countrycode dropdown-toggle" name="signOkDescript" id="signOkDescript" type="submit" class="form-control" maxlength=1024>
+                              <ul class="dropdown-menu">
+                                <li><a href="#" data-value="同意报销">同意报销</a></li>
+                                <li><a href="#" data-value="OK">OK</a></li>
+                                <li><a href="#" data-value="YES">Yes</a></li>
+                              </ul>
+                              <span role="button" class="input-group-addon dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><span class="caret"></span></span>
+                            </div>
                             <div class="modal-footer">
                                 <button type="button" class="btn btn-default" data-dismiss="modal">取消</button>
                                 <button id="signOkConfirm" type="submit" class="btn btn-primary">确定</button>

@@ -110,7 +110,7 @@ class TravelStreamDetail(forms.Form):
         cashList, travelerList, travelRouteList, icbcList, amount, typeAmount = self.getTravelDetail(record)
         typeList = self.getTypeAmountList(typeAmount)
         try:
-            signList, stageInfo = FormPublic.getStreamStageInfo(stream)
+            signList, stageInfo, firstSigner = FormPublic.getStreamStageInfo(stream, request)
         except:
             messages.add_message(request, messages.ERROR, '审核状态异常')
             return HttpResponseRedirect(reverse('index', args={''}))
@@ -136,7 +136,7 @@ class TravelStreamDetail(forms.Form):
             {'form': form, 'typeList': typeList, 'cashList': cashList, 'travelerList': travelerList, 'travelRoute': travelRouteList,
                 'icbcList': icbcList, 'signList': signList, 'stream': stream,
                 'unsigned': unsigned, 'sign1': sign1, 'sign12': sign12, 'sign11': sign11, 'schoolSigner': schoolSigner, 'deptSigner': deptSigner,
-                'schoolSign1': schoolSign1, 'schoolSign2': schoolSign2, 'schoolSign3': schoolSign3})
+                'schoolSign1': schoolSign1, 'schoolSign2': schoolSign2, 'schoolSign3': schoolSign3, 'firstSigner': firstSigner})
 
     def printStream(self, request, stream):
         try:

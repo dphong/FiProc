@@ -54,7 +54,7 @@ class LaborStreamForm(ModelForm):
     projectLeaderName = forms.CharField(
         label=u'项目负责人'
     )
-    currentStage = forms.CharField()
+    currentStage = ''
 
     def get(self, request):
         staff = FormPublic.getStaffFromRequest(request)
@@ -63,8 +63,9 @@ class LaborStreamForm(ModelForm):
         form = LaborStreamForm(
             initial={'myDepartment': staff.department.name,
                 'name': staff.name, 'workId': staff.workId, 'applyDate': datetime.today().strftime('%Y-%m-%d'),
-                'projectLeaderWorkId': staff.workId, 'projectLeaderName': staff.name, 'currentStage': 'create'}
+                'projectLeaderWorkId': staff.workId, 'projectLeaderName': staff.name}
         )
+        form.currentStage = 'create'
         return render(request, 'FiProcess/laborStream.html', {'form': form, 'departmentList': Department.objects.filter()})
 
     class StaffPay:
@@ -91,8 +92,9 @@ class LaborStreamForm(ModelForm):
         form = LaborStreamForm(
             initial={'myDepartment': stream.applicante.department.name, 'projectName': stream.projectName, 'department': stream.department,
                 'name': stream.applicante.name, 'workId': stream.applicante.workId, 'applyDate': stream.applyDate.strftime('%Y-%m-%d'),
-                'projectLeaderWorkId': stream.projectLeader.workId, 'projectLeaderName': stream.projectLeader.name, 'currentStage': 'create'}
+                'projectLeaderWorkId': stream.projectLeader.workId, 'projectLeaderName': stream.projectLeader.name}
         )
+        form.currentStage = 'create'
         return render(request, 'FiProcess/laborStream.html',
             {'form': form, 'departmentList': Department.objects.filter(), 'staffPayList': staffPayList, 'hirePayList': hirePayList, 'total': amount})
 
@@ -102,7 +104,7 @@ class LaborStreamForm(ModelForm):
             stream.stage = 'cantModify'
             stream.save()
         try:
-            signList, stageInfo = FormPublic.getStreamStageInfo(stream)
+            signList, stageInfo, firstSigner = FormPublic.getStreamStageInfo(stream, request)
         except:
             messages.add_message(request, messages.ERROR, '审核状态异常')
             return HttpResponseRedirect(reverse('index', args={''}))
@@ -110,8 +112,9 @@ class LaborStreamForm(ModelForm):
             initial={'myDepartment': stream.applicante.department.name, 'projectName': stream.projectName, 'department': stream.department,
                 'name': stream.applicante.name, 'workId': stream.applicante.workId, 'applyDate': stream.applyDate.strftime('%Y-%m-%d'),
                 'projectLeaderWorkId': stream.projectLeader.workId, 'projectLeaderName': stream.projectLeader.name,
-                'projectName': stream.projectName, 'currentStage': stageInfo}
+                'projectName': stream.projectName}
         )
+        form.currentStage = stageInfo
         form.fields['applyDate'].widget.attrs['readonly'] = True
         form.fields['department'].widget.attrs['disabled'] = True
         form.fields['projectName'].widget.attrs['readonly'] = True
@@ -128,7 +131,7 @@ class LaborStreamForm(ModelForm):
             {'form': form, 'cantModify': True,
                 'staffPayList': staffPayList, 'hirePayList': hirePayList, 'total': amount, 'signList': signList,
                 'unsigned': unsigned, 'sign1': sign1, 'sign12': sign12, 'sign11': sign11, 'schoolSigner': schoolSigner, 'deptSigner': deptSigner,
-                'schoolSign1': schoolSign1, 'schoolSign2': schoolSign2, 'schoolSign3': schoolSign3})
+                'schoolSign1': schoolSign1, 'schoolSign2': schoolSign2, 'schoolSign3': schoolSign3, 'firstSigner': firstSigner})
 
     def postAddRow(self, request, modifyLabor=None):
         stream = None
@@ -213,6 +216,7 @@ class LaborStreamForm(ModelForm):
                     errorMsg.append(u'\n金额不能为0')
             except:
                 errorMsg.append(u'\n应发酬金格式错误')
+        self.currentStage = stream.stage
         if len(errorMsg):
             amount, staffPayList, hirePayList = self.getPayList(stream)
             return render(request, 'FiProcess/laborStream.html',
@@ -240,6 +244,7 @@ class LaborStreamForm(ModelForm):
 
     def renderForm(self, request, stream):
         amount, staffPayList, hirePayList = self.getPayList(stream)
+        self.currentStage = stream.stage
         return render(request, 'FiProcess/laborStream.html',
             {'form': self, 'departmentList': Department.objects.filter(), 'staffPayList': staffPayList,
             'hirePayList': hirePayList, 'total': amount})
@@ -270,6 +275,7 @@ class LaborStreamForm(ModelForm):
         request.session['staffLaborId'] = labor.id
         amount, staffPayList, hirePayList = self.getPayList(labor.stream)
         labor.date = labor.date.strftime('%Y-%m-%d')
+        self.currentStage = labor.stream.stage
         return render(request, 'FiProcess/laborStream.html',
             {'form': self, 'departmentList': Department.objects.filter(), 'type': 'staff', 'modify': True,
                 'pay': labor, 'staffPayList': staffPayList, 'hirePayList': hirePayList, 'total': amount})
@@ -290,6 +296,7 @@ class LaborStreamForm(ModelForm):
         request.session['hireLaborId'] = labor.id
         amount, staffPayList, hirePayList = self.getPayList(labor.stream)
         labor.date = labor.date.strftime('%Y-%m-%d')
+        self.currentStage = labor.stream.stage
         return render(request, 'FiProcess/laborStream.html',
             {'form': self, 'departmentList': Department.objects.filter(), 'type': 'hire', 'modify': True,
                 'pay': labor, 'staffPayList': staffPayList, 'hirePayList': hirePayList, 'total': amount})
@@ -308,3 +315,15 @@ class LaborStreamForm(ModelForm):
                 'dept1': dept1, 'dept2': dept2, 'school1': school1, 'school2': school2, 'school3': school3,
                 'staffList': staffPayList, 'staffAmount': staffAmount, 'staffAmountBig': FormPublic.numtoCny(staffAmount, False, ''),
                 'hireList': hirePayList, 'hireAmount': hireAmount, 'hireAmountBig': FormPublic.numtoCny(hireAmount, False, '')})
+
+    def modifyCreatedForm(self, request, stream):
+        self = LaborStreamForm(
+            initial={'myDepartment': stream.applicante.department.name, 'projectName': stream.projectName, 'department': stream.department,
+                'name': stream.applicante.name, 'workId': stream.applicante.workId, 'applyDate': stream.applyDate.strftime('%Y-%m-%d'),
+                'projectLeaderWorkId': stream.projectLeader.workId, 'projectLeaderName': stream.projectLeader.name,
+                'projectName': stream.projectName}
+        )
+        stream.stage = 'create'
+        stream.save()
+        self.currentStage = 'create'
+        return self.renderForm(request, stream)

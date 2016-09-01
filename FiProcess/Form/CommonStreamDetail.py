@@ -121,7 +121,7 @@ class CommonStreamDetail(forms.Form):
 
     def get(self, request, stream):
         try:
-            signList, stageInfo = FormPublic.getStreamStageInfo(stream)
+            signList, stageInfo, firstSigner = FormPublic.getStreamStageInfo(stream, request)
         except:
             messages.add_message(request, messages.ERROR, '审核状态异常')
             return HttpResponseRedirect(reverse('index', args={''}))
@@ -148,7 +148,7 @@ class CommonStreamDetail(forms.Form):
         return render(request, 'FiProcess/commonStreamDetail.html',
             {'form': form, 'typeList': typeList, 'icbcList': icbcQuery, 'ccbList': ccbQuery, 'comList': comQuery, 'signList': signList,
                 'unsigned': unsigned, 'sign1': sign1, 'sign12': sign12, 'sign11': sign11, 'schoolSigner': schoolSigner, 'deptSigner': deptSigner,
-                'schoolSign1': schoolSign1, 'schoolSign2': schoolSign2, 'schoolSign3': schoolSign3})
+                'schoolSign1': schoolSign1, 'schoolSign2': schoolSign2, 'schoolSign3': schoolSign3, 'firstSigner': firstSigner})
 
     def printStream(self, request, stream):
         typeAmount, amount, icbcQuery, ccbQuery, comQuery = self.getTypeQuery(stream)

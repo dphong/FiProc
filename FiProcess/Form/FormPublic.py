@@ -35,24 +35,25 @@ def clearSession(request):
         del request.session['staffLaborId']
 
 
-def getStreamStageInfo(stream):
+def getStreamStageInfo(stream, request):
     signList = SignRecord.objects.filter(stream__id=stream.id)
     if stream.stage == 'refused':
         refuseMsg = u"本报销单被拒绝审批"
         for item in signList:
             if item.refused:
                 refuseMsg += u"，拒绝者：" + item.signer.name + u"，拒绝原因：" + item.descript
-        return (signList, refuseMsg)
+        return (signList, refuseMsg, False)
     elif stream.stage == 'finish':
-        return (signList, u'报销审批流程结束')
+        return (signList, u'报销审批流程结束', False)
     elif stream.stage == 'cwcSubmit':
-        return (signList, u'报销单由财务处分配中, 项目流水号：' + stream.number)
+        return (signList, u'报销单由财务处分配中, 项目流水号：' + stream.number, False)
     elif stream.stage == 'cwcChecking':
         return (signList, u'报销单由财务处"' + stream.cwcDealer.name
                 + u'"处理中，项目流水号：' + stream.number
-                + u' 预计处理时间：' + stream.cwcSubmitDate.strftime('%Y年%m月%d日 %H点').decode('utf-8') + u'左右')
+                + u' 预计处理时间：' + stream.cwcSubmitDate.strftime('%Y年%m月%d日 %H点').decode('utf-8') + u'左右',
+                False)
     elif stream.stage == 'cwcpaid':
-        return (signList, u'报销单已由财务付款，项目流水号：' + stream.number)
+        return (signList, u'报销单已由财务付款，项目流水号：' + stream.number, False)
     elif (('project' in stream.stage)
             or ('department' in stream.stage)
             or ('school' in stream.stage)
@@ -61,8 +62,13 @@ def getStreamStageInfo(stream):
             sign = signList.get(stage__exact=stream.stage)
         except:
             raise Exception('')
-        return (signList, u"报销单由 '" + sign.signer.name + u"' 审核中")
-    return (signList, stream.stage)
+        firstSigner = False
+        if sign.stage == 'department1':
+            staff = getStaffFromRequest(request)
+            if sign.signer.id == staff.id:
+                firstSigner = True
+        return (signList, u"报销单由 '" + sign.signer.name + u"' 审核中", firstSigner)
+    return (signList, stream.stage, False)
 
 
 def getSigner(stream, amount, signList):
@@ -167,9 +173,42 @@ def numtoCny(num, append=True, space=' '):
         result = space + capNum[int(snum[i])] + space + chara[i + diff] + result
     return result
 
+
 def getFiCode(deptId, name):
     try:
         item = FiStaffCode.objects.get(Q(name=name, department__id=deptId))
         return item.code
     except:
         return u'不存在'
+
+
+def streamStageChange(stream):
+    if stream.stage == 'finish' or stream.stage == 'refuesd' or stream.stage == 'approved':
+        return stream.stage
+    querySet = SignRecord.objects.filter(stream__id=stream.id)
+    stageDict = None
+    finalStr = ''
+    if ('receptApproval' == stream.streamType or 'contractApproval' == stream.streamType
+            or ('travelApproval' == stream.streamType and 'approv' in stream.stage and 'approved' != stream.stage)):
+        if len(querySet) == 0:
+            return 'unapprove'
+        stageDict = {'unapprove': 0, 'approvalDepartment': 1, 'approvalOffice': 2, 'approvalSchool': 3, 'approved': 4}
+        finalStr = 'approved'
+    elif (('travelApproval' == stream.streamType and ('approv' not in stream.stage or stream.stage == 'approved'))
+            or 'labor' == stream.streamType
+            or 'travel' == stream.streamType or 'common' == stream.streamType):
+        if len(querySet) == 0:
+            return 'create'
+        stageDict = {'create': 0, 'project': 1, 'department1': 2, 'department2': 3, 'projectDepartment': 4,
+                     'school1': 5, 'school2': 6, 'school3': 7, 'financial': 8, 'finish': 9}
+        finalStr = 'finish'
+    else:
+        raise Exception(u'报销单类型错误')
+    minUnsignedStage = ""
+    for item in querySet:
+        if not item.signed and (stageDict[item.stage] >= stageDict[stream.stage]):
+            if len(minUnsignedStage) == 0 or stageDict[item.stage] < stageDict[minUnsignedStage]:
+                minUnsignedStage = item.stage
+    if len(minUnsignedStage) == 0:
+        minUnsignedStage = finalStr
+    return minUnsignedStage

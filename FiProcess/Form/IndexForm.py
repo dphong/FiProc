@@ -132,37 +132,6 @@ class IndexForm(forms.Form):
                 {'userInfoForm': userInfoForm, 'orderList': self.getOrderList(request), 'signList': signList})
         return render(request, 'FiProcess/index.html', {'userInfoForm': userInfoForm, 'orderList': self.getOrderList(request)})
 
-    def streamStageChange(self, stream):
-        if stream.stage == 'finish' or stream.stage == 'refuesd' or stream.stage == 'approved':
-            return stream.stage
-        querySet = SignRecord.objects.filter(stream__id=stream.id)
-        stageDict = None
-        finalStr = ''
-        if ('receptApproval' == stream.streamType or 'contractApproval' == stream.streamType
-                or ('travelApproval' == stream.streamType and 'approv' in stream.stage and 'approved' != stream.stage)):
-            if len(querySet) == 0:
-                return 'unapprove'
-            stageDict = {'unapprove': 0, 'approvalDepartment': 1, 'approvalOffice': 2, 'approvalSchool': 3, 'approved': 4}
-            finalStr = 'approved'
-        elif (('travelApproval' == stream.streamType and ('approv' not in stream.stage or stream.stage == 'approved'))
-                or 'labor' == stream.streamType
-                or 'travel' == stream.streamType or 'common' == stream.streamType):
-            if len(querySet) == 0:
-                return 'create'
-            stageDict = {'create': 0, 'project': 1, 'department1': 2, 'department2': 3, 'projectDepartment': 4,
-                         'school1': 5, 'school2': 6, 'school3': 7, 'financial': 8, 'finish': 9}
-            finalStr = 'finish'
-        else:
-            raise Exception(u'报销单类型错误')
-        minUnsignedStage = ""
-        for item in querySet:
-            if not item.signed and (stageDict[item.stage] >= stageDict[stream.stage]):
-                if len(minUnsignedStage) == 0 or stageDict[item.stage] < stageDict[minUnsignedStage]:
-                    minUnsignedStage = item.stage
-        if len(minUnsignedStage) == 0:
-            minUnsignedStage = finalStr
-        return minUnsignedStage
-
     def post(self, request):
         staff = FormPublic.getStaffFromRequest(request)
         if not staff:
@@ -280,7 +249,7 @@ class IndexForm(forms.Form):
                 item.save()
                 userInfoForm.currentTab = 'signList'
                 try:
-                    item.stream.stage = self.streamStageChange(item.stream)
+                    item.stream.stage = FormPublic.streamStageChange(item.stream)
                     item.stream.save()
                 except Exception, e:
                     messages.add_message(request, messages.ERROR, str(e))
@@ -326,7 +295,7 @@ class IndexForm(forms.Form):
         signList = []
         for item in signQuery:
             if item.stream.stage == item.stage and not item.signed:
-                item.stage = self.typeDic[item.stream.streamType]
+                item.descript = self.typeDic[item.stream.streamType]
                 signList.append(item)
         return signList
 
