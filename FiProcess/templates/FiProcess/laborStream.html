@@ -137,7 +137,7 @@
         {% endif %}
         {% if firstSigner %}
         <div class="alert alert-danger">  
-            <h4>报销单实行首签负责制，请您认真审核报销信息，确认无误后签批</h4>
+            <h4>温馨提示：请对原始单据核阅后再进行审核批准。</h4>
             <a href="#signOk" data-toggle="modal" class="btn btn-success" name="signPermit{{ sign.id }}" role="button">通过</a>
         </div>
         <!-- Modal -->
@@ -150,9 +150,9 @@
                     <div class="input-group dropdown">
                       <input type="text" class="form-control countrycode dropdown-toggle" name="signOkDescript" id="signOkDescript" type="submit" class="form-control" maxlength=1024>
                       <ul class="dropdown-menu">
-                        <li><a href="#" data-value="同意报销">同意报销</a></li>
-                        <li><a href="#" data-value="OK">OK</a></li>
-                        <li><a href="#" data-value="YES">Yes</a></li>
+                        <li><a href="#" data-value="同意。">同意。</a></li>
+                        <li><a href="#" data-value="审批通过。">审批通过。</a></li>
+                        <li><a href="#" data-value="已审核，同意。">已审核，同意。</a></li>
                       </ul>
                       <span role="button" class="input-group-addon dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><span class="caret"></span></span>
                     </div>
