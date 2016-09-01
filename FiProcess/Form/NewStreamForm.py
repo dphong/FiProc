@@ -149,7 +149,7 @@ class NewStreamForm(forms.Form):
                 messages.add_message(request, messages.ERROR, u'密码错误')
                 return HttpResponseRedirect(reverse('index', args={''}))
             try:
-                item = SignRecord.objects.get(stream__id=stream.id)
+                item = SignRecord.objects.get(Q(stream__id=stream.id), Q(stage='department1'), Q(signer__id=staff.id))
             except:
                 messages.add_message(request, messages.ERROR, u'操作失败')
                 return HttpResponseRedirect(reverse('index', args={''}))

@@ -71,7 +71,7 @@ class IndexForm(forms.Form):
             if not check_password(userInfoForm.cleaned_data['password'], staff.password):
                 raise Exception(u"密码错误")
         except Exception, e:
-            messages.add_message(request, messages.ERROR, '保存失败:' + str(e))
+            messages.add_message(request, messages.ERROR, u'保存失败:' + str(e))
             return self.render(request, userInfoForm, staff)
         staff.phoneNumber = userInfoForm.cleaned_data['phoneNumber']
         staff.icbcCard = userInfoForm.cleaned_data['icbcCard']
